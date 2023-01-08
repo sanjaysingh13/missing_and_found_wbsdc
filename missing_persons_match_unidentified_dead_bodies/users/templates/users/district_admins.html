@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %} District Admins{% endblock title %}
+{% block content %}
+<p><strong>Contact your District admin for Authorisation</strong> </p>
+    <table class="table table-condensed table-responsive table-striped">
+      <tr>
+            <th >Sl. No.</th>
+            <th >Name</th>
+
+            <th >Email</th>
+            <th> Telephone </th>
+
+            <th >District</th>
+
+
+        </tr>
+        <tbody>
+          {% for district_admin in district_admins %}
+
+            <tr>
+              <td>{{forloop.counter}}</td>
+                <td>{{district_admin.0}}</td>
+                <td>{{district_admin.1}}</td>
+
+                <td> {{district_admin.2}}</td>
+
+                <td> {{district_admin.3}}</td>
+
+
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p> Senior officers not attached to a District can contact crime.criminal.database@gmail.com at 033-24506146 </p>
+    {% endblock content %}
