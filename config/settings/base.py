@@ -38,12 +38,13 @@ LOCALE_PATHS = [str(ROOT_DIR / "locale")]
 # DATABASES
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
-
+DATABASE_DEFAULT = env.db(
+    "DATABASE_URL",
+    default="postgres:///missing_persons_match_unidentified_dead_bodies",
+)
+DATABASE_DEFAULT["ENGINE"] = "django.contrib.gis.db.backends.postgis"
 DATABASES = {
-    "default": env.db(
-        "DATABASE_URL",
-        default="postgres:///missing_persons_match_unidentified_dead_bodies",
-    ),
+    "default": DATABASE_DEFAULT,
 }
 DATABASES["default"]["ATOMIC_REQUESTS"] = True
 # https://docs.djangoproject.com/en/stable/ref/settings/#std:setting-DEFAULT_AUTO_FIELD
@@ -68,6 +69,7 @@ DJANGO_APPS = [
     # "django.contrib.humanize", # Handy template tags
     "django.contrib.admin",
     "django.forms",
+    "django.contrib.gis",
 ]
 THIRD_PARTY_APPS = [
     "crispy_forms",
@@ -322,3 +324,5 @@ SOCIALACCOUNT_FORMS = {
 
 # Your stuff...
 # ------------------------------------------------------------------------------
+MAP_BOX_ACCESS_TOKEN = env("MAP_BOX_ACCESS_TOKEN")
+GEOIP_PATH = str(ROOT_DIR / "geoip")

@@ -7,4 +7,5 @@ app_name = "backend"
 urlpatterns = [
     path("upload_photo/", views.upload_photo, name="upload_photo"),
     path("view_report/<int:object_id>/", views.view_report, name="view_report"),
+    path("report_search/", views.report_search, name="report_search"),
 ]

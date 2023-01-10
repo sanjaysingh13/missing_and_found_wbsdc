@@ -1,16 +1,16 @@
 {% extends "base_maps.html" %}
 {% load crispy_forms_tags %}
-{% block title %}Upload Photo{% endblock title %}
+{% block title %} {{title}} {% endblock title %}
 {% block content %}
-<h6>Upload Photo of Missing/Found Person</h6>
-<form method="post" enctype="multipart/form-data">
-	{% csrf_token %}
-    {% crispy reportsform  %}
+<div >
+	</br>
+	<h6> {{form_title}}</h6>
+</div>
 
-</form>
+{% crispy form form.helper %}
 
 {% endblock content %}
-{% block inline_javascript %}
+\{% block inline_javascript %}
 {{ block.super }}
 <script>
 var elementExists = document.getElementById("map");
@@ -25,7 +25,6 @@ const map = new mapboxgl.Map({
   center: [88.31370, 22.56764],
   zoom: 13
 });
-console.log(map);
 map.addControl(new MapboxGeocoder({
   accessToken: mapboxgl.accessToken,
   mapboxgl: mapboxgl
