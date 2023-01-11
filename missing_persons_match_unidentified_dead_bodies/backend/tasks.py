@@ -30,7 +30,7 @@ def add_icon_to_report(pk):
         icon_data = buffer.getvalue()
 
         # Upload the resized image to S3
-        s3.upload_fileobj(BytesIO(icon_data), icon_file_name)
+        s3.upload_fileobj(BytesIO(icon_data), 'wb-missing-found', icon_file_name)
 
         # Save the file name of the resized image to the icon field of the model
         report.icon = icon_file_name
