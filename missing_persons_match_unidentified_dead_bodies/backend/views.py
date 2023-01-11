@@ -134,7 +134,7 @@ def upload_photo(request):
                     arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
                     img = cv2.imdecode(arr, cv2.IMREAD_GRAYSCALE)
                     cv2.imwrite("tmp.jpg", img)
-                    image = face_recognition.load_report_file("tmp.jpg")
+                    image = face_recognition.load_image_file("tmp.jpg")
                     face_encoding = face_recognition.face_encodings(image)
 
                 if len(face_encoding) != 0:
