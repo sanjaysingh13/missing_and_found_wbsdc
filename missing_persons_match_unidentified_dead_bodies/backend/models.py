@@ -1,6 +1,10 @@
 # from django.contrib.postgres.fields import ArrayField
+from io import BytesIO
+
 from django.contrib.gis.db import models
+from django.core.files import File
 from django.utils.translation import gettext_lazy as _
+from PIL import Image
 
 from missing_persons_match_unidentified_dead_bodies.users.models import PoliceStation
 
@@ -17,7 +21,7 @@ class TimeStampedModel(models.Model):
 
 class Report(TimeStampedModel):
     photo = models.FileField()
-    icon = models.FileField(null=True)
+    icon = models.FileField(blank=True)
     police_station = models.ForeignKey(
         PoliceStation, blank=True, null=True, on_delete=models.SET_NULL
     )
@@ -37,3 +41,19 @@ class Report(TimeStampedModel):
     location = models.PointField(srid=4326, geography=True, null=True)
     # spatial_location = SpatialLocationField()
     year = models.CharField(blank=True, max_length=2)
+
+    def save(self, *args, **kwargs):
+        # Open the uploaded photo
+        with Image.open(self.photo) as img:
+            # Create a thumbnail
+            img.thumbnail((64, 64))
+
+            # Create a BytesIO object to save the thumbnail
+            thumb_io = BytesIO()
+            img.save(thumb_io, "JPEG")
+
+            # Seek to the beginning of the BytesIO object
+            thumb_io.seek(0)
+
+            # Save the thumbnail to the icon field
+            self.icon.save(self.photo.name, File(thumb_io), save=False)
