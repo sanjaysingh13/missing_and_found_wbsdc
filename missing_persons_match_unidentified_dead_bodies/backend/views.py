@@ -277,6 +277,7 @@ def report_search(request):
                     context["mapbox_access_token"] = mapbox_access_token
                     context["reports_json"] = report_dicts
                     context["location"] = [given_location.y, given_location.x]
+                    print(context["location"])
                     return render(request, template, context)
                 return render(request, template_name, context)
             else:

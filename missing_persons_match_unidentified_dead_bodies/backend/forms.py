@@ -17,9 +17,13 @@ MISSING_OR_FOUND = [("M", "Missing"), ("F", "Found")]
 #         (ps.id, ps.ps_with_distt)
 #         for ps in PoliceStation.objects.all().order_by("ps_with_distt")
 #     ]
-DISTRICTS = [
-    (distt.id, distt.name) for distt in District.objects.all().order_by("name")
-]
+try:
+    DISTRICTS = [
+        (distt.id, distt.name) for distt in District.objects.all().order_by("name")
+    ]
+except Exception as e:
+    print(str(e))
+    DISTRICTS = [("bar", "bar")]
 DISTRICTS.insert(0, ("Null", "Select a District"))
 YEARS = [
     (str(n).rjust(2, "0"), str(n).rjust(2, "0"))
