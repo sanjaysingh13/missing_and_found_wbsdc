@@ -29,7 +29,7 @@ from .forms import ReportForm, ReportSearchForm
 
 mapbox_access_token = settings.MAP_BOX_ACCESS_TOKEN
 
-local_file_pattern = re.compile(r".*media.*")
+s3_file_pattern = re.compile(r".*https.*")
 root = (
     "/Users/sanjaysingh/non_icloud/"
     + "missing_persons_match_unidentified_dead_bodies/"
@@ -111,7 +111,7 @@ def upload_photo(request):
                 )
                 report.police_station = police_station
                 url = report.photo.url
-                if local_file_pattern.search(url):
+                if not s3_file_pattern .search(url):
                     root = (
                         "/Users/sanjaysingh/non_icloud/"
                         + "missing_persons_match_unidentified_dead_bodies/"
