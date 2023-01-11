@@ -110,6 +110,7 @@ def upload_photo(request):
                     ps_with_distt=police_station_with_distt.strip()
                 )
                 report.police_station = police_station
+                report.save()
                 url = report.photo.url
                 if not s3_file_pattern .search(url):
                     root = (
@@ -123,6 +124,7 @@ def upload_photo(request):
                     face_encoding = face_recognition.face_encodings(img)
                 else:
                     url = url.replace("ccs-django", "ccs-django-uploads")
+                    print(f"URL IS {url}")
                     req = urllib.request.urlopen(url)
                     arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
                     report = cv2.imdecode(arr, cv2.IMREAD_GRAYSCALE)
