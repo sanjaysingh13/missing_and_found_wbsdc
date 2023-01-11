@@ -57,3 +57,4 @@ class Report(TimeStampedModel):
 
             # Save the thumbnail to the icon field
             self.icon.save(self.photo.name, File(thumb_io), save=False)
+            super().save(*args, **kwargs)
