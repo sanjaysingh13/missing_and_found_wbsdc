@@ -1,5 +1,8 @@
 {% extends "base_maps.html" %}
 {% load crispy_forms_tags %}
+{% load mapbox_location_field_tags %}
+ {% location_field_includes %}
+ {% include_jquery %}
 {% block title %} {{title}} {% endblock title %}
 {% block content %}
 <div >
@@ -8,37 +11,6 @@
 </div>
 
 {% crispy form form.helper %}
+{{ form.media }}
 
 {% endblock content %}
-\{% block inline_javascript %}
-{{ block.super }}
-<script>
-var elementExists = document.getElementById("map");
-if (elementExists) {
-	console.log("map div found");
-};
-	mapboxgl.accessToken = "{{mapbox_access_token}}"
-console.log(mapboxgl.accessToken)
-const map = new mapboxgl.Map({
-  container: 'map',
-  style: 'mapbox://styles/mapbox/streets-v11',
-  center: [88.31370, 22.56764],
-  zoom: 13
-});
-map.addControl(new MapboxGeocoder({
-  accessToken: mapboxgl.accessToken,
-  mapboxgl: mapboxgl
-}));
-console.log("everything working so far");
-map.on('click', (e) => {
-  // Retrieve the clicked location's coordinates
-  const coordinates = [e.lngLat.lng, e.lngLat.lat];
-  console.log(coordinates)
-  // Update a form field with the selected coordinates
-  // document.getElementById('form-field-id').value = coordinates;
-
-
-});
-console.log("everything working finally");
-</script>
-{% endblock inline_javascript %}

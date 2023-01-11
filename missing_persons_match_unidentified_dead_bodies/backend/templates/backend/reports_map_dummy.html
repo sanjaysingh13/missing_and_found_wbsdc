@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      {% load static i18n %}
+      <meta charset="utf-8" />
+      <meta name="description" content="View Missing/Found persons">
+      <title>Missing/Found Map</title>
+      <meta name="robots" content="noindex, nofollow" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <link
+         href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400, 700"
+         rel="stylesheet"
+         />
+      <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v2.5.1/mapbox-gl.js"></script>
+      <link
+            href="https://api.tiles.mapbox.com/mapbox-gl-js/v2.5.1/mapbox-gl.css"
+            rel="stylesheet"
+            />
+      <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.0/mapbox-gl-geocoder.min.js'></script>
+      <link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.0/mapbox-gl-geocoder.css' type='text/css' />
+            <!-- Turf.js plugin -->
+      <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
+      <style>
+      body {
+            color: #404040;
+            font: 400 15px/22px 'Source Sans Pro', 'Helvetica Neue', sans-serif;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+            }
+            * {
+            box-sizing: border-box;
+            }
+            .sidebar {
+            position: absolute;
+            width: 33.3333%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+            border-right: 1px solid rgba(0, 0, 0, 0.25);
+            }
+            .pad2 {
+            padding: 20px;
+            }
+            .map {
+            position: absolute;
+            width: 100%;
+            top: 0;
+            bottom: 0;
+            }
+            h1 {
+            font-size: 22px;
+            margin: 0;
+            font-weight: 400;
+            line-height: 20px;
+            padding: 20px 2px;
+            }
+            a {
+            color: #404040;
+            text-decoration: none;
+            }
+            a:hover {
+            color: #101010;
+            }
+            .heading {
+            background: #fff;
+            border-bottom: 1px solid #eee;
+            min-height: 60px;
+            line-height: 60px;
+            padding: 0 10px;
+            background-color: #00853e;
+            color: #fff;
+            }
+            .listings {
+            height: 100%;
+            overflow: auto;
+            padding-bottom: 60px;
+            }
+            .listings .item {
+            border-bottom: 1px solid #eee;
+            padding: 10px;
+            text-decoration: none;
+            }
+            .listings .item:last-child {
+            border-bottom: none;
+            }
+            .listings .item .title {
+            display: block;
+            color: #00853e;
+            font-weight: 700;
+            }
+            .listings .item .title small {
+            font-weight: 400;
+            }
+            .listings .item.active .title,
+            .listings .item .title:hover {
+            color: #8cc63f;
+            }
+            .listings .item.active {
+            background-color: #f8f8f8;
+            }
+            ::-webkit-scrollbar {
+            width: 3px;
+            height: 3px;
+            border-left: 0;
+            background: rgba(0, 0, 0, 0.1);
+            }
+            ::-webkit-scrollbar-track {
+            background: none;
+            }
+            ::-webkit-scrollbar-thumb {
+            background: #00853e;
+            border-radius: 0;
+            }
+            .marker {
+            border: none;
+            cursor: pointer;
+            height: 56px;
+            width: 56px;
+            background-image: url("https://cid-crime-criminal.s3.amazonaws.com/uploads/image/avatar/9946/SAMIM_HOSSAI_GILL.png");
+            /* Marker tweaks */
+            .mapboxgl-popup {
+            padding-bottom: 50px;
+            }
+            .mapboxgl-popup-close-button {
+            display: none;
+            }
+            .mapboxgl-popup-content {
+            font: 400 15px/22px 'Source Sans Pro', 'Helvetica Neue', sans-serif;
+            padding: 5px;
+            width: 180px;
+            }
+            .mapboxgl-popup-content h3 {
+            background: #91c949;
+            color: #fff;
+            margin: -15px 0 0;
+            padding: 10px;
+            border-radius: 3px 3px 0 0;
+            font-weight: 700;
+            }
+            .mapboxgl-popup-content h4 {
+            margin: 0;
+            padding: 10px;
+            font-weight: 400;
+            }
+            .mapboxgl-popup-content div {
+            padding: 10px;
+            }
+            .mapboxgl-popup-anchor-top > .mapboxgl-popup-content {
+            margin-top: 15px;
+            }
+            .mapboxgl-popup-anchor-top > .mapboxgl-popup-tip {
+            border-bottom-color: #91c949;
+            }
+            .mapboxgl-ctrl-geocoder {
+            border: 0;
+            border-radius: 0;
+            position: relative;
+            top: 0;
+            width: 800px;
+            width: 800px!important;
+            margin-top: 0;
+            }
+            .mapboxgl-ctrl-geocoder > div {
+            min-width: 100%;
+            margin-left: 0;
+            }
+
+            #myInput {
+  background-image: url('https://cid-crime-criminal.s3.amazonaws.com/uploads/image/avatar/9946/SAMIM_HOSSAI_GILL.png');
+  width: 100%;
+  font-size: 20px;
+  padding: 12px 20px 12px 40px;
+  border: 1px solid #ddd;
+  margin-bottom: 12px;
+}
+      </style>
+            {{reports_json|json_script:"reports_json" }}
+            {{location|json_script:"given_location"}}
+      </head>
+      <body>
+
+            <div id="map" class="map"></div>
+
+            <script>
+
+// create the map
+mapboxgl.accessToken = "{{mapbox_access_token}}"
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v11'
+});
+
+// add a marker for each report
+const reports = JSON.parse(document.getElementById('reports_json').textContent);
+
+
+reports.forEach(function(marker) {
+    console.log(marker.photo);
+     console.log(marker.lon);
+      console.log(marker.lat);
+    var el = document.createElement('div');
+    el.style.backgroundImage = 'url(' + marker.icon + ')';
+    el.style.width = '64px';
+    el.style.height = '64px';
+
+    new mapboxgl.Marker(el)
+        .setLngLat([marker.lat, marker.lon])
+        .setPopup(new mapboxgl.Popup({ offset: 25 }) // add popups
+        .setHTML('<img src="' +  marker.photo  + '" width="200" ><p> ' + (marker.description || "")  + '</p><p>Date: ' + (marker.date || "") + '</p><p>Name: ' + (marker.name || "") + '</p><p>Of: ' + (marker.guardian_name_and_address || "") + '</p><p>Age: ' + (marker.age || "") + '</p><p>Height: ' + (marker.height || "") + '</p><p>PS: ' + (marker.police_station || "") + '</p><p>Contact: <strong>' + (marker.oc || "") + ' : ' + (marker.tel || "")
+            + '</strong></p>'))
+        .addTo(map);
+});
+
+
+// reports.forEach(function(report) {
+//     console.log(report)
+//     var marker = new mapboxgl.Marker({
+//         draggable: false
+//     })
+//         .setLngLat([report.lon, report.lat])
+//         .setPopup(new mapboxgl.Popup({ offset: 25 }) // add popups
+//         .setHTML('<img src="' + report.photo + '" width="100" height="100"><p> ' + (report.description || "")  + '</p><p>Date: ' + (report.date || "") + '</p><p>Name: ' + (report.name || "") + '</p><p>Of: ' + (report.guardian_name_and_address || "") + '</p><p>Age: ' + (report.age || "") + '</p><p>Height: ' + (report.height || "") + '</p><p>PS: ' + (report.police_station || "") + '</p><p>Contact: <strong>' + (report.oc || "") + ' : ' + (report.tel || "")
+//             + '</strong></p>'))
+//         .addTo(map);
+
+//     marker.getElement().classList.add("marker")
+//     // marker.setIcon(report.icon);
+// });
+
+// center the map and set the zoom level
+const given_location = JSON.parse(document.getElementById('given_location').textContent);
+console.log([given_location[0], given_location[1]])
+map.setCenter([given_location[1], given_location[0]]);
+map.setZoom(9);
+
+            </script>
+         </body>
+      </html>

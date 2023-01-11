@@ -11,7 +11,7 @@ import numpy as np
 # from celery.result import AsyncResult
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.geos import GEOSGeometry, Point
 from django.core.paginator import Paginator
 from django.db.models import Q
 # from django.contrib.gis.geos import Point
@@ -33,7 +33,7 @@ local_file_pattern = re.compile(r".*media.*")
 root = (
     "/Users/sanjaysingh/non_icloud/"
     + "missing_persons_match_unidentified_dead_bodies/"
-    + "missing_persons_match_unidentified_dead_bodies"
+    + "missing_persons_match_unidentified_dead_bodies/media/"
 )
 
 
@@ -57,7 +57,7 @@ def match_encodings(report):
             height__gte=height - 10, height__lte=height + 10
         )
     # reports_under_consideration = reports_under_consideration.filter(
-    # entry_date__gte=entry_date-10,entry_date__lte=entry_date+90)
+    # entry_date__gte=entry_date-10, entry_date__lte=entry_date+90)
     face_encodings = [
         np.array(json.loads(report.face_encoding), dtype="float64")
         for report in reports_under_consideration
@@ -92,7 +92,7 @@ def upload_photo(request):
             police_station_with_distt = cleaned_data.get(
                 "police_station_with_distt", ""
             )
-
+            location = cleaned_data.get("location", "")
             # Encoding face
             for f in files:
                 report = Report(
@@ -106,25 +106,21 @@ def upload_photo(request):
                     latitude=latitude,
                     longitude=longitude,
                 )
-                report.save()
                 police_station = PoliceStation.objects.get(
                     ps_with_distt=police_station_with_distt.strip()
                 )
                 report.police_station = police_station
-                report.save()
                 url = report.photo.url
-                # Load report and encode with face_recognition
                 if local_file_pattern.search(url):
                     root = (
                         "/Users/sanjaysingh/non_icloud/"
                         + "missing_persons_match_unidentified_dead_bodies/"
-                        + "missing_persons_match_unidentified_dead_bodies"
+                        + "missing_persons_match_unidentified_dead_bodies/media/"
                     )
 
                     url = root + url
                     img = face_recognition.load_image_file(url)
-                    face_encoding = face_recognition.face_encodings(img)[0]
-                    print(face_encoding.dtype)
+                    face_encoding = face_recognition.face_encodings(img)
                 else:
                     url = url.replace("ccs-django", "ccs-django-uploads")
                     req = urllib.request.urlopen(url)
@@ -132,12 +128,20 @@ def upload_photo(request):
                     report = cv2.imdecode(arr, cv2.IMREAD_GRAYSCALE)
                     cv2.imwrite("tmp.jpg", img)
                     image = face_recognition.load_report_file("tmp.jpg")
-                    face_encoding = face_recognition.face_encodings(image)[0]
+                    face_encoding = face_recognition.face_encodings(image)
 
-                face_encoding = json.dumps(face_encoding.tolist())
-                report.face_encoding = face_encoding
+                if len(face_encoding) != 0:
+                    face_encoding = face_encoding[0]
+                    face_encoding = json.dumps(face_encoding.tolist())
+                    report.face_encoding = face_encoding
+                report.year = str(entry_date.year)[-2:]
+                if location:
+                    report.location = location
+                else:
+                    report.location = Point(longitude, latitude)
+
                 report.save()
-                return redirect("backend:view_report", object_id=report.id)
+                return redirect("backend: view_report", object_id=report.id)
     return render(
         request,
         template_name,
@@ -175,7 +179,7 @@ def report_search(request):
             # ref_date = cleaned_data.get('ref_date', '')
             # ref_year = cleaned_data.get('ref_year', '')
             keywords = cleaned_data.get("keywords", "")
-            # full_text_search_type = cleaned_data.get('full_text_search_type','')
+            # full_text_search_type = cleaned_data.get('full_text_search_type', '')
             districts = cleaned_data.get("districts", "")
             ps_list = cleaned_data.get("ps_list", "")
             min_date = cleaned_data.get("min_date", "")
@@ -186,6 +190,9 @@ def report_search(request):
             latitude = cleaned_data.get("latitude", "")
             longitude = cleaned_data.get("longitude", "")
             distance = cleaned_data.get("distance", "")
+            location = cleaned_data.get("location", "")
+            map_or_list = cleaned_data.get("map_or_list", "")
+            print(f"MAP OR LIST IS {map_or_list}")
             if advanced_search_report:
                 query_object = Q(entry_date__gte=min_date) & Q(entry_date__lte=max_date)
                 if keywords != "":
@@ -196,7 +203,7 @@ def report_search(request):
                     )
                     districts = districts
                 if ps_list != "":
-                    police_stations = ps_list.split(",")
+                    police_stations = ps_list.split(", ")
                     police_stations = [int(ps.strip()) for ps in police_stations if ps]
                     police_stations = list(filter(None, police_stations))
                     query_object = query_object & Q(
@@ -206,36 +213,71 @@ def report_search(request):
                     query_object = query_object & Q(missing_or_found=missing_or_found)
                 if gender != "All":
                     query_object = query_object & Q(gender=gender)
-                if latitude != "":
+                given_location = None
+                if location:
+                    given_location = location
+                elif latitude != "":
                     given_location = GEOSGeometry(
                         f"POINT({longitude} {latitude})", srid=4326
                     )
-                    # given_location = Point(longitude,latitude)
+                if given_location:
                     distance = distance * 1000
                     query_object = query_object & Q(
                         location__dwithin=(given_location, distance)
                     )
-                qs = Report.objects.filter(query_object)
-                print(
-                    f"""
-                keywords: {keywords}\n
-                districts: {districts}\n
-                ps_list: {ps_list}\n
-                min_date: {type(min_date)}\n
-                max_date: {max_date}\n
-                missing_or_found: {missing_or_found}\n
-                gender: {gender}\n
-                latitude: {latitude}\n
-                longitude: {longitude}\n
-                distance: {distance}\n
-                names: {[q.name for q in qs]}
-                """
+                reports = Report.objects.filter(query_object).only(
+                    "name",
+                    "description",
+                    "photo",
+                    "icon",
+                    "entry_date",
+                    "age",
+                    "guardian_name_and_address",
+                    "height",
+                    "location",
+                    "gender",
+                    "missing_or_found",
+                    "police_station",
                 )
-                context = {}
-                context["form"] = form
-                context["mapbox_access_token"] = mapbox_access_token
-                context["form_title"] = "Basic and Advanced Search for Reports"
-                context["title"] = "Report Search"
+                print(f"-------{len(reports)}------")
+                if map_or_list == "L":
+                    context = {}
+                    context["title"] = "Advanced Search Results"
+                    paginator = Paginator(reports, 5)
+                    page_number = request.GET.get("page")
+                    page_obj = paginator.get_page(page_number)
+                    context["reports"] = page_obj
+                    template_name = "backend/advanced_report_search_results.html"
+                    return render(request, template_name, context)
+                else:
+                    report_dicts = []
+                    for report in reports:
+                        report_dict = {}
+                        report_dict["lat"] = report.location.x
+                        report_dict["lon"] = report.location.y
+                        report_dict["photo"] = report.photo.url
+                        report_dict["icon"] = report.icon.url
+                        report_dict["entry_date"] = report.entry_date
+                        report_dict["name"] = report.name
+                        report_dict[
+                            "guardian_name_and_address"
+                        ] = report.guardian_name_and_address
+                        report_dict["description"] = report.description
+                        report_dict["age"] = report.age
+                        report_dict["height"] = report.height
+                        report_dict[
+                            "police_station"
+                        ] = report.police_station.ps_with_distt
+                        report_dict["oc"] = report.police_station.officer_in_charge
+                        report_dict["tel"] = report.police_station.telephones
+                        report_dicts.append(report_dict)
+                    template_name = "backend/reports_map.html"
+                    context = {}
+                    template = "backend/reports_map_dummy.html"
+                    context["mapbox_access_token"] = mapbox_access_token
+                    context["reports_json"] = report_dicts
+                    context["location"] = [given_location.y, given_location.x]
+                    return render(request, template, context)
                 return render(request, template_name, context)
             else:
                 results = "foo"
@@ -243,7 +285,7 @@ def report_search(request):
                     pass
                     # return redirect(report)
                 else:
-                    return redirect("backend:report_search")
+                    return redirect("backend: report_search")
 
                 # template_name = "searches/report_search_results"
 

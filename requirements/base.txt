@@ -23,3 +23,6 @@ CMake
 dlib==19.24.0
 opencv-contrib-python-headless==4.6.0.66
 face-recognition
+
+# Mapbox
+django-mapbox-location-field

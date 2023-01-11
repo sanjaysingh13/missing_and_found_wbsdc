@@ -4,6 +4,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, Column, Div, Field, Layout, Row, Submit
 from django import forms
 from django.core.validators import RegexValidator
+from mapbox_location_field.spatial.forms import SpatialLocationField
 
 from missing_persons_match_unidentified_dead_bodies.users.models import (
     District,
@@ -50,7 +51,22 @@ FULL_TEXT_SEARCH_TYPE.append(
     "sari"  will also be returned for "Saree")""",
     )
 )
-
+default_map_attrs = {
+    "style": "mapbox://styles/mapbox/outdoors-v11",
+    "zoom": 13,
+    "center": [88.3639, 22.5726],
+    "cursor_style": "pointer",
+    "marker_color": "red",
+    "rotate": False,
+    "geocoder": True,
+    "fullscreen_button": True,
+    "navigation_buttons": True,
+    "track_location_button": True,
+    "readonly": True,
+    "placeholder": "Pick a location on map below",
+    "language": "auto",
+    "message_404": "undefined address",
+}
 try:
     ps_list = [
         (ps["id"], ps["ps_with_distt"])
@@ -63,9 +79,7 @@ except Exception as e:
 
 
 class ReportForm(forms.Form):
-    photo = forms.FileField(
-        label="Photos ", required=False, widget=forms.ClearableFileInput()
-    )
+    photo = forms.FileField(label="Photos ", widget=forms.ClearableFileInput())
     police_station_with_distt = forms.CharField(
         label="Police Station",
         max_length=100,
@@ -77,17 +91,21 @@ class ReportForm(forms.Form):
             ),
         ],
     )
-    # police_station_with_distt = forms.ChoiceField(choices=ps_list, required=False)
-    entry_date = forms.DateField(required=False)
+    entry_date = forms.DateField()
     name = forms.CharField(required=False, label="Name", max_length=100)
     gender = forms.CharField(label="Gender", widget=forms.RadioSelect(choices=GENDER))
     missing_or_found = forms.CharField(
         label="Missing or Found", widget=forms.RadioSelect(choices=MISSING_OR_FOUND)
     )
     height = forms.IntegerField()
+    age = forms.IntegerField()
+    guardian_name_and_address = forms.CharField(
+        max_length=300, required=False, widget=forms.Textarea()
+    )
     description = forms.CharField(max_length=500, widget=forms.Textarea())
     latitude = forms.FloatField(required=False)
     longitude = forms.FloatField(required=False)
+    location = SpatialLocationField(map_attrs=default_map_attrs, required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -95,29 +113,109 @@ class ReportForm(forms.Form):
         self.helper.layout = Layout(
             Div(
                 Column(
-                    Row("photo", css_class="form-group"),
-                    Row("missing_or_found", css_class="form-group"),
+                    Row(
+                        Column(
+                            "photo",
+                            css_class="form-group card text-dark bg-light col-md-6 mb-0",
+                        ),
+                        HTML(
+                            """<p class='col-md-6 mb-0 card text-white bg-primary'>
+                            Use a clear  frontal face picture if possible.
+                            In case of mutilation by accident, take a clear picture
+                            after stitching of injuries.<
+                            /p>"""
+                        ),
+                    ),
+                    Row(HTML("</br>")),
+                    Row(
+                        Column(
+                            "missing_or_found",
+                            css_class="form-group col-md-6 mb-0 card text-dark bg-light",
+                        ),
+                        Column(
+                            "gender",
+                            css_class="form-group col-md-6 mb-0 card text-dark bg-light",
+                        ),
+                    ),
                     Row("name", css_class="form-group "),
-                    Row("description", css_class="form-group"),
+                    Row("guardian_name_and_address", css_class="form-group "),
+                    Row("police_station_with_distt", css_class="form-group"),
                     css_class="col-md-6 mb-0",
                 ),
                 Column(
-                    Row("height", css_class="form-group"),
-                    Row("gender", css_class="form-group"),
+                    Row(
+                        Column(
+                            "height",
+                            css_class="form-group card text-dark bg-light col-md-6 mb-0",
+                        ),
+                        HTML(
+                            """<p class='col-md-6 mb-0 card text-white bg-primary'>
+                            It is <strong> very </strong> important to record height.
+                            For dead bodies, measure it in prone position.
+                            For missing perons, make a best guess by recording
+                            statements of 3/4 close acquantances.</p>"""
+                        ),
+                    ),
+                    Row("age", css_class="form-group"),
+                    Row("description", css_class="form-group"),
                     Row("entry_date", css_class="form-group "),
-                    Row("latitude", css_class="form-group "),
-                    Row("longitude", css_class="form-group "),
-                    Row("police_station_with_distt", css_class="form-group"),
                     Row(HTML("<div id='map' class='map'></div>")),
                     css_class="col-md-6 mb-0",
                 ),
                 css_class="row",
-            )
+            ),
+            HTML("<hr>"),
+            Div(
+                Row(
+                    HTML(
+                        """<p class='col-md-12 mb-0 card-title'>
+                        You can enter location by either selecting a point on the map, or supplying lat/long manually.
+                        For dead bodies, it will be the location where found.
+                        For missing persons,
+                        the EO must visit or otherwise ascertain the last known location
+                        and record it's coordinates.</p>"""
+                    )
+                ),
+                Row(HTML("</br>")),
+                Row(
+                    Column("location", css_class="form-group col-md-8 mb-0"),
+                    Column("latitude", css_class="form-group col-md-2 mb-0"),
+                    Column("longitude", css_class="form-group col-md-2 mb-0"),
+                ),
+                css_class="row card text-dark bg-light",
+            ),
         )
 
         self.helper.form_method = "post"
         self.helper.form_tag = False
         self.helper.add_input(Submit("submit", "Submit"))
+
+    def clean(self):
+        cleaned_data = super().clean()
+        messages = []
+        latitude = cleaned_data.get("latitude")
+        longitude = cleaned_data.get("longitude", "")
+        if latitude:
+            if not longitude:
+                msg_ = "Please fill both lat and long"
+                messages.append(msg_)
+            else:
+                if (not (21 <= latitude <= 28)) or (not (86.5 <= longitude <= 90)):
+                    msg_ = "Please fill lat and long within the State of West Bengal."
+                    messages.append(msg_)
+        if longitude:
+            if not latitude:
+                msg_ = "Please fill both lat and long"
+                messages.append(msg_)
+            else:
+                if (not (21 <= latitude <= 28)) or (not (86.5 <= longitude <= 90)):
+                    msg_ = "Please fill lat and long within the State of West Bengal."
+                    messages.append(msg_)
+        if messages != []:
+            messages = list(set(messages))
+            raise forms.ValidationError(messages)
+
+        return cleaned_data
 
 
 #######################
@@ -160,7 +258,12 @@ class ReportSearchForm(forms.Form):
     ps_list = forms.CharField(required=False, widget=forms.HiddenInput())
     latitude = forms.CharField(required=False, max_length=20)
     longitude = forms.CharField(required=False, max_length=20)
+    location = SpatialLocationField(map_attrs=default_map_attrs, required=False)
     distance = forms.IntegerField(required=False)
+    map_or_list = forms.CharField(
+        label="Map or List",
+        widget=forms.RadioSelect(choices=[("M", "Map"), ("L", "list")]),
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -212,17 +315,24 @@ class ReportSearchForm(forms.Form):
                     Column("min_date", css_class="form-group col-md-3 mb-0"),
                     Column("max_date", css_class="form-group col-md-3 mb-0"),
                 ),
-                Row(
-                    HTML(
-                        """<p class = col-md-3>
+                HTML(
+                    """<p class = col-md-12>
                         You can specify a lat/long and distance in Km
                         to search for reports within a circle</p>"""
-                    ),
-                    Column("latitude", css_class="form-group col-md-3 mb-0"),
-                    Column("longitude", css_class="form-group col-md-3 mb-0"),
-                    Column("distance", css_class="form-group col-md-3 mb-0"),
                 ),
-                Row(HTML("<div id='map' class='map'></div>")),
+                Row(
+                    Column(
+                        Row("location", css_class="form-group "),
+                        css_class="col-md-10 mb-0",
+                    ),
+                    Column(
+                        Row("latitude", css_class="form-group "),
+                        Row("longitude", css_class="form-group "),
+                        Row("distance", css_class="form-group "),
+                        Row("map_or_list", css_class="form-group "),
+                        css_class="col-md-2 mb-0",
+                    ),
+                ),
                 css_class="advanced-search-fields ",
             ),
         )

@@ -78,6 +78,7 @@ THIRD_PARTY_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "django_celery_beat",
+    "mapbox_location_field",
 ]
 
 LOCAL_APPS = [
@@ -325,4 +326,5 @@ SOCIALACCOUNT_FORMS = {
 # Your stuff...
 # ------------------------------------------------------------------------------
 MAP_BOX_ACCESS_TOKEN = env("MAP_BOX_ACCESS_TOKEN")
+MAPBOX_KEY = MAP_BOX_ACCESS_TOKEN
 GEOIP_PATH = str(ROOT_DIR / "geoip")

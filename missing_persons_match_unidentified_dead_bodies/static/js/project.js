@@ -27,7 +27,7 @@ $(document).ready(function() {
         }
 
         function split(val) {
-            return val.split(/,\s*/);
+            return val.split(/, \s*/);
         }
 
         function extractLast(term) {

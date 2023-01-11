@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}{{title}}{% endblock title %}
+{% load static%}
+{% block content %}
+<div>
+
+    <h2>Matched Reports</h2>
+
+    <div class="container">
+        <!--Pagination-->
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-center">
+                {% if matches.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ matches.previous_page_number }}">Previous</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+                </li>
+                {% endif %}
+
+                {% if matches.number|add:'-4' > 1 %}
+                <li class="page-item"><a class="page-link" href="?page={{ matches.number|add:'-5' }}">&hellip;</a></li>
+                {% endif %}
+
+                {% for i in matches.paginator.page_range %}
+                {% if matches.number == i %}
+                <li class="page-item active" aria-current="page">
+                  <span class="page-link">
+                    {{ i }}
+                    <span class="sr-only">(current)</span>
+                </span>
+            </li>
+            {% elif i > matches.number|add:'-5' and i < matches.number|add:'5' %}
+            <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+            {% endif %}
+            {% endfor %}
+
+            {% if matches.paginator.num_pages > matches.number|add:'4' %}
+            <li class="page-item"><a class="page-link" href="?page={{ matches.number|add:'5' }}">&hellip;</a></li>
+            {% endif %}
+
+            {% if matches.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ matches.next_page_number }}">Next</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Next</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    <!--end of Pagination-->
+    <div class="row row-cols-5">
+        {% for report in reports %}
+        <div class="col">
+            <img src= "{{ report.photo.url }}" class="img-fluid" >
+            <p>Missing/Found: <strong>{{ report.missing_or_found}}</strong></p>
+            <p>Name: <strong>{{ report.name}}</strong></p>
+            <p>{{ report.guardian_name_and_address}}</p>
+            <p>Age: <strong>{{ report.age}}</strong></p>
+            <p>Height: <strong>{{ report.height}}</strong></p>
+            <p>Date: <strong>{{ report.entry_date}}</strong></p>
+            <p>{{ report.detail}}</p>
+            <p>PS: <strong>{{ report.police_station.ps_with_distt}}</strong></p>
+            <p>Contact</p>
+            <p><strong>{{report.police_station.officer_in_charge}}</strong></p>
+            <p><strong>{{report.police_station.telephones}}</strong></p>
+
+
+        </div>
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock content %}
+
+</div>
