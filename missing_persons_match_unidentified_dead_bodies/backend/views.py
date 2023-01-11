@@ -84,6 +84,8 @@ def upload_photo(request):
             entry_date = cleaned_data.get("entry_date", "")
             name = cleaned_data.get("name", "")
             gender = cleaned_data.get("gender", "")
+            age = cleaned_data.get("age", "")
+            guardian_name_and_address = cleaned_data.get("guardian_name_and_address", "")
             missing_or_found = cleaned_data.get("missing_or_found", "")
             height = cleaned_data.get("height", "")
             description = cleaned_data.get("description", "")
@@ -105,6 +107,9 @@ def upload_photo(request):
                     description=description,
                     latitude=latitude,
                     longitude=longitude,
+                    age=age,
+                    guardian_name_and_address=guardian_name_and_address,
+
                 )
                 police_station = PoliceStation.objects.get(
                     ps_with_distt=police_station_with_distt.strip()
