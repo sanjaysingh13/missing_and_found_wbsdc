@@ -148,7 +148,7 @@ def upload_photo(request):
                     report.location = Point(longitude, latitude)
 
                 report.save()
-                return redirect("backend: view_report", object_id=report.id)
+                return redirect("backend:view_report", object_id=report.id)
     return render(
         request,
         template_name,
