@@ -199,7 +199,6 @@ def report_search(request):
             distance = cleaned_data.get("distance", "")
             location = cleaned_data.get("location", "")
             map_or_list = cleaned_data.get("map_or_list", "")
-            print(f"MAP OR LIST IS {map_or_list}")
             if advanced_search_report:
                 query_object = Q(entry_date__gte=min_date) & Q(entry_date__lte=max_date)
                 if keywords != "":
@@ -259,6 +258,9 @@ def report_search(request):
                 else:
                     report_dicts = []
                     for report in reports:
+                        print(f"PHOTO URL IS  {report.photo.url}")
+                        print(f"ICON URL IS  {report.icon.url}")
+
                         report_dict = {}
                         report_dict["lat"] = report.location.x
                         report_dict["lon"] = report.location.y
