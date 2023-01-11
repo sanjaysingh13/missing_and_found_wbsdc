@@ -24,13 +24,13 @@ def add_icon_to_report(pk):
         s3 = boto3.client("s3")
 
         # Get the file name of the resized image
-        icon_file_name = "icons_" + image.name.split("/")[-1]
+        icon_file_name = "icons_" + report.photo.name.split("/")[-1]
 
         # Get the contents of the buffer
         icon_data = buffer.getvalue()
 
         # Upload the resized image to S3
-        s3.upload_fileobj(BytesIO(icon_data), "ccs-django-icons", icon_file_name)
+        s3.upload_fileobj(BytesIO(icon_data), icon_file_name)
 
         # Save the file name of the resized image to the icon field of the model
         report.icon = icon_file_name
