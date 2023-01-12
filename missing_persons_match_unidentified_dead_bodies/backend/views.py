@@ -1,4 +1,5 @@
 # import io
+import io
 import json
 import re
 import urllib
@@ -85,7 +86,9 @@ def upload_photo(request):
             name = cleaned_data.get("name", "")
             gender = cleaned_data.get("gender", "")
             age = cleaned_data.get("age", "")
-            guardian_name_and_address = cleaned_data.get("guardian_name_and_address", "")
+            guardian_name_and_address = cleaned_data.get(
+                "guardian_name_and_address", ""
+            )
             missing_or_found = cleaned_data.get("missing_or_found", "")
             height = cleaned_data.get("height", "")
             description = cleaned_data.get("description", "")
@@ -109,15 +112,14 @@ def upload_photo(request):
                     longitude=longitude,
                     age=age,
                     guardian_name_and_address=guardian_name_and_address,
-
                 )
                 police_station = PoliceStation.objects.get(
                     ps_with_distt=police_station_with_distt.strip()
                 )
                 report.police_station = police_station
-                report.save()
+                # report.save()
                 url = report.photo.url
-                if not s3_file_pattern .search(url):
+                if not s3_file_pattern.search(url):
                     root = (
                         "/Users/sanjaysingh/non_icloud/"
                         + "missing_persons_match_unidentified_dead_bodies/"
@@ -133,10 +135,13 @@ def upload_photo(request):
                     req = urllib.request.urlopen(url)
                     arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
                     img = cv2.imdecode(arr, cv2.IMREAD_GRAYSCALE)
-                    cv2.imwrite("tmp.jpg", img)
-                    image = face_recognition.load_image_file("tmp.jpg")
+                    _, img_encoded = cv2.imencode(".jpeg", img)
+                    memory_file_output = io.BytesIO()
+                    memory_file_output.write(img_encoded)
+                    memory_file_output.seek(0)
+                    image = face_recognition.load_image_file(memory_file_output)
+                    image = face_recognition.load_image_file(memory_file_output)
                     face_encoding = face_recognition.face_encodings(image)
-
                 if len(face_encoding) != 0:
                     face_encoding = face_encoding[0]
                     face_encoding = json.dumps(face_encoding.tolist())
