@@ -133,7 +133,7 @@ def upload_photo(request):
                     face_encoding = face_recognition.face_encodings(img)
                 else:
                     image = cv2.imdecode(
-                        np.fromstring(f.read(), np.uint8), cv2.IMREAD_UNCHANGED
+                        np.fromstring(resized_image.read(), np.uint8), cv2.IMREAD_UNCHANGED
                     )
                     _, img_encoded = cv2.imencode(".jpeg", img)
                     memory_file_output = io.BytesIO()
