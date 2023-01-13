@@ -1,12 +1,13 @@
 # from django.contrib.postgres.fields import ArrayField
-from io import BytesIO
 
 from django.contrib.gis.db import models
-from django.core.files import File
+# from django.core.files import File
 from django.utils.translation import gettext_lazy as _
-from PIL import Image
 
 from missing_persons_match_unidentified_dead_bodies.users.models import PoliceStation
+
+# from PIL import Image
+
 
 # from mapbox_location_field.spatial.models import SpatialLocationField
 
@@ -42,19 +43,19 @@ class Report(TimeStampedModel):
     # spatial_location = SpatialLocationField()
     year = models.CharField(blank=True, max_length=2)
 
-    def save(self, *args, **kwargs):
-        # Open the uploaded photo
-        with Image.open(self.photo) as img:
-            # Create a thumbnail
-            img.thumbnail((64, 64))
+    # def save(self, *args, **kwargs): # Will use this later in CCS
+    #     # Open the uploaded photo
+    #     with Image.open(self.photo) as img:
+    #         # Create a thumbnail
+    #         img.thumbnail((64, 64))
 
-            # Create a BytesIO object to save the thumbnail
-            thumb_io = BytesIO()
-            img.save(thumb_io, "JPEG")
+    #         # Create a BytesIO object to save the thumbnail
+    #         thumb_io = BytesIO()
+    #         img.save(thumb_io, "JPEG")
 
-            # Seek to the beginning of the BytesIO object
-            thumb_io.seek(0)
+    #         # Seek to the beginning of the BytesIO object
+    #         thumb_io.seek(0)
 
-            # Save the thumbnail to the icon field
-            self.icon.save(self.photo.name, File(thumb_io), save=False)
-            super().save(*args, **kwargs)
+    #         # Save the thumbnail to the icon field
+    #         self.icon.save(self.photo.name, File(thumb_io), save=False)
+    #         super().save(*args, **kwargs)

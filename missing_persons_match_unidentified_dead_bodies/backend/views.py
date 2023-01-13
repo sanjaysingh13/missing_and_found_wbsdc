@@ -2,7 +2,6 @@
 import io
 import json
 import re
-import urllib
 
 import cv2
 import face_recognition
@@ -27,6 +26,7 @@ from missing_persons_match_unidentified_dead_bodies.backend.models import Report
 from missing_persons_match_unidentified_dead_bodies.users.models import PoliceStation
 
 from .forms import ReportForm, ReportSearchForm
+from .utils import resize_image
 
 mapbox_access_token = settings.MAP_BOX_ACCESS_TOKEN
 
@@ -100,8 +100,10 @@ def upload_photo(request):
             location = cleaned_data.get("location", "")
             # Encoding face
             for f in files:
+                resized_image, icon = resize_image(f, 600, 64)
                 report = Report(
-                    photo=f,
+                    photo=resized_image,
+                    icon=icon,
                     entry_date=entry_date,
                     name=name,
                     gender=gender,
@@ -123,18 +125,16 @@ def upload_photo(request):
                     root = (
                         "/Users/sanjaysingh/non_icloud/"
                         + "missing_persons_match_unidentified_dead_bodies/"
-                        + "missing_persons_match_unidentified_dead_bodies/media/"
+                        + "missing_persons_match_unidentified_dead_bodies"
                     )
 
                     url = root + url
                     img = face_recognition.load_image_file(url)
                     face_encoding = face_recognition.face_encodings(img)
                 else:
-                    url = url.replace("ccs-django", "ccs-django-uploads")
-                    print(f"URL IS {url}")
-                    req = urllib.request.urlopen(url)
-                    arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
-                    img = cv2.imdecode(arr, cv2.IMREAD_GRAYSCALE)
+                    image = cv2.imdecode(
+                        np.fromstring(f.read(), np.uint8), cv2.IMREAD_UNCHANGED
+                    )
                     _, img_encoded = cv2.imencode(".jpeg", img)
                     memory_file_output = io.BytesIO()
                     memory_file_output.write(img_encoded)

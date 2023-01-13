@@ -362,7 +362,40 @@ class ReportSearchForm(forms.Form):
                 msg_ = "Case number has to be just a number (without year)"
                 messages.append(msg_)
         else:
-            pass
+            latitude = cleaned_data.get("latitude")
+            longitude = cleaned_data.get("longitude", "")
+            distance = cleaned_data.get("distance", "")
+            location = cleaned_data.get("location", "")
+            if latitude:
+                if not longitude:
+                    msg_ = "Please fill both lat and long"
+                    messages.append(msg_)
+                else:
+                    if (not (21 <= latitude <= 28)) or (not (86.5 <= longitude <= 90)):
+                        msg_ = (
+                            "Please fill lat and long within the State of West Bengal."
+                        )
+                        messages.append(msg_)
+            if longitude:
+                if not latitude:
+                    msg_ = "Please fill both lat and long"
+                    messages.append(msg_)
+                else:
+                    if (not (21 <= latitude <= 28)) or (not (86.5 <= longitude <= 90)):
+                        msg_ = (
+                            "Please fill lat and long within the State of West Bengal."
+                        )
+                        messages.append(msg_)
+            if latitude or location:
+                if not distance:
+                    msg_ = "Please enter a distance to search."
+                    messages.append(msg_)
+
+            if messages != []:
+                messages = list(set(messages))
+                raise forms.ValidationError(messages)
+
+            return cleaned_data
         if messages != []:
             raise forms.ValidationError(messages)
 
