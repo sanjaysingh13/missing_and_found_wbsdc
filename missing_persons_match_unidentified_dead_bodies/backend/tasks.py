@@ -7,8 +7,8 @@ from PIL import Image
 from config.celery_app import app
 from missing_persons_match_unidentified_dead_bodies.backend.models import Report
 
-ACCESS_ID = settings.AWS_ACCESS_KEY_ID
-ACCESS_KEY = settings.AWS_SECRET_ACCESS_KEY
+ACCESS_ID = settings.DJANGO_AWS_ACCESS_KEY_ID
+ACCESS_KEY = settings.DJANGO_AWS_SECRET_ACCESS_KEY
 
 
 @app.task(task_soft_time_limit=3000, ignore_result=True)
