@@ -17,6 +17,7 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
     "3.111.96.240",
     ".ccsneo4jdigitalocean.com",
+    ".wbkhoyapaya.com"
 ]
 
 # CACHES
