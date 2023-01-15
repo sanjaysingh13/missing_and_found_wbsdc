@@ -1,5 +1,5 @@
 from .base import *  # noqa
-from .base import env
+from .base import DATABASES, env
 
 # GENERAL
 # ------------------------------------------------------------------------------
@@ -11,7 +11,13 @@ SECRET_KEY = env(
     default="e8KRL4le0E5dCAvwdnRfwAvx6gNJtdTDdo9FuB1tHDD9qBtcrWxcmt1JppAB276W",
 )
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1", "3.111.96.240", ".ccsneo4jdigitalocean.com"]
+ALLOWED_HOSTS = [
+    "localhost",
+    "0.0.0.0",
+    "127.0.0.1",
+    "3.111.96.240",
+    ".ccsneo4jdigitalocean.com",
+]
 
 # CACHES
 # ------------------------------------------------------------------------------
@@ -41,7 +47,7 @@ INSTALLED_APPS = ["whitenoise.runserver_nostatic"] + INSTALLED_APPS  # noqa F405
 # https://django-debug-toolbar.readthedocs.io/en/latest/installation.html#prerequisites
 INSTALLED_APPS += ["debug_toolbar"]  # noqa F405
 # https://django-debug-toolbar.readthedocs.io/en/latest/installation.html#middleware
-MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]  # noqa F405
+# MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]  # noqa F405
 # https://django-debug-toolbar.readthedocs.io/en/latest/configuration.html#debug-toolbar-config
 DEBUG_TOOLBAR_CONFIG = {
     "DISABLE_PANELS": ["debug_toolbar.panels.redirects.RedirectsPanel"],
@@ -65,10 +71,12 @@ CELERY_TASK_EAGER_PROPAGATES = True
 # ------------------------------------------------------------------------------
 # need to add production settings. This will be loaded only if RUNNING_ON_AWS is set
 try:
-    RUNNING_ON_AWS = env('RUNNING_ON_AWS')
+    RUNNING_ON_AWS = env("RUNNING_ON_AWS")
     # DATABASES
     # ------------------------------------------------------------------------------
-    DATABASES["default"]["CONN_MAX_AGE"] = env.int("CONN_MAX_AGE", default=60)  # noqa F405
+    DATABASES["default"]["CONN_MAX_AGE"] = env.int(
+        "CONN_MAX_AGE", default=60
+    )  # noqa F405
 
     # CACHES
     # ------------------------------------------------------------------------------
@@ -120,7 +128,10 @@ try:
     AWS_S3_REGION_NAME = env("DJANGO_AWS_S3_REGION_NAME", default=None)
     # https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html#cloudfront
     AWS_S3_CUSTOM_DOMAIN = env("DJANGO_AWS_S3_CUSTOM_DOMAIN", default=None)
-    aws_s3_domain = AWS_S3_CUSTOM_DOMAIN or f"{AWS_STORAGE_BUCKET_NAME}.s3.ap-south-1.amazonaws.amazonaws.com"
+    aws_s3_domain = (
+        AWS_S3_CUSTOM_DOMAIN
+        or f"{AWS_STORAGE_BUCKET_NAME}.s3.ap-south-1.amazonaws.amazonaws.com"
+    )
     # STATIC
     # ------------------------
     STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
@@ -159,7 +170,9 @@ try:
     EMAIL_BACKEND = "anymail.backends.sendgrid.EmailBackend"
     ANYMAIL = {
         "SENDGRID_API_KEY": env("SENDGRID_API_KEY"),
-        "SENDGRID_API_URL": env("SENDGRID_API_URL", default="https://api.sendgrid.com/v3/"),
+        "SENDGRID_API_URL": env(
+            "SENDGRID_API_URL", default="https://api.sendgrid.com/v3/"
+        ),
     }
     # LOGGING
     # ------------------------------------------------------------------------------
@@ -172,7 +185,9 @@ try:
     LOGGING = {
         "version": 1,
         "disable_existing_loggers": False,
-        "filters": {"require_debug_false": {"()": "django.utils.log.RequireDebugFalse"}},
+        "filters": {
+            "require_debug_false": {"()": "django.utils.log.RequireDebugFalse"}
+        },
         "formatters": {
             "verbose": {
                 "format": "%(levelname)s %(asctime)s %(module)s "

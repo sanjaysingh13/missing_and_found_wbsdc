@@ -43,6 +43,7 @@ DATABASE_DEFAULT = env.db(
     default="postgres:///missing_persons_match_unidentified_dead_bodies",
 )
 DATABASE_DEFAULT["ENGINE"] = "django.contrib.gis.db.backends.postgis"
+DATABASE_DEFAULT["OPTIONS"] = {"options": "-c search_path=public,pg_trgm"}
 DATABASES = {
     "default": DATABASE_DEFAULT,
 }
@@ -70,6 +71,7 @@ DJANGO_APPS = [
     "django.contrib.admin",
     "django.forms",
     "django.contrib.gis",
+    "django.contrib.postgres",
 ]
 THIRD_PARTY_APPS = [
     "crispy_forms",
@@ -296,6 +298,9 @@ CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 CELERY_WORKER_SEND_TASK_EVENTS = True
 # https://docs.celeryq.dev/en/stable/userguide/configuration.html#std-setting-task_send_sent_event
 CELERY_TASK_SEND_SENT_EVENT = True
+CELERY_TASK_ALWAYS_EAGER = True
+# https://docs.celeryq.dev/en/stable/userguide/configuration.html#task-eager-propagates
+CELERY_TASK_EAGER_PROPAGATES = True
 # django-allauth
 # ------------------------------------------------------------------------------
 ACCOUNT_ALLOW_REGISTRATION = env.bool("DJANGO_ACCOUNT_ALLOW_REGISTRATION", True)

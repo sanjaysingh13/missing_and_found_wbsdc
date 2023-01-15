@@ -4,7 +4,7 @@
 {% block content %}
 <div>
 
-    <h2>Matched Reports</h2>
+    <h2>Reports</h2>
 
     <div class="container">
         <!--Pagination-->
@@ -63,7 +63,7 @@
             <p>Age: <strong>{{ report.age}}</strong></p>
             <p>Height: <strong>{{ report.height}}</strong></p>
             <p>Date: <strong>{{ report.entry_date}}</strong></p>
-            <p>{{ report.detail}}</p>
+            <p>{{ report.description}}</p>
             <p>PS: <strong>{{ report.police_station.ps_with_distt}}</strong></p>
             <p>Contact</p>
             <p><strong>{{report.police_station.officer_in_charge}}</strong></p>

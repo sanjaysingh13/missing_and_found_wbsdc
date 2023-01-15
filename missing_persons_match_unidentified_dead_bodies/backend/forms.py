@@ -42,15 +42,7 @@ FULL_TEXT_SEARCH_TYPE.append(
 FULL_TEXT_SEARCH_TYPE.append(
     (
         1,
-        """Partial word - slow
-    (when you are searching for words within words e.g.
-    gold will also return results for golden, marigold etc. )""",
-    )
-)
-FULL_TEXT_SEARCH_TYPE.append(
-    (
-        2,
-        """Fuzzy - slowest
+        """Fuzzy -
     (Will return all approximate matches e.g.
     "sari"  will also be returned for "Saree")""",
     )

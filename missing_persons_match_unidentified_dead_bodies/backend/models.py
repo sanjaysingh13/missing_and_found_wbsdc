@@ -1,6 +1,7 @@
 # from django.contrib.postgres.fields import ArrayField
 
 from django.contrib.gis.db import models
+from django.contrib.postgres.search import SearchVectorField
 # from django.core.files import File
 from django.utils.translation import gettext_lazy as _
 
@@ -20,6 +21,10 @@ class TimeStampedModel(models.Model):
         abstract = True
 
 
+class Token(models.Model):
+    name = models.CharField(max_length=100)
+
+
 class Report(TimeStampedModel):
     photo = models.FileField()
     icon = models.FileField(blank=True)
@@ -31,6 +36,7 @@ class Report(TimeStampedModel):
     gender = models.CharField(("Gender"), blank=False, max_length=1)
     missing_or_found = models.CharField(("Missing Or Found"), blank=False, max_length=1)
     description = models.CharField(blank=False, max_length=500)
+    description_search_vector = SearchVectorField(null=True)
     height = models.IntegerField()
     age = models.IntegerField()
     guardian_name_and_address = models.CharField(
@@ -42,6 +48,7 @@ class Report(TimeStampedModel):
     location = models.PointField(srid=4326, geography=True, null=True)
     # spatial_location = SpatialLocationField()
     year = models.CharField(blank=True, max_length=2)
+    tokens = models.ManyToManyField(Token, related_name="tokens")
 
     # def save(self, *args, **kwargs): # Will use this later in CCS
     #     # Open the uploaded photo

@@ -12,8 +12,9 @@ import numpy as np
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.gis.geos import GEOSGeometry, Point
+from django.contrib.postgres.search import SearchQuery, SearchRank, TrigramSimilarity
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import F, Q
 # from django.contrib.gis.geos import Point
 # from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 # from django.core.paginator import Paginator
@@ -122,18 +123,19 @@ def upload_photo(request):
                 # report.save()
                 url = report.photo.url
                 if not s3_file_pattern.search(url):
-                    root = (
-                        "/Users/sanjaysingh/non_icloud/"
-                        + "missing_persons_match_unidentified_dead_bodies/"
-                        + "missing_persons_match_unidentified_dead_bodies"
-                    )
+                    # root = (
+                    #     "/Users/sanjaysingh/non_icloud/"
+                    #     + "missing_persons_match_unidentified_dead_bodies"
+                    #     # + "/missing_persons_match_unidentified_dead_bodies"
+                    # )
 
-                    url = root + url
-                    img = face_recognition.load_image_file(url)
+                    # url = root + url
+                    img = face_recognition.load_image_file(report.photo.path)
                     face_encoding = face_recognition.face_encodings(img)
                 else:
                     img = cv2.imdecode(
-                        np.fromstring(resized_image.read(), np.uint8), cv2.IMREAD_UNCHANGED
+                        np.fromstring(resized_image.read(), np.uint8),
+                        cv2.IMREAD_UNCHANGED,
                     )
                     _, img_encoded = cv2.imencode(".jpeg", img)
                     memory_file_output = io.BytesIO()
@@ -191,7 +193,7 @@ def report_search(request):
             # ref_date = cleaned_data.get('ref_date', '')
             # ref_year = cleaned_data.get('ref_year', '')
             keywords = cleaned_data.get("keywords", "")
-            # full_text_search_type = cleaned_data.get('full_text_search_type', '')
+            full_text_search_type = int(cleaned_data.get("full_text_search_type", ""))
             districts = cleaned_data.get("districts", "")
             ps_list = cleaned_data.get("ps_list", "")
             min_date = cleaned_data.get("min_date", "")
@@ -206,8 +208,7 @@ def report_search(request):
             map_or_list = cleaned_data.get("map_or_list", "")
             if advanced_search_report:
                 query_object = Q(entry_date__gte=min_date) & Q(entry_date__lte=max_date)
-                if keywords != "":
-                    query_object = query_object & Q(description__icontains=keywords)
+
                 if districts != "Null":
                     query_object = query_object & Q(
                         police_station__district__in=[int(districts)]
@@ -236,7 +237,41 @@ def report_search(request):
                     query_object = query_object & Q(
                         location__dwithin=(given_location, distance)
                     )
-                reports = Report.objects.filter(query_object).only(
+                reports = Report.objects.filter(query_object)
+                if keywords != "":
+                    if full_text_search_type == 0:
+                        query = SearchQuery(keywords, search_type="websearch")
+                        reports = (
+                            reports.annotate(
+                                rank=SearchRank(F("description_search_vector"), query)
+                            )
+                            .filter(description_search_vector=query)
+                            .order_by("-rank")
+                        )
+                    elif full_text_search_type == 1:
+                        keyword_list = [keyword.strip() for keyword in keywords.split()]
+                        similarity = TrigramSimilarity(
+                            "tokens__name", "kjslsjdmdkffkfff"
+                        )
+                        similarity_index = 0.3
+                        for keyword in keyword_list:
+                            similarity = similarity + TrigramSimilarity(
+                                "tokens__name", keyword
+                            )
+                            similarity_index = similarity_index + 0.3
+                        print(similarity_index)
+                        print(similarity)
+                        reports = (
+                            reports.annotate(similarity=similarity)
+                            .filter(similarity__gt=similarity_index)
+                            .order_by("-similarity")
+                        )
+                        my_set = set(reports)
+                        reports = Report.objects.filter(
+                            pk__in=[obj.pk for obj in my_set]
+                        )
+
+                reports = reports.only(
                     "name",
                     "description",
                     "photo",
@@ -250,6 +285,7 @@ def report_search(request):
                     "missing_or_found",
                     "police_station",
                 )
+
                 print(f"-------{len(reports)}------")
                 if map_or_list == "L":
                     context = {}
@@ -290,8 +326,9 @@ def report_search(request):
                     template = "backend/reports_map_dummy.html"
                     context["mapbox_access_token"] = mapbox_access_token
                     context["reports_json"] = report_dicts
-                    context["location"] = [given_location.y, given_location.x]
-                    print(context["location"])
+                    if given_location:
+                        context["location"] = [given_location.y, given_location.x]
+                        print(context["location"])
                     return render(request, template, context)
                 return render(request, template_name, context)
             else:

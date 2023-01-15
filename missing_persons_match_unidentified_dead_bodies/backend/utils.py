@@ -2,6 +2,7 @@ from io import BytesIO
 
 import cv2
 import numpy as np
+import regex as re
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
 
@@ -48,3 +49,33 @@ def resize_image(file, size_image, size_icon):
         None,
     )
     return (resized_image, image_icon)
+
+
+def tokenize(text):
+    stopwords = {
+        word.strip()
+        for word in """no,off,her,with,myself,it's,all,m,those,ain,be,mustn,theirs,against,
+            being,on,wouldn't,that,wasn,more,mightn't,it,himself,only,couldn,isn,down,
+            or,then,they,we,until,d,didn,wasn't,out,doesn't,than,by,don,won't,in,during,
+            as,do,so,has,she's,further,through,when,themselves,shan,don't,ma,y,there,
+            can,you'd,weren,its,isn't,having,most,i,itself,aren't,doing,now,you've,our,
+            needn't,ve,me,wouldn,below,such,if,them,for,were,why,his,weren't,did,him,
+            herself,own,re,where,my,shouldn,o,ll,over,an,above,haven,she,does,at,nor,
+            too,you'll,because,each,am,the,hadn,didn't,just,should've,what,these,but,
+            not,hers,which,have,a,again,couldn't,under,up,hadn't,hasn't,before,that'll,
+            is,your,any,between,aren,into,needn,ours,shan't,will,he,how,few,shouldn't,
+            you're,been,mightn,once,doesn,t,are,here,was,same,mustn't,after,s,
+            yourselves,of,other,their,whom,had,from,some,yours,while,won,to,you,who,
+            yourself,very,should,ourselves,both,haven't,this,about,and,hasn,www,
+            mandal,fox,rs,manupatra,com""".split(
+            ","
+        )
+    }
+
+    def remove_stop(tokens):
+        return [t.lower() for t in tokens if t.lower() not in stopwords]
+
+    def tokenize(text):
+        return re.findall(r"[\w-]*\p{L}[\w-]*", text)
+
+    return remove_stop(tokenize(text))
