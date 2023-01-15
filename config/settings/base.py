@@ -333,3 +333,4 @@ SOCIALACCOUNT_FORMS = {
 MAP_BOX_ACCESS_TOKEN = env("MAP_BOX_ACCESS_TOKEN")
 MAPBOX_KEY = MAP_BOX_ACCESS_TOKEN
 GEOIP_PATH = str(ROOT_DIR / "geoip")
+CSRF_TRUSTED_ORIGINS = ['https://www.wbkhoyapaya.com', 'https://wbkhoyapaya.com']
