@@ -1,1 +1,19 @@
 {% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="card mb-3" >
+  <div class="row g-0">
+    <div class="col-md-5">
+      <img src="{% static 'images/dgp.JPG' %}" class="img-fluid rounded-start" alt="...">
+    </div>
+    <div class="col-md-7">
+      <div class="card-body">
+        <h5 class="card-title">Khoya Paya App of West Bengal Police</h5>
+        <p class="card-text">West Bengal Police stands committed to the cause of  finding missing persons as we understand the deep agony and anguish of their loved and dear ones. Here is one more step in this direction to achieve this target.</p>
+        <p>We seek the public's cooperation. Please check the reports of persons missing near your location i the app and contact us if you have any information.
+        <p class="card-text"><small class="text-muted">Shri Manoj Malaviya, IPS, Director General & Inspector General of Police, West Bengal</small></p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
