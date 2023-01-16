@@ -4,13 +4,11 @@ from django.contrib import messages
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.messages.middleware import MessageMiddleware
 from django.contrib.sessions.middleware import SessionMiddleware
-from django.http import HttpRequest, HttpResponseRedirect
+from django.http import HttpRequest
 from django.test import RequestFactory
 from django.urls import reverse
 
-from missing_persons_match_unidentified_dead_bodies.users.forms import (
-    UserAdminChangeForm,
-)
+from missing_persons_match_unidentified_dead_bodies.users.forms import UserChangeForm
 from missing_persons_match_unidentified_dead_bodies.users.models import User
 from missing_persons_match_unidentified_dead_bodies.users.tests.factories import (
     UserFactory,
@@ -66,9 +64,8 @@ class TestUserUpdateView:
         view.request = request
 
         # Initialize the form
-        form = UserAdminChangeForm()
-        form.cleaned_data = {}
-        form.instance = user
+        form = UserChangeForm()
+        form.cleaned_data = []
         view.form_valid(form)
 
         messages_sent = [m.message for m in messages.get_messages(request)]
@@ -102,6 +99,5 @@ class TestUserDetailView:
         response = user_detail_view(request, username=user.username)
         login_url = reverse(settings.LOGIN_URL)
 
-        assert isinstance(response, HttpResponseRedirect)
         assert response.status_code == 302
         assert response.url == f"{login_url}?next=/fake-url/"

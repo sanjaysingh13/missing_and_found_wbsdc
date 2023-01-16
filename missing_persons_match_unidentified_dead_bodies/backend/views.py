@@ -33,6 +33,7 @@ from .utils import resize_image
 mapbox_access_token = settings.MAP_BOX_ACCESS_TOKEN
 
 s3_file_pattern = re.compile(r".*https.*")
+pk_pattern = re.compile(r"\$primary_key=(\d+)$")
 root = (
     "/Users/sanjaysingh/non_icloud/"
     + "missing_persons_match_unidentified_dead_bodies/"
@@ -232,18 +233,18 @@ def report_search(request):
                         vector = SearchVector("description", config="english")
                         reports = reports.annotate(search=vector).filter(search=query)
                     elif full_text_search_type == 1:
-                        choices = [r.description for r in reports]
-                        pks = [r.pk for r in reports]
+                        choices = [
+                            r.description + f" $primary_key={r.pk}" for r in reports
+                        ]
                         results = process.extract(keywords, choices, limit=10)
+                        results = [result for (result, score) in results if score > 50]
+                        print(results)
                         results = [
-                            idx
-                            for idx, (result, score) in enumerate(results)
-                            if score > 50
+                            int(pk_pattern.search(string).group(1))
+                            for string in results
                         ]
                         print(results)
-                        pks = [pks[idx] for idx in results]
-                        print(pks)
-                        reports = Report.objects.filter(pk__in=pks)
+                        reports = Report.objects.filter(pk__in=results)
 
                 reports = reports.only(
                     "name",

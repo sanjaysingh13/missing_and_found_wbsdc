@@ -1,22 +1,26 @@
 """
 Module for all Form Tests.
 """
+import pytest
 from django.utils.translation import gettext_lazy as _
 
 from missing_persons_match_unidentified_dead_bodies.users.forms import (
-    UserAdminCreationForm,
+    CustomSignupForm,
+    UserCreationForm,
 )
 from missing_persons_match_unidentified_dead_bodies.users.models import User
 
+pytestmark = pytest.mark.django_db
 
-class TestUserAdminCreationForm:
+
+class TestUserCreationForm:
     """
-    Test class for all tests related to the UserAdminCreationForm
+    Test class for all tests related to the UserCreationForm
     """
 
     def test_username_validation_error_msg(self, user: User):
         """
-        Tests UserAdminCreation Form's unique validator functions correctly by testing:
+        Tests UserCreation Form's unique validator functions correctly by testing:
             1) A new user with an existing username cannot be added.
             2) Only 1 error is raised by the UserCreation Form
             3) The desired error message is raised
@@ -24,7 +28,7 @@ class TestUserAdminCreationForm:
 
         # The user already exists,
         # hence cannot be created.
-        form = UserAdminCreationForm(
+        form = UserCreationForm(
             {
                 "username": user.username,
                 "password1": user.password,
@@ -36,3 +40,60 @@ class TestUserAdminCreationForm:
         assert len(form.errors) == 1
         assert "username" in form.errors
         assert form.errors["username"][0] == _("This username has already been taken.")
+
+
+class TestCustomSignupnForm:
+    """
+    Test class for all tests related to the UserCreationForm
+    """
+
+    def test_username_validation_error_msg(self, user: User):
+        """
+        Tests UserCreation Form's unique validator functions correctly by testing:
+            1) A new user with an existing username cannot be added.
+            2) Only 1 error is raised by the UserCreation Form
+            3) The desired error message is raised
+        """
+
+        # The user already exists,
+        # hence cannot be created.
+        form = CustomSignupForm(
+            {
+                "username": "jamesbond",
+                "password1": "neversaydie",
+                "password2": "neversaydie",
+                "rank": "Spy",
+            }
+        )
+
+        assert not form.is_valid()
+        print(form.errors)
+        assert len(form.errors) == 3
+        assert "email" in form.errors
+        assert "telephone" in form.errors
+        form = CustomSignupForm(
+            {
+                "email": "jamesbond@gmail.com",
+                "username": "jamesbond",
+                "password1": "neversaydie",
+                "password2": "neversaydie",
+                "rank": "Spy",
+                "telephone": "abcdefghij",
+            }
+        )
+        assert not form.is_valid()
+        assert len(form.errors) == 2
+        assert "Telephone number must be 10-digit" == form.errors["telephone"][0]
+        form = CustomSignupForm(
+            {
+                "email": "jamesbond@gmail.com",
+                "name": "James Bond",
+                "username": "jamesbond",
+                "password1": "neversaydie",
+                "password2": "neversaydie",
+                "rank": "Spy",
+                "telephone": "9830425757",
+            }
+        )
+
+        assert form.is_valid()
