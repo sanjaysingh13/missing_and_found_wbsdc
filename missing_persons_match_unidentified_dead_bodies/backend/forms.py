@@ -87,7 +87,8 @@ class ReportForm(forms.Form):
             ),
         ],
     )
-    entry_date = forms.DateField()
+    reference = forms.IntegerField()
+    entry_date = forms.DateField(label="Ref Date")
     name = forms.CharField(required=False, label="Name", max_length=100)
     gender = forms.CharField(label="Gender", widget=forms.RadioSelect(choices=GENDER))
     missing_or_found = forms.CharField(
@@ -149,11 +150,12 @@ class ReportForm(forms.Form):
                             It is very important to record height.
                             For dead bodies, measure it in prone position.
                             For missing perons, make a best guess by recording
-                            statements of 3/4 close acquantances.</p>"""
+                            statements of 3/4 close acquaintances.</p>"""
                         ),
                     ),
                     Row("age", css_class="form-group"),
                     Row("description", css_class="form-group"),
+                    Row("reference", css_class="form-group "),
                     Row("entry_date", css_class="form-group "),
                     Row(HTML("<div id='map' class='map'></div>")),
                     css_class="col-md-6 mb-0",

@@ -28,6 +28,7 @@ class Report(TimeStampedModel):
     police_station = models.ForeignKey(
         PoliceStation, blank=True, null=True, on_delete=models.SET_NULL
     )
+    reference = models.IntegerField("PS Reference")
     entry_date = models.DateField()
     name = models.CharField(("Name if known"), blank=True, max_length=100)
     gender = models.CharField(("Gender"), blank=False, max_length=1)
@@ -45,6 +46,7 @@ class Report(TimeStampedModel):
     location = models.PointField(srid=4326, geography=True, null=True)
     # spatial_location = SpatialLocationField()
     year = models.CharField(blank=True, max_length=2)
+    matches = models.ManyToManyField("self", related_name="matched_by", through="Match")
 
     class Meta:
         indexes = (GinIndex(fields=["description_search_vector"]),)  # add index
@@ -65,3 +67,13 @@ class Report(TimeStampedModel):
     #         # Save the thumbnail to the icon field
     #         self.icon.save(self.photo.name, File(thumb_io), save=False)
     #         super().save(*args, **kwargs)
+
+
+class Match(TimeStampedModel):
+    report_missing = models.ForeignKey(
+        Report, on_delete=models.CASCADE, related_name="report_missing"
+    )
+    report_found = models.ForeignKey(
+        Report, on_delete=models.CASCADE, related_name="report_found"
+    )
+    mail_sent = models.DateField(null=True)

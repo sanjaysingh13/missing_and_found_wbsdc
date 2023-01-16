@@ -22,7 +22,7 @@ from django.db.models import Q
 from django.shortcuts import redirect, render
 from fuzzywuzzy import process
 
-from missing_persons_match_unidentified_dead_bodies.backend.models import Report
+from missing_persons_match_unidentified_dead_bodies.backend.models import Match, Report
 # from django.views.decorators.cache import cache_page
 # from django.views.decorators.csrf import csrf_protect
 from missing_persons_match_unidentified_dead_bodies.users.models import PoliceStation
@@ -85,6 +85,7 @@ def upload_photo(request):
         if reportsform.is_valid():
             files = request.FILES.getlist("photo")
             cleaned_data = reportsform.cleaned_data
+            reference = cleaned_data.get("reference", "")
             entry_date = cleaned_data.get("entry_date", "")
             name = cleaned_data.get("name", "")
             gender = cleaned_data.get("gender", "")
@@ -107,6 +108,7 @@ def upload_photo(request):
                 report = Report(
                     photo=resized_image,
                     icon=icon,
+                    reference=reference,
                     entry_date=entry_date,
                     name=name,
                     gender=gender,
@@ -157,6 +159,20 @@ def view_report(request, object_id):
     context = {}
     matched_reports = match_encodings(report)
     reports = Report.objects.filter(pk__in=matched_reports)
+    if report.missing_or_found == "M":
+        for report_found in reports:
+            if not Match.objects.filter(
+                report_missing=report, report_found=report_found
+            ).exists():
+                match = Match(report_missing=report, report_found=report_found)
+                match.save()
+    else:
+        for report_missing in reports:
+            if not Match.objects.filter(
+                report_missing=report_missing, report_found=report
+            ).exists():
+                match = Match(report_missing=report_missing, report_found=report)
+                match.save()
     context["report"] = report
     paginator = Paginator(reports, 2)
     page_number = request.GET.get("page")
