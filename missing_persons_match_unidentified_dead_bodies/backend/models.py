@@ -1,6 +1,7 @@
 # from django.contrib.postgres.fields import ArrayField
 
 from django.contrib.gis.db import models
+from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVectorField
 # from django.core.files import File
 from django.utils.translation import gettext_lazy as _
@@ -19,10 +20,6 @@ class TimeStampedModel(models.Model):
 
     class Meta:
         abstract = True
-
-
-class Token(models.Model):
-    name = models.CharField(max_length=100)
 
 
 class Report(TimeStampedModel):
@@ -48,7 +45,9 @@ class Report(TimeStampedModel):
     location = models.PointField(srid=4326, geography=True, null=True)
     # spatial_location = SpatialLocationField()
     year = models.CharField(blank=True, max_length=2)
-    tokens = models.ManyToManyField(Token, related_name="tokens")
+
+    class Meta:
+        indexes = (GinIndex(fields=["description_search_vector"]),)  # add index
 
     # def save(self, *args, **kwargs): # Will use this later in CCS
     #     # Open the uploaded photo

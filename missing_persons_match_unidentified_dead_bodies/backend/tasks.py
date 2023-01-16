@@ -7,9 +7,7 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from PIL import Image
 
 from config.celery_app import app
-from missing_persons_match_unidentified_dead_bodies.backend.models import Report, Token
-
-from .utils import tokenize
+from missing_persons_match_unidentified_dead_bodies.backend.models import Report
 
 
 @app.task(task_soft_time_limit=3000, ignore_result=True)
@@ -61,14 +59,3 @@ def add_description_search_vector_to_report(pk):
     report.description_search_vector = SearchVector("description")
     print(report.description_search_vector)
     report.save()
-
-
-@app.task(task_soft_time_limit=3000, ignore_result=True)
-def add_tokens_to_report(pk):
-    report = Report.objects.get(pk=pk)
-    tokens = tokenize(report.description)
-    token_objects = []
-    for token in tokens:
-        (obj, created) = Token.objects.get_or_create(name=token)
-        token_objects.append(obj)
-    report.tokens.add(*token_objects)

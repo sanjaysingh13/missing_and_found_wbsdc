@@ -12,14 +12,15 @@ import numpy as np
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.gis.geos import GEOSGeometry, Point
-from django.contrib.postgres.search import SearchQuery, SearchRank, TrigramSimilarity
+from django.contrib.postgres.search import SearchQuery, SearchVector
 from django.core.paginator import Paginator
-from django.db.models import F, Q
+from django.db.models import Q
 # from django.contrib.gis.geos import Point
 # from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 # from django.core.paginator import Paginator
 # from django.http import HttpResponse  # , JsonResponse, request
 from django.shortcuts import redirect, render
+from fuzzywuzzy import process
 
 from missing_persons_match_unidentified_dead_bodies.backend.models import Report
 # from django.views.decorators.cache import cache_page
@@ -120,30 +121,17 @@ def upload_photo(request):
                     ps_with_distt=police_station_with_distt.strip()
                 )
                 report.police_station = police_station
-                # report.save()
-                url = report.photo.url
-                if not s3_file_pattern.search(url):
-                    # root = (
-                    #     "/Users/sanjaysingh/non_icloud/"
-                    #     + "missing_persons_match_unidentified_dead_bodies"
-                    #     # + "/missing_persons_match_unidentified_dead_bodies"
-                    # )
-
-                    # url = root + url
-                    img = face_recognition.load_image_file(report.photo.path)
-                    face_encoding = face_recognition.face_encodings(img)
-                else:
-                    img = cv2.imdecode(
-                        np.fromstring(resized_image.read(), np.uint8),
-                        cv2.IMREAD_UNCHANGED,
-                    )
-                    _, img_encoded = cv2.imencode(".jpeg", img)
-                    memory_file_output = io.BytesIO()
-                    memory_file_output.write(img_encoded)
-                    memory_file_output.seek(0)
-                    image = face_recognition.load_image_file(memory_file_output)
-                    image = face_recognition.load_image_file(memory_file_output)
-                    face_encoding = face_recognition.face_encodings(image)
+                img = cv2.imdecode(
+                    np.fromstring(resized_image.read(), np.uint8),
+                    cv2.IMREAD_UNCHANGED,
+                )
+                _, img_encoded = cv2.imencode(".jpeg", img)
+                memory_file_output = io.BytesIO()
+                memory_file_output.write(img_encoded)
+                memory_file_output.seek(0)
+                image = face_recognition.load_image_file(memory_file_output)
+                image = face_recognition.load_image_file(memory_file_output)
+                face_encoding = face_recognition.face_encodings(image)
                 if len(face_encoding) != 0:
                     face_encoding = face_encoding[0]
                     face_encoding = json.dumps(face_encoding.tolist())
@@ -241,35 +229,21 @@ def report_search(request):
                 if keywords != "":
                     if full_text_search_type == 0:
                         query = SearchQuery(keywords, search_type="websearch")
-                        reports = (
-                            reports.annotate(
-                                rank=SearchRank(F("description_search_vector"), query)
-                            )
-                            .filter(description_search_vector=query)
-                            .order_by("-rank")
-                        )
+                        vector = SearchVector("description", config="english")
+                        reports = reports.annotate(search=vector).filter(search=query)
                     elif full_text_search_type == 1:
-                        keyword_list = [keyword.strip() for keyword in keywords.split()]
-                        similarity = TrigramSimilarity(
-                            "tokens__name", "kjslsjdmdkffkfff"
-                        )
-                        similarity_index = 0.3
-                        for keyword in keyword_list:
-                            similarity = similarity + TrigramSimilarity(
-                                "tokens__name", keyword
-                            )
-                            similarity_index = similarity_index + 0.3
-                        print(similarity_index)
-                        print(similarity)
-                        reports = (
-                            reports.annotate(similarity=similarity)
-                            .filter(similarity__gt=similarity_index)
-                            .order_by("-similarity")
-                        )
-                        my_set = set(reports)
-                        reports = Report.objects.filter(
-                            pk__in=[obj.pk for obj in my_set]
-                        )
+                        choices = [r.description for r in reports]
+                        pks = [r.pk for r in reports]
+                        results = process.extract(keywords, choices, limit=10)
+                        results = [
+                            idx
+                            for idx, (result, score) in enumerate(results)
+                            if score > 50
+                        ]
+                        print(results)
+                        pks = [pks[idx] for idx in results]
+                        print(pks)
+                        reports = Report.objects.filter(pk__in=pks)
 
                 reports = reports.only(
                     "name",

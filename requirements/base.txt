@@ -26,3 +26,7 @@ face-recognition
 
 # Mapbox
 django-mapbox-location-field
+
+# Fuzzy search
+fuzzywuzzy
+python-Levenshtein

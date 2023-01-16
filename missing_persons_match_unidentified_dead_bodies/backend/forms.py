@@ -146,7 +146,7 @@ class ReportForm(forms.Form):
                         ),
                         HTML(
                             """<p class='col-md-6 mb-0 card text-white bg-primary'>
-                            It is <strong> very </strong> important to record height.
+                            It is very important to record height.
                             For dead bodies, measure it in prone position.
                             For missing perons, make a best guess by recording
                             statements of 3/4 close acquantances.</p>"""
@@ -230,7 +230,7 @@ class ReportSearchForm(forms.Form):
     districts = forms.ChoiceField(choices=DISTRICTS, required=False)
     keywords = forms.CharField(
         label="Keywords",
-        widget=forms.TextInput(attrs={"placeholder": "Muthoot"}),
+        widget=forms.TextInput(attrs={"placeholder": "mole on left hand"}),
         required=False,
         max_length=100,
         validators=[
