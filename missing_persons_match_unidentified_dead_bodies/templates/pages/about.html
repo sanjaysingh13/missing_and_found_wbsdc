@@ -1,5 +1,18 @@
 {% extends "base.html" %}
+{% load static %}
 {% block content %}
+
+<div class="card text-white bg-dark">
+  <div class="card-header">Important</div>
+  <div class="card-body">
+    <h5 class="card-title">Check-list for users</h5>
+    <p class="card-text">Always upload a good quality, frontal face photo of both missing persons and found dead bodies. If the dead is decomposed or mutilated because of injuries, try to get a clear photograph after the post-mortem, requesting the Autopsy Surgeon to stitch the face as naturally as possible. The features of the face are essential for automatic identification.</p>
+    <p class="card-text">Always record the height of both missing persons and found dead bodies accurately. The dead body's length should be measured precisely after the post-mortem. If the height of a missing person is known exactly because of some ID card which holds that information, please note it. Otherwise, make enquiries with 3/4 close acquaintances to get a best estimate of height (within 5-10 cm).</p>
+    <p class="card-text">The app has features to search by location. for this, please record the lat long of the dead body, and, in case of missing persons, ascertain the location where he/she was last seen, and note the lat long.</p>
+    <p class="card-text">Enter as much detail about the person as possible in the `Description` column. the app has good search capabilities. Things like wearing apparel, identification marks and habits will be enterd here in one paragraph.</p>
+
+  </div>
+</div>
 <div class="card text-dark bg-info">
 	<div class="card-header">Developer</div>
 	<div class="card-body">
@@ -10,15 +23,20 @@
 
 	</div>
 </div>
-<div class="card text-white bg-dark">
-  <div class="card-header">Important</div>
-  <div class="card-body">
-    <h5 class="card-title">Check-list for users</h5>
-    <p class="card-text">Always upload a good quality, frontal face photo of both missing persons and found dead bodies. If the dead is decomposed or mutilated because of injuries, try to get a clear photograph after the post-mortem, requesting the Autopsy Surgeon to stitch the face as naturally as possible. The features of the face are essential for automatic identification.</p>
-    <p class="card-text">Always record the height of both missing persons and found dead bodies accurately. The dead body's length should be measured precisely after the post-mortem. If the height of a missing person is known exactly because of some ID card which holds that information, please note it. Otherwise, make enquiries with 3/4 close acquaintances to get a best estimate of height (within 5-10 cm).</p>
-    <p class="card-text">The app has features to search by location. for this, please record the lat long of the dead body, and, in case of missing persons, ascertain the location where he/she was last seen, and note the lat long.</p>
-    <p class="card-text">Enter as much detail about the person as possible in the `Description` column. the app has good search capabilities. Things like wearing apparel, identification marks and habits will be enterd here in one paragraph.</p>
-
+<div class="card text-white bg-secondary mb-3" >
+  <div class="row g-0">
+    <div class="col-md-4">
+      <img src="{% static 'images/django-logo-negative.png' %}" class="img-fluid rounded-start" alt="...">
+      <img src="https://letsencrypt.org/images/letsencrypt-logo-horizontal.svg" alt="Let's Encrypt">
+    </div>
+    <div class="col-md-8">
+      <div class="card-body">
+        <h5 class="card-title">Credits</h5>
+        <p class="card-text">The app-development was accelerated by <a href="https://chat.openai.com" class="btn btn-primary">ChatGPT</a> which is more like a Consultancy Service than a Search Engine.</p>
+        <p class="card-text">The app is built on the  <a href="https://www.djangoproject.com" class="btn btn-primary">Django</a> Framework.</p>
+        <p class="card-text">It uses the free SSL certification offered by <a href="https://letsencrypt.org/" class="btn btn-primary">Let's Encrypt.</a></p>
+      </div>
+    </div>
   </div>
 </div>
 {% endblock content %}
