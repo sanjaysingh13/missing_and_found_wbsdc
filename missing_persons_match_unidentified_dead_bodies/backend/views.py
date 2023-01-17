@@ -11,6 +11,7 @@ import numpy as np
 # from celery.result import AsyncResult
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.gis.geos import GEOSGeometry, Point
 from django.contrib.postgres.search import SearchQuery, SearchVector
 from django.core.paginator import Paginator
@@ -20,6 +21,7 @@ from django.db.models import Q
 # from django.core.paginator import Paginator
 # from django.http import HttpResponse  # , JsonResponse, request
 from django.shortcuts import redirect, render
+from django.views.generic.edit import DeleteView
 from fuzzywuzzy import process
 
 from missing_persons_match_unidentified_dead_bodies.backend.models import Match, Report
@@ -133,7 +135,6 @@ def upload_photo(request):
                 memory_file_output.write(img_encoded)
                 memory_file_output.seek(0)
                 image = face_recognition.load_image_file(memory_file_output)
-                image = face_recognition.load_image_file(memory_file_output)
                 face_encoding = face_recognition.face_encodings(image)
                 if len(face_encoding) != 0:
                     face_encoding = face_encoding[0]
@@ -158,7 +159,9 @@ def view_report(request, object_id):
     report = Report.objects.get(id=object_id)
     context = {}
     matched_reports = match_encodings(report)
-    reports = Report.objects.filter(pk__in=matched_reports)
+    reports = Report.objects.filter(pk__in=matched_reports).only(
+        "pk", "photo", "description", "entry_date", "name", "police_station"
+    )
     if report.missing_or_found == "M":
         for report_found in reports:
             if not Match.objects.filter(
@@ -341,3 +344,51 @@ def report_search(request):
     context["form_title"] = "Basic and Advanced Search for Reports"
     context["title"] = "Report Search"
     return render(request, template_name, context)
+
+
+def matches(request):
+    matches = Match.objects.all().order_by("-mail_sent").values()
+    matched_reports = [
+        (
+            Report.objects.get(pk=match["report_missing_id"]),
+            Report.objects.get(pk=match["report_found_id"]),
+        )
+        for match in matches
+    ]
+    matched_reports = [
+        (
+            (
+                report_missing.photo,
+                report_missing.description,
+                report_missing.entry_date,
+                report_missing.name,
+                report_missing.police_station,
+            ),
+            (
+                report_found.photo,
+                report_found.description,
+                report_found.entry_date,
+                report_found.name,
+                report_found.police_station,
+            ),
+        )
+        for (report_missing, report_found) in matched_reports
+    ]
+    paginator = Paginator(matched_reports, 2)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    context = {}
+    context["matches"] = page_obj
+    template_name = "backend/matches.html"
+    return render(request, template_name, context)
+
+
+class ReportDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
+    # specify the model you want to use
+    model = Report
+    permission_required = "users.delete_user"
+    template_name = "backend/report_confirm_delete.html"
+    # can specify success url
+    # url to redirect after successfully
+    # deleting object
+    success_url = "/"

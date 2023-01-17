@@ -8,4 +8,6 @@ urlpatterns = [
     path("upload_photo/", views.upload_photo, name="upload_photo"),
     path("view_report/<int:object_id>/", views.view_report, name="view_report"),
     path("report_search/", views.report_search, name="report_search"),
+    path("matches/", views.matches, name="matches"),
+    path("report/<pk>/delete/", views.ReportDeleteView.as_view(), name="report_delete"),
 ]

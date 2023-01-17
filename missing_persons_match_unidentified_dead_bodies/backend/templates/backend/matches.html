@@ -53,42 +53,35 @@
         </ul>
     </nav>
     <!--end of Pagination-->
-    <div class="row row-cols-3">
-        <div class="col">
-            <h5>Reported Case</h5>
-            <img src="{{ report.photo.url }}" class="img-fluid">
-            <p>{{ report.detail}}</p>
-            <p>{{ report.entry_date}}</p>
-            <p>{{ report.name}}</p>
-            <p>{{ report.police_station.ps_with_distt}}</p>
-            <p id = "searched_report", style="display:none;">{{report.pk}}</p>
-            <form method="post" action="{% url 'backend:report_delete' report.pk %}">
-                {% csrf_token %}
-                <input type="submit" value="Delete" class="btn btn-danger">
-            </form>
-
-        </div>
-
-
-
-
-
+    <div class="row row-cols-4">
         {% for match in matches %}
-        <div class="col">
+        <div class="col card bg-secondary text-white ">
             <h5>Match</h5>
-            <img src= "{{ match.photo.url }}" class="img-fluid" >
-            <input class="form-check-input dup_id" type="checkbox"  value= {{match.pk}} aria-label="...">
-            <p>{{ match.name}}</p>
-            <p>{{ match.entry_date}}</p>
-            <p>{{ match.description}}</p>
-            <p>{{ match.police_station.ps_with_distt}}</p>
+            <div class="row">
+                <div class="col col-md-6">
+                    <h6>Missing</h6>
+                    <img src= "{{ match.0.0.url }}" class="img-fluid" >
+                    <p>{{ match.0.3}}</p>
+                    <p>{{ match.0.2}}</p>
+                    <p>{{ match.0.1}}</p>
+                    <p>{{ match.0.4.ps_with_distt}}</p>
+                </div>
+                <div class="col col-md-6">
+                    <h6>Found</h6>
+                    <img src= "{{ match.1.0.url }}" class="img-fluid" >
+                    <p>{{ match.1.3}}</p>
+                    <p>{{ match.1.2}}</p>
+                    <p>{{ match.1.1}}</p>
+                    <p>{{ match.1.4.ps_with_distt}}</p>
+                </div>
+            </div>
 
         </div>
         {% endfor %}
 
     </div>
 
-    <button type="submit" class="btn btn-primary mb-3" id="merge_matches">Confirm Match</button>
+
 </div>
 
 {% endblock content %}
