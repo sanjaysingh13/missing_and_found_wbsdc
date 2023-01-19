@@ -263,9 +263,10 @@ def report_search(request):
                             for string in results
                         ]
                         print(results)
-                        reports = Report.objects.filter(pk__in=results)
+                        reports = reports.filter(pk__in=results)
 
                 reports = reports.only(
+                    "id",
                     "name",
                     "description",
                     "photo",
@@ -279,9 +280,22 @@ def report_search(request):
                     "missing_or_found",
                     "police_station",
                 )
-
                 print(f"-------{len(reports)}------")
                 if map_or_list == "L":
+                    reports = reports.values()
+                    report_list = []
+                    for report in reports:
+                        rep = Report.objects.get(pk=report["id"])
+                        report["matched"] = (
+                            Match.objects.filter(report_found=rep).exists()
+                            or Match.objects.filter(report_missing=rep).exists()
+                        )
+                        report["photo"] = Report.objects.get(pk=report["id"]).photo.url
+                        report["ps"] = rep.police_station.ps_with_distt
+                        report["oc"] = rep.police_station.officer_in_charge
+                        report["tel"] = rep.police_station.telephones
+                        report_list.append(report)
+                    reports = report_list
                     context = {}
                     context["title"] = "Advanced Search Results"
                     paginator = Paginator(reports, 5)

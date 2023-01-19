@@ -11,3 +11,14 @@
   background-color: #f2dede;
   border-color: #eed3d7;
 }
+.matched-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+  text-align: center;
+  text-shadow: 2px 2px #000;
+}

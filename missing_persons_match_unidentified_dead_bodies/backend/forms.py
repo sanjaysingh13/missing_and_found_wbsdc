@@ -260,7 +260,7 @@ class ReportSearchForm(forms.Form):
     distance = forms.IntegerField(required=False)
     map_or_list = forms.CharField(
         label="Map or List",
-        widget=forms.RadioSelect(choices=[("M", "Map"), ("L", "list")]),
+        widget=forms.RadioSelect(choices=[("M", "Map"), ("L", "List")]),
     )
 
     def __init__(self, *args, **kwargs):

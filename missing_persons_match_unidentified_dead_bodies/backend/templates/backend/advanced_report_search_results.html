@@ -56,24 +56,41 @@
     <div class="row row-cols-5">
         {% for report in reports %}
         <div class="col">
-            <img src= "{{ report.photo.url }}" class="img-fluid" >
-            <p>Missing/Found: <strong>{{ report.missing_or_found}}</strong></p>
-            <p>Name: <strong>{{ report.name}}</strong></p>
-            <p>{{ report.guardian_name_and_address}}</p>
-            <p>Age: <strong>{{ report.age}}</strong></p>
-            <p>Height: <strong>{{ report.height}}</strong></p>
-            <p>Date: <strong>{{ report.entry_date}}</strong></p>
-            <p>{{ report.description}}</p>
-            <p>PS: <strong>{{ report.police_station.ps_with_distt}}</strong></p>
-            <p>Contact</p>
-            <p><strong>{{report.police_station.officer_in_charge}}</strong></p>
-            <p><strong>{{report.police_station.telephones}}</strong></p>
 
+
+            <div class="card">
+              <img src="{{ report.photo }}" class="card-img-top" alt="...">
+              <div class="card-body">
+               {% if  report.matched %}
+               <h5 class="card-title">Matched</h5>
+               {% endif %}
+               <p class="card-text">{{ report.name}}</p>
+           </div>
+           <ul class="list-group list-group-flush">
+            <li class="list-group-item">Missing/Found: {{ report.missing_or_found}}</li>
+            <li class="list-group-item">{{ report.guardian_name_and_address}}</li>
+            <li class="list-group-item">Age: {{ report.age}} </li>
+            <li class="list-group-item">Height: {{ report.height}}</li>
+            <li class="list-group-item">Date: {{ report.entry_date}}</li>
+            <li class="list-group-item">{{ report.description}}</li>
+            <li class="list-group-item">PS: {{ report.ps}}</li>
+            <li class="list-group-item"><strong>Contact</strong></li>
+            <li class="list-group-item">{{report.oc}}</li>
+            <li class="list-group-item">{{report.tel}}</li>
+        </ul>
+        <div class="card-body">
+            <a href="{% url 'backend:view_report' report.id %}" class="card-link">See</a>
 
         </div>
-        {% endfor %}
-
     </div>
+
+
+
+
+</div>
+{% endfor %}
+
+</div>
 
 </div>
 

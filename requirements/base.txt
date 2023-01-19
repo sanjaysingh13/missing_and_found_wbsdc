@@ -30,3 +30,6 @@ django-mapbox-location-field
 # Fuzzy search
 fuzzywuzzy
 python-Levenshtein
+
+#Analytics
+django-analytical
