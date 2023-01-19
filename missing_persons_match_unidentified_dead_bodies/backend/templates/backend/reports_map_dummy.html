@@ -118,7 +118,6 @@
             cursor: pointer;
             height: 56px;
             width: 56px;
-            background-image: url("https://cid-crime-criminal.s3.amazonaws.com/uploads/image/avatar/9946/SAMIM_HOSSAI_GILL.png");
             /* Marker tweaks */
             .mapboxgl-popup {
             padding-bottom: 50px;
@@ -213,21 +212,6 @@ reports.forEach(function(marker) {
         .addTo(map);
 });
 
-
-// reports.forEach(function(report) {
-//     console.log(report)
-//     var marker = new mapboxgl.Marker({
-//         draggable: false
-//     })
-//         .setLngLat([report.lon, report.lat])
-//         .setPopup(new mapboxgl.Popup({ offset: 25 }) // add popups
-//         .setHTML('<img src="' + report.photo + '" width="100" height="100"><p> ' + (report.description || "")  + '</p><p>Date: ' + (report.date || "") + '</p><p>Name: ' + (report.name || "") + '</p><p>Of: ' + (report.guardian_name_and_address || "") + '</p><p>Age: ' + (report.age || "") + '</p><p>Height: ' + (report.height || "") + '</p><p>PS: ' + (report.police_station || "") + '</p><p>Contact: <strong>' + (report.oc || "") + ' : ' + (report.tel || "")
-//             + '</strong></p>'))
-//         .addTo(map);
-
-//     marker.getElement().classList.add("marker")
-//     // marker.setIcon(report.icon);
-// });
 
 // center the map and set the zoom level
 const given_location = JSON.parse(document.getElementById('given_location').textContent);

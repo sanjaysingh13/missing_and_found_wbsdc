@@ -1,11 +1,14 @@
 from datetime import datetime
 
 # from dateutil.parser import parse
+from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Q
 from django.http import JsonResponse
 
 from missing_persons_match_unidentified_dead_bodies.backend.models import Report
+
+mapbox_access_token = settings.MAP_BOX_ACCESS_TOKEN
 
 
 # from django.shortcuts import redirect, render
@@ -53,9 +56,22 @@ def public_missing(request):
         report_dicts.append(report_dict)
     print(report_dicts)
 
-    # data = {
-    #   'reports_json': results
-    # }
-    data = {"results": {1: "a", 2: "b"}, "status_code": 200}
-
+    data = {
+        "reports_json": report_dicts,
+        "given_location": [longitude, latitude],
+        "mapbox_access_token": mapbox_access_token,
+    }
+    # context = {}
+    # template = "backend/reports_map_dummy.html"
+    # context["mapbox_access_token"] = mapbox_access_token
+    # context["reports_json"] = report_dicts
+    # context["location"] = [latitude, longitude]
+    # response = JsonResponse(context, safe=False)
+    # response["Access-Control-Allow-Origin"] = "*"
+    # response["Access-Control-Allow-Methods"] = "GET, OPTIONS"
+    # response["Access-Control-Max-Age"] = "1000"
+    # response["Access-Control-Allow-Headers"] = "X-Requested-With, Content-Type"
+    # return HttpResponseRedirect('/backend/report_search')
+    # return response
+    # return render(request, template, context)
     return JsonResponse(data)

@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 {% load static %}
 {% block content %}
+<!-- {% block inline_css %}
+ <link rel="stylesheet" type="text/css" href="{% static 'css/mapbox.css' %}">
+{% endblock inline_css %} -->
 <div class="card mb-3" >
   <div class="row g-0">
     <div class="col-md-5">
@@ -13,7 +16,11 @@
         <p>We seek the public's cooperation. Please check the reports of persons missing <a href="#" id="public_link">near your location</a> in the app and contact us if you have any information.
         <p class="card-text"><small class="text-muted">Shri Manoj Malaviya, IPS, Director General & Inspector General of Police, West Bengal</small></p>
       </div>
+       <div class="mapbox_div card">
+         <div id="map" class="map" style='width: 100%; height: 400px;'></div>
+       </div>
     </div>
+
   </div>
 </div>
 {% endblock content %}
