@@ -38,8 +38,8 @@ $(document).ready(function() {
             $.widget("custom.combobox", {
                 _create: function() {
                     this.wrapper = $("<span>")
-                        .addClass("custom-combobox")
-                        .insertAfter(this.element);
+                    .addClass("custom-combobox")
+                    .insertAfter(this.element);
 
                     this.element.hide();
                     this._createAutocomplete();
@@ -48,21 +48,21 @@ $(document).ready(function() {
 
                 _createAutocomplete: function() {
                     var selected = this.element.children(":selected"),
-                        value = selected.val() ? selected.text() : "";
+                    value = selected.val() ? selected.text() : "";
 
                     this.input = $("<input>")
-                        .appendTo(this.wrapper)
-                        .val(value)
-                        .attr("title", "")
-                        .addClass("custom-combobox-input ui-widget ui-widget-content ui-state-default ui-corner-left form-control input-lg")
-                        .autocomplete({
-                            delay: 0,
-                            minLength: 0,
-                            source: $.proxy(this, "_source")
-                        })
-                        .tooltip({
-                            tooltipClass: "ui-state-highlight"
-                        });
+                    .appendTo(this.wrapper)
+                    .val(value)
+                    .attr("title", "")
+                    .addClass("custom-combobox-input ui-widget ui-widget-content ui-state-default ui-corner-left form-control input-lg")
+                    .autocomplete({
+                        delay: 0,
+                        minLength: 0,
+                        source: $.proxy(this, "_source")
+                    })
+                    .tooltip({
+                        tooltipClass: "ui-state-highlight"
+                    });
 
                     this._on(this.input, {
                         autocompleteselect: function(event, ui) {
@@ -95,35 +95,35 @@ $(document).ready(function() {
 
                 _createShowAllButton: function() {
                     var input = this.input,
-                        wasOpen = false;
+                    wasOpen = false;
 
                     $("<a>")
-                        .attr("tabIndex", -1)
-                        .attr("title", "Show All Items")
-                        .tooltip()
-                        .appendTo(this.wrapper)
-                        .button({
-                            icons: {
-                                primary: "ui-icon-triangle-1-s"
-                            },
-                            text: false
-                        })
-                        .removeClass("ui-corner-all")
-                        .addClass("custom-combobox-toggle ui-corner-right")
-                        .mousedown(function() {
-                            wasOpen = input.autocomplete("widget").is(":visible");
-                        })
-                        .click(function() {
-                            input.focus();
+                    .attr("tabIndex", -1)
+                    .attr("title", "Show All Items")
+                    .tooltip()
+                    .appendTo(this.wrapper)
+                    .button({
+                        icons: {
+                            primary: "ui-icon-triangle-1-s"
+                        },
+                        text: false
+                    })
+                    .removeClass("ui-corner-all")
+                    .addClass("custom-combobox-toggle ui-corner-right")
+                    .mousedown(function() {
+                        wasOpen = input.autocomplete("widget").is(":visible");
+                    })
+                    .click(function() {
+                        input.focus();
 
                             // Close if already visible
-                            if (wasOpen) {
-                                return;
-                            }
+                        if (wasOpen) {
+                            return;
+                        }
 
                             // Pass empty string as value to search for, displaying all results
-                            input.autocomplete("search", "");
-                        });
+                        input.autocomplete("search", "");
+                    });
                 },
 
                 _source: function(request, response) {
@@ -136,7 +136,7 @@ $(document).ready(function() {
                                 value: text,
                                 option: this
                             };
-                    }));
+                        }));
                 },
 
                 _removeIfInvalid: function(event, ui) {
@@ -148,8 +148,8 @@ $(document).ready(function() {
 
                     // Search for a match (case-insensitive)
                     var value = this.input.val(),
-                        valueLowerCase = value.toLowerCase(),
-                        valid = false;
+                    valueLowerCase = value.toLowerCase(),
+                    valid = false;
                     this.element.children("option").each(function() {
                         if ($(this).text().toLowerCase() === valueLowerCase) {
                             this.selected = valid = true;
@@ -164,9 +164,9 @@ $(document).ready(function() {
 
                     // Remove invalid value
                     this.input
-                        .val("")
-                        .attr("title", value + " didn't match any item")
-                        .tooltip("open");
+                    .val("")
+                    .attr("title", value + " didn't match any item")
+                    .tooltip("open");
                     this.element.val("");
                     this._delay(function() {
                         this.input.tooltip("close").attr("title", "");
@@ -182,79 +182,186 @@ $(document).ready(function() {
             });
 
 
-        })(jQuery);
+})(jQuery);
 
-        $(function() {
-            $("#police_station_id").combobox();
+$(function() {
+    $("#police_station_id").combobox();
 
-        });
+});
 
 
 
-        $(function() {
-            $('#id_advanced_search_report').change(function() {
-                $('.basic-search-fields').toggle(!this.checked);
-                $('.advanced-search-fields').toggle(this.checked);
+$(function() {
+    $('#id_advanced_search_report').change(function() {
+        $('.basic-search-fields').toggle(!this.checked);
+        $('.advanced-search-fields').toggle(this.checked);
             }).change(); //ensure visible state matches initially
-        });
+});
 
 
 
         // Let's check if the browser supports notifications
-        if (!("Notification" in window)) {
+if (!("Notification" in window)) {
 
-        }
+}
 
         // Let's check whether notification permissions have already been granted
-        else if (Notification.permission === "granted") {
+else if (Notification.permission === "granted") {
             // If it's okay let's create a notification
 
-        }
+}
 
         // Otherwise, we need to ask the user for permission
-        else if (Notification.permission !== 'denied') {
-            Notification.requestPermission(function(permission) {
+else if (Notification.permission !== 'denied') {
+    Notification.requestPermission(function(permission) {
                 // If the user accepts, let's create a notification
-                if (permission === "granted") {
+        if (permission === "granted") {
 
-                }
-            });
         }
+    });
+}
 
         // Finally, if the user has denied notifications and you
         // want to be respectful there is no need to bother them any more.
-    };
-    $(document).on('focus', "input[id$='date']", function() {
-        selected_id = "#" + $(this).first().attr("id");
+};
+$(document).on('focus', "input[id$='date']", function() {
+    selected_id = "#" + $(this).first().attr("id");
 
-        $(selected_id).datepicker({
-            dateFormat: 'yy-mm-dd'
-        });
-        $(selected_id).change(function() {
-            $(selected_id).datepicker("destroy");
-        });
-
+    $(selected_id).datepicker({
+        dateFormat: 'yy-mm-dd'
     });
+    $(selected_id).change(function() {
+        $(selected_id).datepicker("destroy");
+    });
+
+});
 
 $(document).on('focus', "input[id$='police_station_with_distt']", function() {
-        selected_id = "#" + $(this).first().attr("id");
-        $(selected_id).autocomplete({
-            source: availablePSs,
-            change: function(event, ui) {
+    selected_id = "#" + $(this).first().attr("id");
+    $(selected_id).autocomplete({
+        source: availablePSs,
+        change: function(event, ui) {
                 // This block of code ensures that values are restricted to list items
-                if (ui.item == null) {
-                    event.currentTarget.value = '';
-                    event.currentTarget.focus();
-                }
-                // This block of code ensures that values are restricted to list items
-                else {
-                    $(selected_id).autocomplete("destroy");
-                }
+            if (ui.item == null) {
+                event.currentTarget.value = '';
+                event.currentTarget.focus();
             }
-
-        });
-
+                // This block of code ensures that values are restricted to list items
+            else {
+                $(selected_id).autocomplete("destroy");
+            }
+        }
 
     });
+
+
+});
+
+$(function() {
+
+    var public_link = document.getElementById("public_link");
+
+    $('#public_link').click(function() {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(function(position) {
+            var latitude = position.coords.latitude;
+            var longitude = position.coords.longitude;
+
+
+
+            // $(form).find('#id_advanced_search_report').prop('checked', true);
+
+            // $(form).find('#id_gender_0').prop('checked', true);
+
+            // $(form).find('#id_missing_or_found_0').prop('checked', true);
+
+            var today = new Date();
+            var oneMonthAgo = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+            console.log("Latitude: " + latitude + ", Longitude: " + longitude);
+            console.log("today: " + today.toISOString().slice(0, 10) + ", oneMonthAgo: " + oneMonthAgo.toISOString().slice(0, 10));
+             $.ajax({
+            url: '/ajax/public_missing/',
+            data: {
+                'latitude': latitude,
+                'longitude': longitude,
+                'min_date': oneMonthAgo.toISOString().slice(0, 10),
+                'max_date': today.toISOString().slice(0, 10)
+            },
+            dataType: 'json',
+            success: function(data) {
+                console.log(data.results)
+
+
+                                // nodes = result["nodes"];
+
+                                // var edges = result["relationships"]
+
+
+                // displaying gist on select
+
+                            // network.on('click', function(properties) {
+                            //     node = getNodeByUUID(properties.nodes[0]);
+
+
+                            //     if (node[0].group == "Crime") {
+                            //         $.ajax({
+                            //             url: '/ajax/crimes/',
+                            //             data: {
+                            //                 'unique_id': properties.nodes[0]
+                            //             },
+                            //             dataType: 'json',
+                            //             success: function(data) {
+                            //                 alert('Gist: ' + data.gist);
+                            //             },
+                            //         });
+                            //     }
+                            // });
+                // displaying gist on select -> end
+                // navigating on hold
+                        // network.on('hold', function(properties) {
+                        //     node = getNodeByUUID(properties.nodes[0]);
+                        //     if (node[0].group == "Crime") {
+                        //         window.location.assign('/backend/crimes/' + properties.nodes[0])
+                        //     } else {
+                        //         window.location.assign('/graphs/criminals/' + properties.nodes[0])
+                        //     }
+                        // });
+                //navigating on hold -> end
+            }
+        });
+
+            // $(form).find('#id_min_date').value = oneMonthAgo.toISOString().slice(0, 10);
+            // $(form).find('#id_max_date').value = today.toISOString().slice(0, 10);
+            // $(form).find('#id_longitude').value = longitude;
+            // $(form).find('#id_latitude').value = latitude;
+            // $(form).find('#id_distance').value = today.toISOString().slice(0, 10);
+            // $(form).find('#id_max_date').value = today.toISOString().slice(0, 10);
+
+
+            // formElement.getElementById('').value = 20;
+
+            // formElement.getElementById('id_map_or_list_0').click();
+
+            // formElement.getElementById('submit-id-submit').click();
+
+
+
+
+
+});
+      } else {
+          console.log("Geolocation is not supported by this browser.");
+      }
+
+
+            }); //ensure visible state matches initially
+
+
+
+
+
+
+});
+
 
 });

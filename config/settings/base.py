@@ -86,6 +86,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "missing_persons_match_unidentified_dead_bodies.users",
     "missing_persons_match_unidentified_dead_bodies.backend",
+    "missing_persons_match_unidentified_dead_bodies.ajax",
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -333,4 +334,4 @@ SOCIALACCOUNT_FORMS = {
 MAP_BOX_ACCESS_TOKEN = env("MAP_BOX_ACCESS_TOKEN")
 MAPBOX_KEY = MAP_BOX_ACCESS_TOKEN
 GEOIP_PATH = str(ROOT_DIR / "geoip")
-CSRF_TRUSTED_ORIGINS = ['https://www.wbkhoyapaya.com', 'https://wbkhoyapaya.com']
+CSRF_TRUSTED_ORIGINS = ["https://www.wbkhoyapaya.com", "https://wbkhoyapaya.com"]

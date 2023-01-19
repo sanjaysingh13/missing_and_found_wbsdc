@@ -29,6 +29,13 @@ urlpatterns = [
             namespace="backend",
         ),
     ),
+    path(
+        "ajax/",
+        include(
+            "missing_persons_match_unidentified_dead_bodies.ajax.urls",
+            namespace="ajax",
+        ),
+    ),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
