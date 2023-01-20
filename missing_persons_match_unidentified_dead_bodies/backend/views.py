@@ -64,11 +64,12 @@ def match_encodings(report):
         )
     # reports_under_consideration = reports_under_consideration.filter(
     # entry_date__gte=entry_date-10, entry_date__lte=entry_date+90)
-    face_encodings = [
-        np.array(json.loads(report.face_encoding), dtype="float64")
-        for report in reports_under_consideration
-    ]
-    ids = [report.pk for report in reports_under_consideration]
+    face_encodings = []
+    ids = []
+    for report in reports_under_consideration:
+        if report.face_encoding:
+            face_encodings.append(np.array(json.loads(report.face_encoding), dtype="float64"))
+            ids.append(report.pk)
     all_matches = face_recognition.compare_faces(
         face_encodings, face_encoding, tolerance=0.5
     )
