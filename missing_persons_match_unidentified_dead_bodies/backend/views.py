@@ -64,8 +64,6 @@ def match_encodings(report):
         reports_under_consideration = reports_under_consideration.filter(
             height__gte=height - 10, height__lte=height + 10
         )
-    # reports_under_consideration = reports_under_consideration.filter(
-    # entry_date__gte=entry_date-10, entry_date__lte=entry_date+90)
     face_encodings = []
     ids = []
     for report in reports_under_consideration:
