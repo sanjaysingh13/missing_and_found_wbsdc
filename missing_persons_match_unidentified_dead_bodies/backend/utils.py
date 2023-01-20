@@ -102,6 +102,7 @@ def initial_migration():
             else:
                 face_encoding = None
             photo_file = f"./resized_photos/{row[0]}"
+            photo_file = photo_file.replace(' ', '_')
 
             report = Report(
                 name=name,

@@ -24,23 +24,23 @@ class TimeStampedModel(models.Model):
 
 class Report(TimeStampedModel):
     photo = models.FileField()
-    icon = models.FileField(blank=True)
+    icon = models.FileField(null=True)
     police_station = models.ForeignKey(
         PoliceStation, blank=True, null=True, on_delete=models.SET_NULL
     )
     reference = models.IntegerField("PS Reference")
     entry_date = models.DateField()
-    name = models.CharField(("Name if known"), blank=True, max_length=100)
-    gender = models.CharField(("Gender"), blank=False, max_length=1)
+    name = models.CharField(("Name if known"), blank=True, null=True, max_length=100)
+    gender = models.CharField(("Gender"), blank=True, null=True, max_length=1)
     missing_or_found = models.CharField(("Missing Or Found"), blank=False, max_length=1)
     description = models.CharField(blank=False, max_length=500)
     description_search_vector = SearchVectorField(null=True)
     height = models.IntegerField()
     age = models.IntegerField()
     guardian_name_and_address = models.CharField(
-        ("Name if known"), blank=True, max_length=300
+        ("Name if known"), blank=True, null=True, max_length=300
     )
-    face_encoding = models.CharField(blank=True, max_length=4000)
+    face_encoding = models.CharField(blank=True, null=True, max_length=4000)
     latitude = models.FloatField(_("Latitude of Event"), blank=True, null=True)
     longitude = models.FloatField(_("Longitude of Event"), blank=True, null=True)
     location = models.PointField(srid=4326, geography=True, null=True)
