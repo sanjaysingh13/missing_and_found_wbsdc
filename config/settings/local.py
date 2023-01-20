@@ -73,7 +73,7 @@ CELERY_TASK_EAGER_PROPAGATES = True
 # need to add production settings. This will be loaded only if RUNNING_ON_AWS is set
 try:
     RUNNING_ON_AWS = env("RUNNING_ON_AWS")
-    DEBUG = False
+    # DEBUG = False
     # DATABASES
     # ------------------------------------------------------------------------------
     DATABASES["default"]["CONN_MAX_AGE"] = env.int(
