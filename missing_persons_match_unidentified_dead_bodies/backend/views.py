@@ -44,37 +44,40 @@ root = (
 
 
 def match_encodings(report):
-    face_encoding = report.face_encoding
-    face_encoding = json.loads(face_encoding)
-    face_encoding = np.array(face_encoding, dtype="float64")
-    gender = report.gender
-    missing_or_found = report.missing_or_found
-    height = report.height
-    # entry_date = report.entry_date
-    if missing_or_found == "M":
-        required = "F"
-    else:
-        required = "M"
-    reports_under_consideration = Report.objects.filter(
-        gender=gender, missing_or_found=required
-    )
-    if height:
-        reports_under_consideration = reports_under_consideration.filter(
-            height__gte=height - 10, height__lte=height + 10
+    try:
+        face_encoding = report.face_encoding
+        face_encoding = json.loads(face_encoding)
+        face_encoding = np.array(face_encoding, dtype="float64")
+        gender = report.gender
+        missing_or_found = report.missing_or_found
+        height = report.height
+        # entry_date = report.entry_date
+        if missing_or_found == "M":
+            required = "F"
+        else:
+            required = "M"
+        reports_under_consideration = Report.objects.filter(
+            gender=gender, missing_or_found=required
         )
-    # reports_under_consideration = reports_under_consideration.filter(
-    # entry_date__gte=entry_date-10, entry_date__lte=entry_date+90)
-    face_encodings = []
-    ids = []
-    for report in reports_under_consideration:
-        if report.face_encoding:
-            face_encodings.append(np.array(json.loads(report.face_encoding), dtype="float64"))
-            ids.append(report.pk)
-    all_matches = face_recognition.compare_faces(
-        face_encodings, face_encoding, tolerance=0.5
-    )
-    matched_images = [id_ for idx, id_ in enumerate(ids) if all_matches[idx]]
-    return matched_images
+        if height:
+            reports_under_consideration = reports_under_consideration.filter(
+                height__gte=height - 10, height__lte=height + 10
+            )
+        # reports_under_consideration = reports_under_consideration.filter(
+        # entry_date__gte=entry_date-10, entry_date__lte=entry_date+90)
+        face_encodings = [
+            np.array(json.loads(report.face_encoding), dtype="float64")
+            for report in reports_under_consideration
+        ]
+        ids = [report.pk for report in reports_under_consideration]
+        all_matches = face_recognition.compare_faces(
+            face_encodings, face_encoding, tolerance=0.5
+        )
+        matched_images = [id_ for idx, id_ in enumerate(ids) if all_matches[idx]]
+        return matched_images
+    except Exception as e:
+        print(str(e))
+        return None
 
 
 @login_required
@@ -158,24 +161,26 @@ def upload_photo(request):
 def view_report(request, object_id):
     report = Report.objects.get(id=object_id)
     context = {}
+    reports = []
     matched_reports = match_encodings(report)
-    reports = Report.objects.filter(pk__in=matched_reports).only(
-        "pk", "photo", "description", "entry_date", "name", "police_station"
-    )
-    if report.missing_or_found == "M":
-        for report_found in reports:
-            if not Match.objects.filter(
-                report_missing=report, report_found=report_found
-            ).exists():
-                match = Match(report_missing=report, report_found=report_found)
-                match.save()
-    else:
-        for report_missing in reports:
-            if not Match.objects.filter(
-                report_missing=report_missing, report_found=report
-            ).exists():
-                match = Match(report_missing=report_missing, report_found=report)
-                match.save()
+    if matched_reports:
+        reports = Report.objects.filter(pk__in=matched_reports).only(
+            "pk", "photo", "description", "entry_date", "name", "police_station"
+        )
+        if report.missing_or_found == "M":
+            for report_found in reports:
+                if not Match.objects.filter(
+                    report_missing=report, report_found=report_found
+                ).exists():
+                    match = Match(report_missing=report, report_found=report_found)
+                    match.save()
+        else:
+            for report_missing in reports:
+                if not Match.objects.filter(
+                    report_missing=report_missing, report_found=report
+                ).exists():
+                    match = Match(report_missing=report_missing, report_found=report)
+                    match.save()
     context["report"] = report
     paginator = Paginator(reports, 2)
     page_number = request.GET.get("page")
