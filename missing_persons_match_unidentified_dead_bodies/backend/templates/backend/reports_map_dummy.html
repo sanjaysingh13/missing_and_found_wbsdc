@@ -219,20 +219,13 @@ reports.forEach(function(marker) {
 
 // center the map and set the zoom level
 const given_location = JSON.parse(document.getElementById('given_location').textContent);
-if (given_location[0] == null){
+
     console.log("No location specifed")
     const average = arr => arr.reduce( ( p, c ) => p + c, 0 ) / arr.length;
     const average_lat = average(lats);
     const average_lon = average(lons);
     map.setCenter([average_lat, average_lon]);
     map.setZoom(9);
-
-}
-else {
-    console.log([given_location[0], given_location[1]])
-map.setCenter([given_location[1], given_location[0]]);
-map.setZoom(9);
-}
 
 
             </script>
