@@ -2,6 +2,7 @@
 import io
 import json
 import re
+from datetime import date, timedelta
 
 import cv2
 import face_recognition
@@ -10,6 +11,7 @@ import numpy as np
 # import requests
 # from celery.result import AsyncResult
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.gis.geos import GEOSGeometry, Point
@@ -44,40 +46,42 @@ root = (
 
 
 def match_encodings(report):
-    try:
-        face_encoding = report.face_encoding
-        face_encoding = json.loads(face_encoding)
-        face_encoding = np.array(face_encoding, dtype="float64")
-        gender = report.gender
-        missing_or_found = report.missing_or_found
-        height = report.height
-        # entry_date = report.entry_date
-        if missing_or_found == "M":
-            required = "F"
-        else:
-            required = "M"
-        reports_under_consideration = Report.objects.filter(
-            gender=gender, missing_or_found=required
+    face_encoding = report.face_encoding
+    face_encoding = json.loads(face_encoding)
+    face_encoding = np.array(face_encoding, dtype="float64")
+    gender = report.gender
+    missing_or_found = report.missing_or_found
+    height = report.height
+    # entry_date = report.entry_date
+    if missing_or_found == "M":
+        required = "F"
+    else:
+        required = "M"
+    reports_under_consideration = Report.objects.filter(
+        gender=gender, missing_or_found=required
+    )
+    if height:
+        reports_under_consideration = reports_under_consideration.filter(
+            height__gte=height - 10, height__lte=height + 10
         )
-        if height:
-            reports_under_consideration = reports_under_consideration.filter(
-                height__gte=height - 10, height__lte=height + 10
+    # reports_under_consideration = reports_under_consideration.filter(
+    # entry_date__gte=entry_date-10, entry_date__lte=entry_date+90)
+    face_encodings = []
+    ids = []
+    for report in reports_under_consideration:
+        if report.face_encoding:
+            face_encodings.append(
+                np.array(json.loads(report.face_encoding), dtype="float64")
             )
-        # reports_under_consideration = reports_under_consideration.filter(
-        # entry_date__gte=entry_date-10, entry_date__lte=entry_date+90)
-        face_encodings = [
-            np.array(json.loads(report.face_encoding), dtype="float64")
-            for report in reports_under_consideration
-        ]
-        ids = [report.pk for report in reports_under_consideration]
+            ids.append(report.pk)
+    if face_encodings != []:
         all_matches = face_recognition.compare_faces(
             face_encodings, face_encoding, tolerance=0.5
         )
         matched_images = [id_ for idx, id_ in enumerate(ids) if all_matches[idx]]
-        return matched_images
-    except Exception as e:
-        print(str(e))
-        return None
+    else:
+        matched_images = None
+    return matched_images
 
 
 @login_required
@@ -162,25 +166,28 @@ def view_report(request, object_id):
     report = Report.objects.get(id=object_id)
     context = {}
     reports = []
-    matched_reports = match_encodings(report)
-    if matched_reports:
-        reports = Report.objects.filter(pk__in=matched_reports).only(
-            "pk", "photo", "description", "entry_date", "name", "police_station"
-        )
-        if report.missing_or_found == "M":
-            for report_found in reports:
-                if not Match.objects.filter(
-                    report_missing=report, report_found=report_found
-                ).exists():
-                    match = Match(report_missing=report, report_found=report_found)
-                    match.save()
-        else:
-            for report_missing in reports:
-                if not Match.objects.filter(
-                    report_missing=report_missing, report_found=report
-                ).exists():
-                    match = Match(report_missing=report_missing, report_found=report)
-                    match.save()
+    if report.face_encoding:
+        matched_reports = match_encodings(report)
+        if matched_reports:
+            reports = Report.objects.filter(pk__in=matched_reports).only(
+                "pk", "photo", "description", "entry_date", "name", "police_station"
+            )
+            if report.missing_or_found == "M":
+                for report_found in reports:
+                    if not Match.objects.filter(
+                        report_missing=report, report_found=report_found
+                    ).exists():
+                        match = Match(report_missing=report, report_found=report_found)
+                        match.save()
+            else:
+                for report_missing in reports:
+                    if not Match.objects.filter(
+                        report_missing=report_missing, report_found=report
+                    ).exists():
+                        match = Match(
+                            report_missing=report_missing, report_found=report
+                        )
+                        match.save()
     context["report"] = report
     paginator = Paginator(reports, 2)
     page_number = request.GET.get("page")
@@ -194,7 +201,14 @@ def report_search(request):
     template_name = "backend/report_search.html"
 
     if request.method == "GET":
-        form = ReportSearchForm(initial={"full_text_search_type": 0})
+        form = ReportSearchForm(
+            initial={
+                "full_text_search_type": 0,
+                "missing_or_found": "All",
+                "gender": "All",
+                "map_or_list": "L",
+            }
+        )
     elif request.method == "POST":
         form = ReportSearchForm(request.POST)
         print("hello")
@@ -220,6 +234,10 @@ def report_search(request):
             location = cleaned_data.get("location", "")
             map_or_list = cleaned_data.get("map_or_list", "")
             if advanced_search_report:
+                if not min_date:
+                    min_date = date.today() - timedelta(days=30)
+                if not max_date:
+                    max_date = date.today()
                 query_object = Q(entry_date__gte=min_date) & Q(entry_date__lte=max_date)
 
                 if districts != "Null":
@@ -347,18 +365,20 @@ def report_search(request):
                     return render(request, template, context)
                 return render(request, template_name, context)
             else:
-                results = "foo"
-                if len(results) != 0:
-                    pass
-                    # return redirect(report)
+                reference = int(cleaned_data.get("ref_no", ""))
+                entry_date = cleaned_data.get("ref_date", "")
+                ps_with_distt = cleaned_data.get("police_station_with_distt", "")
+                report = Report.objects.filter(
+                    Q(reference=reference)
+                    & Q(entry_date=entry_date)
+                    & Q(police_station__ps_with_distt=ps_with_distt)
+                )
+                if report is None:
+                    messages.info(request, "No report found")
+                    return render(request, template_name, context)
                 else:
-                    return redirect("backend: report_search")
-
-                # template_name = "searches/report_search_results"
-
-        else:
-            pass
-            #####
+                    print(report.__dict__)
+                    return redirect("backend:view_report", report[0].pk)
     context = {}
     context["form"] = form
     context["mapbox_access_token"] = mapbox_access_token

@@ -246,13 +246,16 @@ class ReportSearchForm(forms.Form):
     )
     missing_or_found = forms.CharField(
         label="Missing or Found",
+        required=False,
         widget=forms.RadioSelect(choices=[("All", "All")] + MISSING_OR_FOUND),
     )
     gender = forms.CharField(
-        label="Gender", widget=forms.RadioSelect(choices=[("All", "All")] + GENDER[:-1])
+        label="Gender",
+        required=False,
+        widget=forms.RadioSelect(choices=[("All", "All")] + GENDER[:-1]),
     )
-    min_date = forms.DateField()
-    max_date = forms.DateField()
+    min_date = forms.DateField(required=False)
+    max_date = forms.DateField(required=False)
     ps_list = forms.CharField(required=False, widget=forms.HiddenInput())
     latitude = forms.CharField(required=False, max_length=20)
     longitude = forms.CharField(required=False, max_length=20)
@@ -260,6 +263,7 @@ class ReportSearchForm(forms.Form):
     distance = forms.IntegerField(required=False)
     map_or_list = forms.CharField(
         label="Map or List",
+        required=False,
         widget=forms.RadioSelect(choices=[("M", "Map"), ("L", "List")]),
     )
 
@@ -343,12 +347,15 @@ class ReportSearchForm(forms.Form):
         cleaned_data = super().clean()
         messages = []
         if not cleaned_data.get("advanced_search_report"):
-            no_ps = cleaned_data.get("police_station_with_distt", "") == ""
-            no_ref_no = cleaned_data.get("ref_no", "") == ""
-            no_ref_date = cleaned_data.get("ref_date", "")
-            no_ref_year = cleaned_data.get("ref_year", "") == ""
-            if no_ps or no_ref_no or (no_ref_date and no_ref_year):
-                msg = "PS, case number, case date or case year required "
+            ps = cleaned_data.get("police_station_with_distt", "")
+            no_ps = ps == ""
+            ref_no = cleaned_data.get("ref_no", "")
+            no_ref_no = ref_no == ""
+            ref_date = cleaned_data.get("ref_date", "")
+            ref_year = cleaned_data.get("ref_year", "")
+            no_ref_year = ref_year == ""
+            if no_ps or no_ref_no or ((not ref_date) and no_ref_year):
+                msg = f"PS, case number, case date or case year required {ps}, {ref_no}, {ref_date} "
                 messages.append(msg)
             if cleaned_data.get("ref_no", "") != "" and (
                 not cleaned_data.get("ref_no", "").isdigit()
