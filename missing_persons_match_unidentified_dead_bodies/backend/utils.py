@@ -1,9 +1,16 @@
+import csv
+from datetime import datetime
 from io import BytesIO
 
 import cv2
 import numpy as np
 import regex as re
+from django.contrib.gis.geos import Point
+from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import InMemoryUploadedFile
+
+from missing_persons_match_unidentified_dead_bodies.backend.models import Report
+from missing_persons_match_unidentified_dead_bodies.users.models import PoliceStation
 
 
 # Returns resized for upload and for icon
@@ -49,6 +56,74 @@ def resize_image(file, size_image, size_icon):
         None,
     )
     return (resized_image, image_icon)
+
+
+def initial_migration():
+    filename = "./filtered_data.csv"
+    with open(filename) as csvfile:
+        csvreader = csv.reader(csvfile)
+        next(csvreader)  # Skip the first row (header row)
+        for row in csvreader:
+            name = row[1]
+            if row[3] != "":
+                age = int(row[3])
+            else:
+                age = 0
+            if row[4] != "":
+                height = int(row[4])
+            else:
+                height = 0
+            if row[5] != "":
+                latitude = float(row[5])
+            else:
+                latitude = None
+            if row[6] != "":
+                longitude = float(row[6])
+            else:
+                longitude = None
+            if row[7] != "":
+                reference = int(row[7])
+            else:
+                reference = None
+            if row[8] != "":
+                entry_date = datetime.strptime(row[8], "%Y-%m-%d").date()
+            else:
+                entry_date = None
+            if row[13] != "":
+                description = row[13]
+            else:
+                description = ""
+            missing_or_found = row[10]
+            gender = row[9]
+            if missing_or_found == "Unknown" or gender == "Unknown":
+                continue
+            if row[14] != "":
+                face_encoding = row[14]
+            else:
+                face_encoding = None
+            photo_file = f"./resized_photos/{row[0]}"
+
+            report = Report(
+                name=name,
+                age=age,
+                height=height,
+                latitude=latitude,
+                longitude=longitude,
+                entry_date=entry_date,
+                reference=reference,
+                missing_or_found=missing_or_found,
+                gender=gender,
+                description=description,
+                face_encoding=face_encoding,
+            )
+            ps = PoliceStation.objects.get(pk=int(row[11]))
+            report.police_station = ps
+            with open(photo_file, "rb") as f:
+                file = ContentFile(f.read())
+                report.photo.save(f"kghjdsert+{photo_file}", file, save=True)
+                if longitude:
+                    report.location = Point(longitude, latitude)
+                report.save()
 
 
 def tokenize(text):

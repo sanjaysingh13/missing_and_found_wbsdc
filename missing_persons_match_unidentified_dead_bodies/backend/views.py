@@ -145,7 +145,6 @@ def upload_photo(request):
                     report.location = location
                 else:
                     report.location = Point(longitude, latitude)
-
                 report.save()
                 return redirect("backend:view_report", object_id=report.id)
     return render(
@@ -307,6 +306,8 @@ def report_search(request):
                 else:
                     report_dicts = []
                     for report in reports:
+                        if not report.location:
+                            continue
                         print(f"PHOTO URL IS  {report.photo.url}")
                         print(f"ICON URL IS  {report.icon.url}")
 

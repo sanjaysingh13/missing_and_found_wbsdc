@@ -1,3 +1,4 @@
+import sys
 from datetime import date
 from io import BytesIO
 
@@ -24,6 +25,7 @@ def add_icon_to_report(pk):
 
         # Save the image to the buffer
         image.save(buffer, "JPEG")
+
         try:  # For production
             ACCESS_ID = settings.AWS_ACCESS_KEY_ID
             ACCESS_KEY = settings.AWS_SECRET_ACCESS_KEY
@@ -48,7 +50,7 @@ def add_icon_to_report(pk):
             print(str(e))
             icon_file_name = "icons_" + report.photo.name.split("/")[-1]
             icon_file = InMemoryUploadedFile(
-                buffer, None, icon_file_name, "image/jpeg", len(buffer), None
+                buffer, None, icon_file_name, "image/jpeg", sys.getsizeof(buffer), None
             )
             report.icon = icon_file
             report.save()

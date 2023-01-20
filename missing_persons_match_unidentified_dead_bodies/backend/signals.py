@@ -14,9 +14,8 @@ def report_created_add_icon(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Match)
 def report_send_mail_for_match(sender, instance, **kwargs):
-    if 5 == 4:
-        if not instance.mail_sent:
-            send_matched_mail.apply_async(args=[instance.pk], countdown=5)
+    if not instance.mail_sent:
+        send_matched_mail.apply_async(args=[instance.pk], countdown=5)
 
 
 # @receiver(post_save, sender=Report)
