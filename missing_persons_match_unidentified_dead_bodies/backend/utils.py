@@ -101,6 +101,7 @@ def initial_migration():
                 face_encoding = row[14]
             else:
                 face_encoding = None
+            print(row[0])
             photo_file = f"./resized_photos/{row[0]}"
             photo_file = photo_file.replace(' ', '_')
 
@@ -121,7 +122,7 @@ def initial_migration():
             report.police_station = ps
             with open(photo_file, "rb") as f:
                 file = ContentFile(f.read())
-                report.photo.save(f"kghjdsert+{photo_file}", file, save=True)
+                report.photo.save(row[0], file, save=True)
                 if longitude:
                     report.location = Point(longitude, latitude)
                 report.save()
