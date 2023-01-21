@@ -2,7 +2,6 @@
 {% load static %}
 {% block content %}
 {{reports_json|json_script:"reports_json" }}
-{{location|json_script:"given_location"}}
 <div class="row g-0">
     <div class="col-md-12 ">
 
@@ -15,19 +14,36 @@
 {% endblock content %}
 {% block inline_javascript %}
 <script>
+    const reports = JSON.parse(document.getElementById('reports_json').textContent);
+    const lats = [];
+    const lons = [];
+    var given_location = {{location|safe}};
+    reports.forEach(function(marker) {
+        lats.push(marker.lat);
+        lons.push(marker.lon);
+    });
+    if (given_location != null && given_location != undefined){
+console.log("Hi located")
+}
+else {
+console.log("No location specifed")
+    const average = arr => arr.reduce( ( p, c ) => p + c, 0 ) / arr.length;
+    const average_lat = Math.round(average(lats) * Math.pow(10, 6)) / Math.pow(10, 6);
+    const average_lon = Math.round(average(lons) * Math.pow(10, 6)) / Math.pow(10, 6);
+     given_location = [average_lon,average_lat]
+    console.log(given_location);
+}
 
 // create the map
     mapboxgl.accessToken = "{{mapbox_access_token}}"
     var map = new mapboxgl.Map({
         container: 'map',
-        style: 'mapbox://styles/mapbox/streets-v11'
+        style: 'mapbox://styles/mapbox/streets-v11',
+        center: [given_location[1], given_location[0]],
+        zoom: 9,
     });
 
 // add a marker for each report
-    const reports = JSON.parse(document.getElementById('reports_json').textContent);
-
-    const lats = []
-    const lons = []
     reports.forEach(function(marker) {
         lats.push(marker.lat);
         lons.push(marker.lon);
@@ -43,25 +59,9 @@
             .setHTML('<img src="' +  marker.photo  + '" width="200" ><p> ' + (marker.description || "")  + '</p><p>Date: ' + (marker.date || "") + '</p><p>Name: ' + (marker.name || "") + '</p><p>Of: ' + (marker.guardian_name_and_address || "") + '</p><p>Age: ' + (marker.age || "") + '</p><p>Height: ' + (marker.height || "") + '</p><p>PS: ' + (marker.police_station || "") + '</p><p>Contact: <strong>' + (marker.oc || "") + ' : ' + (marker.tel || "")
                 + '</strong></p>'))
         .addTo(map);
+
     });
 
-
-// center the map and set the zoom level
-const given_location = JSON.parse(document.getElementById('given_location').textContent);
-if (given_location[0] == null){
-    console.log("No location specifed")
-    const average = arr => arr.reduce( ( p, c ) => p + c, 0 ) / arr.length;
-    const average_lat = Math.round(average(lats) * Math.pow(10, 6)) / Math.pow(10, 6);
-    const average_lon = Math.round(average(lons) * Math.pow(10, 6)) / Math.pow(10, 6);
-    map.setCenter([average_lat, average_lon]);
-    map.setZoom(9);
-
-}
-else {
-map.setCenter([Math.round(given_location[1]* Math.pow(10, 6)) / Math.pow(10, 6), Math.round(given_location[0]* Math.pow(10, 6)) / Math.pow(10, 6)]);
-map.setZoom(9);
-console.log([Math.round(given_location[1]* Math.pow(10, 6)) / Math.pow(10, 6), Math.round(given_location[0]* Math.pow(10, 6)) / Math.pow(10, 6)]);
-}
 
 </script>
 {% endblock inline_javascript %}
