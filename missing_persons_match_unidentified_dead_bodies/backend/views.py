@@ -354,7 +354,7 @@ def report_search(request):
                         report_dicts.append(report_dict)
                     template_name = "backend/reports_map.html"
                     context = {}
-                    template = "backend/reports_map_dummy.html"
+                    template = "backend/reports_map.html"
                     context["mapbox_access_token"] = mapbox_access_token
                     context["reports_json"] = report_dicts
                     if given_location:
