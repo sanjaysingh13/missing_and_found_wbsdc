@@ -370,17 +370,38 @@ def report_search(request):
                 reference = int(cleaned_data.get("ref_no", ""))
                 entry_date = cleaned_data.get("ref_date", "")
                 ps_with_distt = cleaned_data.get("police_station_with_distt", "")
-                report = Report.objects.filter(
-                    Q(reference=reference)
-                    & Q(entry_date=entry_date)
-                    & Q(police_station__ps_with_distt=ps_with_distt)
-                )
-                if report is None:
+                year = cleaned_data.get("ref_year", "")
+                # Start with a Q object that matches all Report objects
+                query = Q()
+
+                # Add a filter for reference, if provided
+                if reference:
+                    query &= Q(reference=reference)
+
+                # Add a filter for police station, if provided
+                if ps_with_distt:
+                    query &= Q(police_station__ps_with_distt=ps_with_distt)
+
+                # Add a filter for entry date, if provided
+                if entry_date:
+                    query &= Q(entry_date=entry_date)
+
+                # Add a filter for year, if provided
+                if year:
+                    query &= Q(year=year)
+
+                # Use the Q object to filter the Report objects
+                reports = Report.objects.filter(query)
+                if not reports.exists():
+                    context = {}
+                    context["form"] = form
+                    context["mapbox_access_token"] = mapbox_access_token
+                    context["form_title"] = "Basic and Advanced Search for Reports"
+                    context["title"] = "Report Search"
                     messages.info(request, "No report found")
                     return render(request, template_name, context)
                 else:
-                    print(report.__dict__)
-                    return redirect("backend:view_report", report[0].pk)
+                    return redirect("backend:view_report", reports[0].pk)
     context = {}
     context["form"] = form
     context["mapbox_access_token"] = mapbox_access_token
