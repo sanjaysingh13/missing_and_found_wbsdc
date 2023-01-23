@@ -35,7 +35,7 @@ def public_missing(request):
     query_object = Q(entry_date__gte=min_date) & Q(entry_date__lte=max_date)
     given_location = GEOSGeometry(f"POINT({longitude} {latitude})", srid=4326)
     # distance = 20 * 1000
-    distance = 2 * 1000
+    distance = 50 * 1000
     query_object = query_object & Q(location__dwithin=(given_location, distance))
     report_dicts = []
     reports = Report.objects.filter(query_object)

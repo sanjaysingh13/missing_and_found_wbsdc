@@ -36,6 +36,14 @@ urlpatterns = [
             namespace="ajax",
         ),
     ),
+    path("drf/api-auth/", include("rest_framework.urls")),
+    path(
+        "drf/",
+        include(
+            "missing_persons_match_unidentified_dead_bodies.drf.urls",
+            namespace="drf",
+        ),
+    ),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 

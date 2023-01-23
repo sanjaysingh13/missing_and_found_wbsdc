@@ -30,3 +30,7 @@ django-mapbox-location-field
 # Fuzzy search
 fuzzywuzzy
 python-Levenshtein
+
+# DRF
+djangorestframework
+markdown

@@ -117,9 +117,9 @@ class ReportForm(forms.Form):
                         ),
                         HTML(
                             """<p class='col-md-6 mb-0 card text-white bg-primary'>
-                            Use a clear  frontal face picture if possible.
+                            Use a clear, vertical frontal face picture if possible.
                             In case of mutilation by accident, take a clear picture
-                            after stitching of injuries.<
+                            after stitching of injuries.
                             /p>"""
                         ),
                     ),

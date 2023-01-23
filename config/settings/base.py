@@ -81,12 +81,14 @@ THIRD_PARTY_APPS = [
     "allauth.socialaccount",
     "django_celery_beat",
     "mapbox_location_field",
+    "rest_framework",
 ]
 
 LOCAL_APPS = [
     "missing_persons_match_unidentified_dead_bodies.users",
     "missing_persons_match_unidentified_dead_bodies.backend",
     "missing_persons_match_unidentified_dead_bodies.ajax",
+    "missing_persons_match_unidentified_dead_bodies.drf",
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -335,3 +337,13 @@ MAP_BOX_ACCESS_TOKEN = env("MAP_BOX_ACCESS_TOKEN")
 MAPBOX_KEY = MAP_BOX_ACCESS_TOKEN
 GEOIP_PATH = str(ROOT_DIR / "geoip")
 CSRF_TRUSTED_ORIGINS = ["https://www.wbkhoyapaya.com", "https://wbkhoyapaya.com"]
+
+
+# DRF
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly"
+    ]
+}
