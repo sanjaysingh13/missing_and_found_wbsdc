@@ -427,6 +427,7 @@ def matches(request):
                 report_missing.entry_date,
                 report_missing.name,
                 report_missing.police_station,
+                report_missing.pk,
             ),
             (
                 report_found.photo,
@@ -434,6 +435,7 @@ def matches(request):
                 report_found.entry_date,
                 report_found.name,
                 report_found.police_station,
+                report_found.pk,
             ),
         )
         for (report_missing, report_found) in matched_reports

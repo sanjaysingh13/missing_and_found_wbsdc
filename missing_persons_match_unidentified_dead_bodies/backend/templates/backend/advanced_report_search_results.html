@@ -59,7 +59,8 @@
 
 
             <div class="card">
-              <img src="{{ report.photo }}" class="card-img-top" alt="...">
+                <a href="{% url 'backend:view_report' report.id %}" class="card-link"><img src="{{ report.photo }}" class="card-img-top" alt="..."></a>
+
               <div class="card-body">
                {% if  report.matched %}
                <h5 class="card-title">Matched</h5>

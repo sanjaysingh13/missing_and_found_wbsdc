@@ -120,7 +120,7 @@ class ReportForm(forms.Form):
                             Use a clear, vertical frontal face picture if possible.
                             In case of mutilation by accident, take a clear picture
                             after stitching of injuries.
-                            /p>"""
+                            </p>"""
                         ),
                     ),
                     Row(HTML("</br>")),
