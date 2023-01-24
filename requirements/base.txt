@@ -37,3 +37,6 @@ markdown
 
 # Sentry
 sentry-sdk
+
+# Recaptcha
+django-recaptcha

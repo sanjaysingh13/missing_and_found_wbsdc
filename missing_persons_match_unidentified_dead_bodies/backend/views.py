@@ -195,6 +195,8 @@ def view_report(request, object_id):
     return render(request, template_name, context)
 
 
+@login_required
+@permission_required("users.add_user", raise_exception=True)
 def report_search(request):
     template_name = "backend/report_search.html"
 
@@ -410,6 +412,8 @@ def report_search(request):
     return render(request, template_name, context)
 
 
+@login_required
+@permission_required("users.add_user", raise_exception=True)
 def matches(request):
     matches = Match.objects.all().order_by("-mail_sent").values()
     matched_reports = [
@@ -449,6 +453,8 @@ def matches(request):
     return render(request, template_name, context)
 
 
+# @login_required
+# @permission_required("users.delete_user", raise_exception=True)
 class ReportDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     # specify the model you want to use
     model = Report

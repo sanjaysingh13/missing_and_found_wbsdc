@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from missing_persons_match_unidentified_dead_bodies.backend.models import Report
+from missing_persons_match_unidentified_dead_bodies.users.models import User
 
 
 class ReportSerializer(serializers.Serializer):
@@ -26,3 +27,9 @@ class ReportSerializer(serializers.Serializer):
         instance.description = validated_data.get("description", instance.description)
         instance.save()
         return instance
+
+
+class UserSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = User
+        fields = ["url", "username", "email", "groups"]

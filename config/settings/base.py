@@ -84,6 +84,7 @@ THIRD_PARTY_APPS = [
     "django_celery_beat",
     "mapbox_location_field",
     "rest_framework",
+    "captcha",
 ]
 
 LOCAL_APPS = [
@@ -117,6 +118,7 @@ LOGIN_REDIRECT_URL = "users:redirect"
 # https://docs.djangoproject.com/en/dev/ref/settings/#login-url
 LOGIN_URL = "account_login"
 ACCOUNT_FORMS = {
+    "login": "users.forms.CustomLoginForm",
     "signup": "users.forms.CustomSignupForm",
 }
 # PASSWORDS
@@ -364,3 +366,7 @@ sentry_sdk.init(
     # django.contrib.auth) you may enable sending PII data.
     send_default_pii=True,
 )
+
+# RECAPTCHA
+RECAPTCHA_PUBLIC_KEY = env("RECAPTCHA_PUBLIC_KEY")
+RECAPTCHA_PRIVATE_KEY = env("RECAPTCHA_PRIVATE_KEY")

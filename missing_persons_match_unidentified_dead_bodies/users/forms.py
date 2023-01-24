@@ -1,4 +1,5 @@
-from allauth.account.forms import SignupForm
+from allauth.account.forms import LoginForm, SignupForm
+from captcha.fields import ReCaptchaField
 from django import forms
 from django.contrib.auth import forms as admin_forms
 from django.contrib.auth import get_user_model
@@ -41,6 +42,7 @@ class UserCreationForm(admin_forms.UserCreationForm):
 
 
 class CustomSignupForm(SignupForm):
+    captcha = ReCaptchaField()
     name = forms.CharField(max_length=100)
     rank = forms.CharField(max_length=50, label="Rank")
     telephone = forms.CharField(
@@ -75,3 +77,7 @@ class CustomSignupForm(SignupForm):
             ).district_id
         user.save()
         return user
+
+
+class CustomLoginForm(LoginForm):
+    captcha = ReCaptchaField()
