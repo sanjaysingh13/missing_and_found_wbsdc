@@ -116,7 +116,9 @@ AUTH_USER_MODEL = "users.User"
 LOGIN_REDIRECT_URL = "users:redirect"
 # https://docs.djangoproject.com/en/dev/ref/settings/#login-url
 LOGIN_URL = "account_login"
-
+ACCOUNT_FORMS = {
+    "signup": "users.forms.CustomSignupForm",
+}
 # PASSWORDS
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#password-hashers
@@ -320,9 +322,9 @@ ACCOUNT_ADAPTER = (
     "missing_persons_match_unidentified_dead_bodies.users.adapters.AccountAdapter"
 )
 # https://django-allauth.readthedocs.io/en/latest/forms.html
-ACCOUNT_FORMS = {
-    "signup": "missing_persons_match_unidentified_dead_bodies.users.forms.UserSignupForm"
-}
+# ACCOUNT_FORMS = {
+#     "signup": "missing_persons_match_unidentified_dead_bodies.users.forms.UserSignupForm"
+# }
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 SOCIALACCOUNT_ADAPTER = (
     "missing_persons_match_unidentified_dead_bodies.users.adapters.SocialAccountAdapter"
