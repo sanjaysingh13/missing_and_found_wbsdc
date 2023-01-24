@@ -34,3 +34,6 @@ python-Levenshtein
 # DRF
 djangorestframework
 markdown
+
+# Sentry
+sentry-sdk
