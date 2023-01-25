@@ -31,10 +31,16 @@ from missing_persons_match_unidentified_dead_bodies.backend.models import Match,
 # from django.views.decorators.csrf import csrf_protect
 from missing_persons_match_unidentified_dead_bodies.users.models import PoliceStation
 
-from .forms import ReportForm, ReportSearchForm
+from .forms import (
+    GetRiverSearchLoactionForm,
+    ReportForm,
+    ReportSearchForm,
+    RiverSearchForm,
+)
 from .utils import resize_image
 
 mapbox_access_token = settings.MAP_BOX_ACCESS_TOKEN
+gmap_access_token = settings.GOOGLE_MAPS_API
 
 s3_file_pattern = re.compile(r".*https.*")
 pk_pattern = re.compile(r"\$primary_key=(\d+)$")
@@ -407,6 +413,68 @@ def report_search(request):
     context = {}
     context["form"] = form
     context["mapbox_access_token"] = mapbox_access_token
+    context["form_title"] = "Basic and Advanced Search for Reports"
+    context["title"] = "Report Search"
+    return render(request, template_name, context)
+
+
+@login_required
+@permission_required("users.add_user", raise_exception=True)
+def river_search_raw(request):
+    context = {}
+    template = "backend/river_search_raw.html"
+    context["mapbox_access_token"] = mapbox_access_token
+    return render(request, template, context)
+
+
+@login_required
+@permission_required("users.add_user", raise_exception=True)
+def get_river_search_location(request):
+    template_name = "backend/get_river_search_location.html"
+    context = {}
+    if request.method == "GET":
+        form = GetRiverSearchLoactionForm()
+
+    elif request.method == "POST":
+        form = GetRiverSearchLoactionForm(request.POST)
+        if form.is_valid():
+            cleaned_data = form.cleaned_data
+            context["form"] = form
+            location = cleaned_data.get("location", "")
+            print(location.x)
+            print(location.y)
+            return redirect(
+                "backend:river_search", latitude=location.x, longitude=location.y
+            )
+            return render(request, template_name, context)
+
+    context["form"] = form
+    context["mapbox_access_token"] = mapbox_access_token
+    context["form_title"] = "Area for River Search"
+    context["title"] = "Area for River Search"
+    return render(request, template_name, context)
+
+
+@login_required
+@permission_required("users.add_user", raise_exception=True)
+def river_search(request, latitude, longitude):
+    template_name = "backend/river_search.html"
+    latitude = float(latitude)
+    longitude = float(longitude)
+    if request.method == "GET":
+        form = RiverSearchForm(
+            initial={
+                "gender": "F",
+                "min_date": date.today() - timedelta(days=30),
+                "max_date": date.today(),
+            }
+        )
+    context = {}
+    context["form"] = form
+    context["latitude"] = latitude
+    context["longitude"] = longitude
+    context["mapbox_access_token"] = mapbox_access_token
+    context["gmap_access_token"] = gmap_access_token
     context["form_title"] = "Basic and Advanced Search for Reports"
     context["title"] = "Report Search"
     return render(request, template_name, context)

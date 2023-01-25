@@ -1,0 +1,16 @@
+{% extends "base_maps.html" %}
+{% load crispy_forms_tags %}
+{% load mapbox_location_field_tags %}
+ {% location_field_includes %}
+ {% include_jquery %}
+{% block title %} {{title}} {% endblock title %}
+{% block content %}
+<div >
+	</br>
+	<h6> {{form_title}}</h6>
+</div>
+
+{% crispy form form.helper %}
+{{ form.media }}
+
+{% endblock content %}

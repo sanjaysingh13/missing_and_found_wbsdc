@@ -401,3 +401,71 @@ class ReportSearchForm(forms.Form):
             raise forms.ValidationError(messages)
 
         return cleaned_data
+
+
+class GetRiverSearchLoactionForm(forms.Form):
+    location = SpatialLocationField(map_attrs=default_map_attrs, required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Div(
+                Row(
+                    Column("location", css_class="form-group col-md-10 mb-0"),
+                ),
+            ),
+        )
+        self.helper.form_id = "id-exampleForm"
+        self.helper.form_class = "blueForms"
+        self.helper.form_method = "post"
+        self.helper.add_input(Submit("submit", "Submit"))
+
+
+class RiverSearchForm(forms.Form):
+    gender = forms.CharField(
+        label="Gender",
+        required=False,
+        widget=forms.RadioSelect(choices=GENDER[:-1]),
+    )
+    min_date = forms.DateField(required=False)
+    max_date = forms.DateField(required=False)
+    first_location = forms.CharField()
+    second_location = forms.CharField()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Div(
+                Row(
+                    Column("gender", css_class="form-group col-md-3 mb-0"),
+                    Column("min_date", css_class="form-group col-md-3 mb-0"),
+                    Column("max_date", css_class="form-group col-md-3 mb-0"),
+                ),
+                Row(
+                    Field("first_location", type="hidden"),
+                    Field("second_location", type="hidden"),
+                ),
+            ),
+        )
+        self.helper.form_id = "id-exampleForm"
+        self.helper.form_class = "blueForms"
+        self.helper.form_method = "post"
+
+    def clean(self):
+        cleaned_data = super().clean()
+        messages = []
+        if not cleaned_data.get("location"):
+            msg_ = "Add a location"
+            messages.append(msg_)
+        else:
+            pass
+        if not (cleaned_data.get("min_date") or cleaned_data.get("max_date")):
+            msg_ = "Add a location"
+            messages.append(msg_)
+        else:
+            pass
+        if messages != []:
+            raise forms.ValidationError(messages)
+        return cleaned_data
