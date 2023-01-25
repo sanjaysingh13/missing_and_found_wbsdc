@@ -76,13 +76,23 @@ map.on('click', function(e) {
                 if (distance < 50000) {
                     coordinates = response['routes'][0]['geometry']['coordinates']
                     coordinates.forEach(function(coordinate) {
-                        url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + coordinate[1] + ',' + coordinate[0] + '&type=river&radius=50&key=' + '{{gmap_access_token}}'
-                        var xhttp = new XMLHttpRequest();
-                        xhttp.onreadystatechange = function() {
-                            console.log(xhttp.responseText)
-                            if (this.readyState == 4 && this.status == 200) {
-                                let response = JSON.parse(this.responseText);
-                                let results = response["results"]
+                    	const endpoint_url = "https://r0hgzd3t0g.execute-api.ap-south-1.amazonaws.com/Beta/"
+                    	fetch(endpoint_url, {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        coordinate: coordinate
+    })
+}).then(response => {
+    return response.json();
+}).then(data => {
+	results = data["body"];
+	results = JSON.parse(results);
+	results = results["results"];
+    console.log(results);
+
                                 for (let i = 0; i < results.length; i++) {
                                     let location = results[i]["geometry"]["location"];
 
@@ -112,14 +122,15 @@ map.on('click', function(e) {
                                     });
                                 }
 
+}).catch(error => {
+    console.log(error);
+});
 
-                                // Typical action to be performed when the document is ready:
-                            } else {
-                                console.log("error")
-                            }
-                        };
-                        xhttp.open("GET", url, true);
-                        xhttp.send();
+
+
+
+
+
                     })
                 }
 
