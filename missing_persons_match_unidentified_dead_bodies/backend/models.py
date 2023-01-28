@@ -77,3 +77,32 @@ class Match(TimeStampedModel):
         Report, on_delete=models.CASCADE, related_name="report_found"
     )
     mail_sent = models.DateField(null=True)
+
+
+class WaterLines(models.Model):
+    F_CODE_DES = models.CharField(max_length=255)
+    HYC_DESCRI = models.CharField(max_length=255)
+    NAM = models.CharField(max_length=255)
+    ISO = models.CharField(max_length=255)
+    NAME_0 = models.CharField(max_length=255)
+    geom = models.MultiLineStringField(srid=4326, geography=True)
+
+
+class RailLines(models.Model):
+    FID_rail_d = models.IntegerField()
+    F_CODE_DES = models.CharField(max_length=255)
+    EXS_DESCRI = models.CharField(max_length=255)
+    FCO_DESCRI = models.CharField(max_length=255)
+    FID_countr = models.IntegerField()
+    ISO = models.CharField(max_length=255)
+    ISOCOUNTRY = models.CharField(max_length=255, null=True)
+    geom = models.MultiLineStringField(srid=4326, geography=True)
+
+
+class MitRailLines(models.Model):
+    f_code = models.CharField(max_length=255, null=True)
+    fco = models.IntegerField()
+    exs = models.IntegerField()
+    loc = models.IntegerField()
+    soc = models.CharField(max_length=255, null=True)
+    geom = models.MultiLineStringField(srid=4326, geography=True)

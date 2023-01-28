@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import HTML, Column, Div, Field, Layout, Row, Submit
+from crispy_forms.layout import HTML, Button, Column, Div, Field, Layout, Row, Submit
 from django import forms
 from django.core.validators import RegexValidator
 from mapbox_location_field.spatial.forms import SpatialLocationField
@@ -469,3 +469,51 @@ class RiverSearchForm(forms.Form):
         if messages != []:
             raise forms.ValidationError(messages)
         return cleaned_data
+
+
+class BoundedBoxSearchForm(forms.Form):
+    location = SpatialLocationField(map_attrs=default_map_attrs, required=False)
+    gender = forms.CharField(
+        label="Gender",
+        required=False,
+        widget=forms.RadioSelect(choices=GENDER[:-1]),
+    )
+    min_date = forms.DateField(required=False)
+    max_date = forms.DateField(required=False)
+    lines = forms.CharField(
+        label="Type of Line",
+        required=False,
+        widget=forms.RadioSelect(
+            choices=[("waterlines", "River"), ("raillines", "Rail")]
+        ),
+    )
+    north_west_location = forms.CharField()
+    south_east_location = forms.CharField()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Div(
+                Row(
+                    Column("gender", css_class="form-group col-md-3 mb-0"),
+                    Column("min_date", css_class="form-group col-md-3 mb-0"),
+                    Column("max_date", css_class="form-group col-md-3 mb-0"),
+                    Column("lines", css_class="form-group col-md-3 mb-0"),
+                ),
+                Row(
+                    Column("north_west_location", css_class="form-group col-md-3 mb-0"),
+                    Button("confirm_nw", "Confirm NW", css_class=" col-md-2 mb-0"),
+                    Column("south_east_location", css_class="form-group col-md-3 mb-0"),
+                    Button("confirm_se", "Confirm SE", css_class=" col-md-2 mb-0"),
+                    Button("clear", "Clear", css_class=" col-md-2 mb-0"),
+                ),
+                Row(
+                    Column("location", css_class="form-group"),
+                ),
+            ),
+        )
+        self.helper.form_id = "id-exampleForm"
+        self.helper.form_class = "blueForms"
+        self.helper.form_method = "post"
+        self.helper.add_input(Submit("submit", "Submit"))

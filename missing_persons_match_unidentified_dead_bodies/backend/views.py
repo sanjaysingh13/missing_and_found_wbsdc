@@ -25,19 +25,27 @@ from django.db.models import Q
 from django.shortcuts import redirect, render
 from django.views.generic.edit import DeleteView
 from fuzzywuzzy import process
+from rest_framework import viewsets
+from rest_framework.renderers import JSONRenderer
 
 from missing_persons_match_unidentified_dead_bodies.backend.models import Match, Report
+from missing_persons_match_unidentified_dead_bodies.backend.serializers import (
+    ReportSerializer,
+)
 # from django.views.decorators.cache import cache_page
 # from django.views.decorators.csrf import csrf_protect
 from missing_persons_match_unidentified_dead_bodies.users.models import PoliceStation
 
 from .forms import (
+    BoundedBoxSearchForm,
     GetRiverSearchLoactionForm,
     ReportForm,
     ReportSearchForm,
     RiverSearchForm,
 )
-from .utils import resize_image
+from .utils import generate_map_from_reports, get_reports_within_bbox, resize_image
+
+# from .filters import ReportSearchFilter
 
 mapbox_access_token = settings.MAP_BOX_ACCESS_TOKEN
 gmap_access_token = settings.GOOGLE_MAPS_API
@@ -221,10 +229,6 @@ def report_search(request):
         if form.is_valid():
             print("valid")
             cleaned_data = form.cleaned_data
-            # police_station_with_distt = cleaned_data.get('keywords', '')
-            # ref_no = cleaned_data.get('ref_no', '')
-            # ref_date = cleaned_data.get('ref_date', '')
-            # ref_year = cleaned_data.get('ref_year', '')
             keywords = cleaned_data.get("keywords", "")
             full_text_search_type = int(cleaned_data.get("full_text_search_type", ""))
             districts = cleaned_data.get("districts", "")
@@ -293,6 +297,9 @@ def report_search(request):
                         ]
                         print(results)
                         reports = reports.filter(pk__in=results)
+                # testing serialisation
+                serializer = ReportSerializer(reports, many=True)
+                print(JSONRenderer().render(serializer.data))
 
                 reports = reports.only(
                     "id",
@@ -334,35 +341,9 @@ def report_search(request):
                     template_name = "backend/advanced_report_search_results.html"
                     return render(request, template_name, context)
                 else:
-                    report_dicts = []
-                    for report in reports:
-                        if not report.location:
-                            continue
-                        print(f"PHOTO URL IS  {report.photo.url}")
-                        print(f"ICON URL IS  {report.icon.url}")
-
-                        report_dict = {}
-                        report_dict["lat"] = report.location.x
-                        report_dict["lon"] = report.location.y
-                        report_dict["photo"] = report.photo.url
-                        report_dict["icon"] = report.icon.url
-                        report_dict["entry_date"] = report.entry_date
-                        report_dict["name"] = report.name
-                        report_dict[
-                            "guardian_name_and_address"
-                        ] = report.guardian_name_and_address
-                        report_dict["description"] = report.description
-                        report_dict["age"] = report.age
-                        report_dict["height"] = report.height
-                        report_dict[
-                            "police_station"
-                        ] = report.police_station.ps_with_distt
-                        report_dict["oc"] = report.police_station.officer_in_charge
-                        report_dict["tel"] = report.police_station.telephones
-                        report_dicts.append(report_dict)
+                    report_dicts = generate_map_from_reports(reports)
                     template_name = "backend/reports_map.html"
                     context = {}
-                    template = "backend/reports_map.html"
                     context["mapbox_access_token"] = mapbox_access_token
                     context["reports_json"] = report_dicts
                     if given_location:
@@ -372,7 +353,7 @@ def report_search(request):
                     else:
                         context["location"] = json.dumps(None)
                         print(context["location"])
-                    return render(request, template, context)
+                    return render(request, template_name, context)
                 return render(request, template_name, context)
             else:
                 reference = int(cleaned_data.get("ref_no", ""))
@@ -480,6 +461,77 @@ def river_search(request, latitude, longitude):
     return render(request, template_name, context)
 
 
+# New bounded-box search interface:
+@login_required
+@permission_required("users.add_user", raise_exception=True)
+def bounded_box_search(request):
+    template = "backend/bounded_box_search.html"
+    if request.method == "GET":
+        form = BoundedBoxSearchForm(
+            initial={
+                "gender": "F",
+                "min_date": date.today() - timedelta(days=30),
+                "max_date": date.today(),
+                "lines": "waterlines",
+            }
+        )
+    elif request.method == "POST":
+        form = BoundedBoxSearchForm(request.POST)
+        if form.is_valid():
+            print("valid")
+            cleaned_data = form.cleaned_data
+            print(cleaned_data)
+            gender = cleaned_data.get("gender", "")
+            min_date = cleaned_data.get("min_date", "")
+            max_date = cleaned_data.get("max_date", "")
+            north_west_location = cleaned_data.get("north_west_location", "").split(",")
+            xmin = float(north_west_location[1])
+            ymax = float(north_west_location[0])
+            south_east_location = cleaned_data.get("south_east_location", "").split(",")
+            xmax = float(south_east_location[1])
+            ymin = float(south_east_location[0])
+            lines = cleaned_data.get("lines", "")
+            print(xmin, ymin, xmax, ymax, lines)
+            bounded_box_reports = get_reports_within_bbox(xmin, ymin, xmax, ymax, lines)
+            print(bounded_box_reports)
+            bounded_box_reports = bounded_box_reports.filter(
+                entry_date__gte=min_date,
+                entry_date__lte=max_date,
+                gender=gender,
+                missing_or_found="F",
+            )
+            bounded_box_reports = generate_map_from_reports(bounded_box_reports)
+            if bounded_box_reports == []:
+                messages.info(request, "No report found")
+                context = {}
+                context["form"] = form
+                context["form_title"] = "Bounded Box Search"
+                context["title"] = "Bounded Box Search"
+                context["mapbox_access_token"] = mapbox_access_token
+                return render(request, template, context)
+
+            context = {}
+            template = "backend/reports_map.html"
+            context["mapbox_access_token"] = mapbox_access_token
+            context["reports_json"] = bounded_box_reports
+            context["location"] = json.dumps(None)
+            context["title"] = "Curated Search Results"
+            return render(request, template, context)
+        else:
+            context = {}
+            context["form"] = form
+            context["form_title"] = "Bounded Box Search"
+            context["title"] = "Bounded Box Search"
+            context["mapbox_access_token"] = mapbox_access_token
+            return render(request, template, context)
+    context = {}
+    context["form"] = form
+    context["mapbox_access_token"] = mapbox_access_token
+    context["form_title"] = "Bounded Box Search"
+    context["title"] = "Bounded Box Search"
+    return render(request, template, context)
+
+
 @login_required
 @permission_required("users.add_user", raise_exception=True)
 def matches(request):
@@ -532,3 +584,43 @@ class ReportDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     # url to redirect after successfully
     # deleting object
     success_url = "/"
+
+
+# class ReportSerializer(serializers.HyperlinkedModelSerializer):
+#     url = serializers.HyperlinkedIdentityField(view_name="backend:view_report")
+#     class Meta:
+#         model = Report
+#         fields = ["url", "name", "missing_or_found", "gender"]
+
+
+# ViewSets define the view behavior.
+class ReportViewSet(viewsets.ModelViewSet):
+    queryset = Report.objects.all().order_by("name")
+    serializer_class = ReportSerializer
+
+
+# class ReportSearchViewSet(viewsets.ModelViewSet):
+#     queryset = Report.objects.all()
+#     serializer_class = SearchReportSerializer
+#     filter_class = ReportSearchFilter
+#     filter_backends = (filters.SearchFilter, filters.OrderingFilter,)
+#     search_fields = (
+#         'districts',
+#         'keywords',
+#         'full_text_search_type',
+#         'missing_or_found',
+#         'gender',
+#         'min_date',
+#         'max_date',
+#         'ps_list',
+#         'location',
+#         'distance',
+#         'map_or_list'
+#     )
+#     def get(self, request, *args, **kwargs):
+#         serializer = self.get_serializer(data)
+#         serializer,data['search_results'] = self.search()
+#         return Response(serializer.data)
+#     def search(self):
+#         # search logic
+#         return search_results

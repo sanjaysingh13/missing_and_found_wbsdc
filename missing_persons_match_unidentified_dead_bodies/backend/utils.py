@@ -5,11 +5,18 @@ from io import BytesIO
 import cv2
 import numpy as np
 import regex as re
-from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import Point, Polygon
+from django.contrib.gis.measure import D
+from django.contrib.gis.utils import LayerMapping
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
-from missing_persons_match_unidentified_dead_bodies.backend.models import Report
+from missing_persons_match_unidentified_dead_bodies.backend.models import (
+    MitRailLines,
+    RailLines,
+    Report,
+    WaterLines,
+)
 from missing_persons_match_unidentified_dead_bodies.users.models import PoliceStation
 
 
@@ -103,7 +110,7 @@ def initial_migration():
                 face_encoding = None
             print(row[0])
             photo_file = f"./resized_photos/{row[0]}"
-            photo_file = photo_file.replace(' ', '_')
+            photo_file = photo_file.replace(" ", "_")
 
             report = Report(
                 name=name,
@@ -156,3 +163,101 @@ def tokenize(text):
         return re.findall(r"[\w-]*\p{L}[\w-]*", text)
 
     return remove_stop(tokenize(text))
+
+
+water_lines_mapping = {
+    "F_CODE_DES": "F_CODE_DES",
+    "HYC_DESCRI": "HYC_DESCRI",
+    "NAM": "NAM",
+    "ISO": "ISO",
+    "NAME_0": "NAME_0",
+    "geom": "MULTILINESTRING",
+}
+rail_lines_mapping = {
+    "FID_rail_d": "FID_rail_d",
+    "F_CODE_DES": "F_CODE_DES",
+    "EXS_DESCRI": "EXS_DESCRI",
+    "FCO_DESCRI": "FCO_DESCRI",
+    "FID_countr": "FID_countr",
+    "ISO": "ISO",
+    "ISOCOUNTRY": "ISOCOUNTRY",
+    "geom": "MULTILINESTRING",
+}
+mit_rail_lines_mapping = {
+    "f_code": "f_code",
+    "exs": "exs",
+    "fco": "fco",
+    "loc": "loc",
+    "soc": "soc",
+    "geom": "MULTILINESTRING",
+}
+water_lines_shp = "IND_wat/IND_water_lines_dcw.shp"
+rail_lines_shp = "IND_rrd/IND_rails.shp"
+mit_rail_lines_shp = "data/raill_ind.shp"
+
+
+def create_rivers(verbose=True):
+    lm = LayerMapping(
+        WaterLines, water_lines_shp, water_lines_mapping, encoding="utf-8"
+    )
+
+    lm.save(strict=True, verbose=verbose)
+
+
+def create_rails(verbose=True):
+    lm = LayerMapping(RailLines, rail_lines_shp, rail_lines_mapping, encoding="utf-8")
+
+    lm.save(strict=True, verbose=verbose)
+
+
+def create_mit_rails(verbose=True):
+    lm = LayerMapping(
+        MitRailLines, mit_rail_lines_shp, mit_rail_lines_mapping, encoding="utf-8"
+    )
+
+    lm.save(strict=True, verbose=verbose)
+
+
+def get_reports_within_bbox(xmin, ymin, xmax, ymax, layer="waterlines"):
+    reports = Report.objects.none()
+    bbox = Polygon.from_bbox((xmin, ymin, xmax, ymax))
+    if layer == "waterlines":
+        lines = WaterLines.objects.filter(geom__intersects=bbox)
+        for line in lines:
+            new_reports = Report.objects.filter(
+                location__distance_lte=(line.geom, D(km=10))
+            )
+            reports = reports | new_reports
+    elif layer == "raillines":
+        lines = MitRailLines.objects.filter(geom__intersects=bbox)
+        for line in lines:
+            new_reports = Report.objects.filter(
+                location__distance_lte=(line.geom, D(km=1))
+            )
+            reports = reports | new_reports
+
+    reports = reports.distinct()
+    return reports
+
+
+def generate_map_from_reports(reports):
+    report_dicts = []
+    for report in reports:
+        if not report.location:
+            continue
+        report_dict = {}
+        report_dict["lat"] = report.location.x
+        report_dict["lon"] = report.location.y
+        report_dict["photo"] = report.photo.url
+        report_dict["icon"] = report.icon.url
+        report_dict["entry_date"] = report.entry_date
+        report_dict["name"] = report.name
+        report_dict["guardian_name_and_address"] = report.guardian_name_and_address
+        report_dict["description"] = report.description
+        report_dict["age"] = report.age
+        report_dict["height"] = report.height
+        report_dict["police_station"] = report.police_station.ps_with_distt
+        report_dict["oc"] = report.police_station.officer_in_charge
+        report_dict["tel"] = report.police_station.telephones
+        report_dicts.append(report_dict)
+    return report_dicts
