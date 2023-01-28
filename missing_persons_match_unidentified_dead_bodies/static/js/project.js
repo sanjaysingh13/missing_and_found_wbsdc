@@ -256,111 +256,23 @@ $(document).on('focus', "input[id$='police_station_with_distt']", function() {
 
 
 });
-
-$(function() {
-
-    var public_link = document.getElementById("public_link");
-
-    $('#public_link').click(function() {
-        if (!$("#map").is(":empty")) {
-          $("#map").empty();
-      }
-      if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(function(position) {
-            var latitude = position.coords.latitude;
-            var longitude = position.coords.longitude;
-
-
-
-            // $(form).find('#id_advanced_search_report').prop('checked', true);
-
-            // $(form).find('#id_gender_0').prop('checked', true);
-
-            // $(form).find('#id_missing_or_found_0').prop('checked', true);
-
-            var today = new Date();
-            var oneMonthAgo = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
-            console.log("Latitude: " + latitude + ", Longitude: " + longitude);
-            console.log("today: " + today.toISOString().slice(0, 10) + ", oneMonthAgo: " + oneMonthAgo.toISOString().slice(0, 10));
-            $.ajax({
-                url: '/ajax/public_missing/',
-                data: {
-                    'latitude': latitude,
-                    'longitude': longitude,
-                    'min_date': oneMonthAgo.toISOString().slice(0, 10),
-                    'max_date': today.toISOString().slice(0, 10)
-                },
-                dataType: 'json',
-                success: function(data) {
-                    console.log(data);
-                // // Add the map div
-                //     $("#my-iframe").contents().find("body").append('<div id="map" class="map"></div>');
-                // Load Mapbox css
-                    $.get("https://api.tiles.mapbox.com/mapbox-gl-js/v2.5.1/mapbox-gl.css", function(data) {
-                        $("<style>").append(data).appendTo("head");
-                    });
-                // Load Mapbox all mabox JSes
-                    $.when(
-                        $.getScript("https://api.tiles.mapbox.com/mapbox-gl-js/v2.5.1/mapbox-gl.js"),
-                        $.getScript("https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.0/mapbox-gl-geocoder.min.js"),
-                        $.getScript("https://npmcdn.com/@turf/turf/turf.min.js")
-                        ).done(function() {
-                            mapboxgl.accessToken = data.mapbox_access_token
-                            var map = new mapboxgl.Map({
-                                container: 'map',
-                                style: 'mapbox://styles/mapbox/streets-v11'
-                            });
-                            const reports = data.reports_json
-                            reports.forEach(function(marker) {
-                                console.log(marker.photo);
-                                console.log(marker.lon);
-                                console.log(marker.lat);
-                                var el = document.createElement('div');
-                                el.style.backgroundImage = 'url(' + marker.icon + ')';
-                                el.style.width = '64px';
-                                el.style.height = '64px';
-                                new mapboxgl.Marker(el)
-                                .setLngLat([marker.lat, marker.lon])
-                                .setPopup(new mapboxgl.Popup({ offset: 25 }) // add popups
-                                    .setHTML('<img src="' +  marker.photo  + '" width="200" ><p> ' + (marker.description || "")  + '</p><p>Date: ' + (marker.date || "") + '</p><p>Name: ' + (marker.name || "") + '</p><p>Of: ' + (marker.guardian_name_and_address || "") + '</p><p>Age: ' + (marker.age || "") + '</p><p>Height: ' + (marker.height || "") + '</p><p>PS: ' + (marker.police_station || "") + '</p><p>Contact: <strong>' + (marker.oc || "") + ' : ' + (marker.tel || "")
-                                        + '</strong></p>'))
-                                .addTo(map);
-                            });
-
-
-                            // center the map and set the zoom level
-                            const given_location = data.given_location;
-                            map.setCenter([given_location[0], given_location[1]]);
-                            map.setZoom(9);
-
-                        });
-                        console.log(data.reports_json)
-
-
-
-
-
-                    }
-                });
-
-
-
-
-
-        });
-} else {
-  console.log("Geolocation is not supported by this browser.");
-}
-
-
-            }); //ensure visible state matches initially
-
-
-
-
-
-
+document.getElementById("button-id-confirm_nw").addEventListener("click", function(){
+  var map = document.getElementById("map");
+  console.log(map.value)
+  document.getElementById("id_north_west_location").value = map.value;
 });
 
-
+document.getElementById("button-id-confirm_se").addEventListener("click", function(){
+  var map = document.getElementById("map");
+  console.log(map.value)
+  document.getElementById("id_south_east_location").value = map.value;
+});
+document.getElementById("button-id-clear").addEventListener("click", function(){
+  document.getElementById("id_south_east_location").value = null;
+  document.getElementById("id_north_west_location").value = null;
+});
+document.getElementById("button-id-clear").addEventListener("click", function(){
+    document.getElementById("id_north_west_location").value = "";
+    document.getElementById("id_south_east_location").value = "";
+    });
 });

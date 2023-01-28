@@ -14,22 +14,3 @@
 {{ form.media }}
 
 {% endblock content %}
-{% block inline_javascript %}
-<script>
-   document.getElementById("button-id-confirm_nw").addEventListener("click", function(){
-  var map = document.getElementById("map");
-  console.log(map.value)
-  document.getElementById("id_north_west_location").value = map.value;
-});
-
-document.getElementById("button-id-confirm_se").addEventListener("click", function(){
-  var map = document.getElementById("map");
-  console.log(map.value)
-  document.getElementById("id_south_east_location").value = map.value;
-});
-document.getElementById("button-id-clear").addEventListener("click", function(){
-  document.getElementById("id_south_east_location").value = null;
-  document.getElementById("id_north_west_location").value = null;
-});
-</script>
-{% endblock inline_javascript %}

@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from captcha.fields import ReCaptchaField
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, Button, Column, Div, Field, Layout, Row, Submit
 from django import forms
@@ -403,74 +404,6 @@ class ReportSearchForm(forms.Form):
         return cleaned_data
 
 
-class GetRiverSearchLoactionForm(forms.Form):
-    location = SpatialLocationField(map_attrs=default_map_attrs, required=False)
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.helper = FormHelper()
-        self.helper.layout = Layout(
-            Div(
-                Row(
-                    Column("location", css_class="form-group col-md-10 mb-0"),
-                ),
-            ),
-        )
-        self.helper.form_id = "id-exampleForm"
-        self.helper.form_class = "blueForms"
-        self.helper.form_method = "post"
-        self.helper.add_input(Submit("submit", "Submit"))
-
-
-class RiverSearchForm(forms.Form):
-    gender = forms.CharField(
-        label="Gender",
-        required=False,
-        widget=forms.RadioSelect(choices=GENDER[:-1]),
-    )
-    min_date = forms.DateField(required=False)
-    max_date = forms.DateField(required=False)
-    first_location = forms.CharField()
-    second_location = forms.CharField()
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.helper = FormHelper()
-        self.helper.layout = Layout(
-            Div(
-                Row(
-                    Column("gender", css_class="form-group col-md-3 mb-0"),
-                    Column("min_date", css_class="form-group col-md-3 mb-0"),
-                    Column("max_date", css_class="form-group col-md-3 mb-0"),
-                ),
-                Row(
-                    Field("first_location", type="hidden"),
-                    Field("second_location", type="hidden"),
-                ),
-            ),
-        )
-        self.helper.form_id = "id-exampleForm"
-        self.helper.form_class = "blueForms"
-        self.helper.form_method = "post"
-
-    def clean(self):
-        cleaned_data = super().clean()
-        messages = []
-        if not cleaned_data.get("location"):
-            msg_ = "Add a location"
-            messages.append(msg_)
-        else:
-            pass
-        if not (cleaned_data.get("min_date") or cleaned_data.get("max_date")):
-            msg_ = "Add a location"
-            messages.append(msg_)
-        else:
-            pass
-        if messages != []:
-            raise forms.ValidationError(messages)
-        return cleaned_data
-
-
 class BoundedBoxSearchForm(forms.Form):
     location = SpatialLocationField(map_attrs=default_map_attrs, required=False)
     gender = forms.CharField(
@@ -484,11 +417,15 @@ class BoundedBoxSearchForm(forms.Form):
         label="Type of Line",
         required=False,
         widget=forms.RadioSelect(
-            choices=[("waterlines", "River"), ("raillines", "Rail")]
+            choices=[
+                ("waterlines", "River"),
+                ("raillines", "Rail"),
+                ("roadlines", "Road"),
+            ]
         ),
     )
-    north_west_location = forms.CharField()
-    south_east_location = forms.CharField()
+    north_west_location = forms.CharField(label="NW Corner")
+    south_east_location = forms.CharField(label="SE Corner")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -502,14 +439,44 @@ class BoundedBoxSearchForm(forms.Form):
                     Column("lines", css_class="form-group col-md-3 mb-0"),
                 ),
                 Row(
+                    HTML(
+                        "<p> Select a box on the map by fixing"
+                        + "North-West and South-West corner points"
+                        + " of box from the given map.</p>"
+                    ),
                     Column("north_west_location", css_class="form-group col-md-3 mb-0"),
                     Button("confirm_nw", "Confirm NW", css_class=" col-md-2 mb-0"),
-                    Column("south_east_location", css_class="form-group col-md-3 mb-0"),
+                    Column(
+                        "south_east_location",
+                        label="SE Corner",
+                        css_class="form-group col-md-3 mb-0",
+                    ),
                     Button("confirm_se", "Confirm SE", css_class=" col-md-2 mb-0"),
                     Button("clear", "Clear", css_class=" col-md-2 mb-0"),
                 ),
                 Row(
                     Column("location", css_class="form-group"),
+                ),
+            ),
+        )
+        self.helper.form_id = "id-exampleForm"
+        self.helper.form_class = "blueForms"
+        self.helper.form_method = "post"
+        self.helper.add_input(Submit("submit", "Submit"))
+
+
+class PublicForm(forms.Form):
+    captcha = ReCaptchaField()
+    location = SpatialLocationField(map_attrs=default_map_attrs, required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Div(
+                Row(
+                    Column("location", css_class="form-group col-md-9 mb-0"),
+                    Column("captcha", css_class="form-group col-md-2 mb-0"),
                 ),
             ),
         )

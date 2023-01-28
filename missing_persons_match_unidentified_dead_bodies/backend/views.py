@@ -36,13 +36,7 @@ from missing_persons_match_unidentified_dead_bodies.backend.serializers import (
 # from django.views.decorators.csrf import csrf_protect
 from missing_persons_match_unidentified_dead_bodies.users.models import PoliceStation
 
-from .forms import (
-    BoundedBoxSearchForm,
-    GetRiverSearchLoactionForm,
-    ReportForm,
-    ReportSearchForm,
-    RiverSearchForm,
-)
+from .forms import BoundedBoxSearchForm, PublicForm, ReportForm, ReportSearchForm
 from .utils import generate_map_from_reports, get_reports_within_bbox, resize_image
 
 # from .filters import ReportSearchFilter
@@ -399,68 +393,6 @@ def report_search(request):
     return render(request, template_name, context)
 
 
-@login_required
-@permission_required("users.add_user", raise_exception=True)
-def river_search_raw(request):
-    context = {}
-    template = "backend/river_search_raw.html"
-    context["mapbox_access_token"] = mapbox_access_token
-    return render(request, template, context)
-
-
-@login_required
-@permission_required("users.add_user", raise_exception=True)
-def get_river_search_location(request):
-    template_name = "backend/get_river_search_location.html"
-    context = {}
-    if request.method == "GET":
-        form = GetRiverSearchLoactionForm()
-
-    elif request.method == "POST":
-        form = GetRiverSearchLoactionForm(request.POST)
-        if form.is_valid():
-            cleaned_data = form.cleaned_data
-            context["form"] = form
-            location = cleaned_data.get("location", "")
-            print(location.x)
-            print(location.y)
-            return redirect(
-                "backend:river_search", latitude=location.x, longitude=location.y
-            )
-            return render(request, template_name, context)
-
-    context["form"] = form
-    context["mapbox_access_token"] = mapbox_access_token
-    context["form_title"] = "Area for River Search"
-    context["title"] = "Area for River Search"
-    return render(request, template_name, context)
-
-
-@login_required
-@permission_required("users.add_user", raise_exception=True)
-def river_search(request, latitude, longitude):
-    template_name = "backend/river_search.html"
-    latitude = float(latitude)
-    longitude = float(longitude)
-    if request.method == "GET":
-        form = RiverSearchForm(
-            initial={
-                "gender": "F",
-                "min_date": date.today() - timedelta(days=30),
-                "max_date": date.today(),
-            }
-        )
-    context = {}
-    context["form"] = form
-    context["latitude"] = latitude
-    context["longitude"] = longitude
-    context["mapbox_access_token"] = mapbox_access_token
-    context["gmap_access_token"] = gmap_access_token
-    context["form_title"] = "Basic and Advanced Search for Reports"
-    context["title"] = "Report Search"
-    return render(request, template_name, context)
-
-
 # New bounded-box search interface:
 @login_required
 @permission_required("users.add_user", raise_exception=True)
@@ -527,8 +459,8 @@ def bounded_box_search(request):
     context = {}
     context["form"] = form
     context["mapbox_access_token"] = mapbox_access_token
-    context["form_title"] = "Bounded Box Search"
-    context["title"] = "Bounded Box Search"
+    context["form_title"] = "Curated Search for Dead Bodies along river/rail/road"
+    context["title"] = "Curated Search River/Rail/Road"
     return render(request, template, context)
 
 
@@ -624,3 +556,50 @@ class ReportViewSet(viewsets.ModelViewSet):
 #     def search(self):
 #         # search logic
 #         return search_results
+
+
+def public(request):
+    template_name = "backend/public.html"
+    context = {}
+    if request.method == "GET":
+        form = PublicForm()
+
+    elif request.method == "POST":
+        form = PublicForm(request.POST)
+        if form.is_valid():
+            cleaned_data = form.cleaned_data
+            location = cleaned_data.get("location", "")
+            min_date = date.today() - timedelta(days=90)
+            max_date = date.today()
+            query_object = Q(entry_date__gte=min_date) & Q(entry_date__lte=max_date)
+            query_object = query_object & Q(missing_or_found="M")
+            distance = 50 * 1000
+            query_object = query_object & Q(location__dwithin=(location, distance))
+            reports = Report.objects.filter(query_object)
+            reports = reports.only(
+                "id",
+                "name",
+                "description",
+                "photo",
+                "icon",
+                "entry_date",
+                "age",
+                "guardian_name_and_address",
+                "height",
+                "location",
+                "gender",
+                "missing_or_found",
+                "police_station",
+            )
+            report_dicts = generate_map_from_reports(reports)
+            template_name = "backend/reports_map.html"
+            context = {}
+            context["mapbox_access_token"] = mapbox_access_token
+            context["reports_json"] = report_dicts
+            context["location"] = json.dumps([location.y, location.x])
+            return render(request, template_name, context)
+    context["form"] = form
+    context["mapbox_access_token"] = mapbox_access_token
+    context["form_title"] = "Missing Persons Near You"
+    context["title"] = "Area for River Search"
+    return render(request, template_name, context)

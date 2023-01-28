@@ -79,30 +79,32 @@ class Match(TimeStampedModel):
     mail_sent = models.DateField(null=True)
 
 
-class WaterLines(models.Model):
-    F_CODE_DES = models.CharField(max_length=255)
-    HYC_DESCRI = models.CharField(max_length=255)
-    NAM = models.CharField(max_length=255)
-    ISO = models.CharField(max_length=255)
-    NAME_0 = models.CharField(max_length=255)
-    geom = models.MultiLineStringField(srid=4326, geography=True)
-
-
-class RailLines(models.Model):
-    FID_rail_d = models.IntegerField()
-    F_CODE_DES = models.CharField(max_length=255)
-    EXS_DESCRI = models.CharField(max_length=255)
-    FCO_DESCRI = models.CharField(max_length=255)
-    FID_countr = models.IntegerField()
-    ISO = models.CharField(max_length=255)
-    ISOCOUNTRY = models.CharField(max_length=255, null=True)
-    geom = models.MultiLineStringField(srid=4326, geography=True)
-
-
 class MitRailLines(models.Model):
     f_code = models.CharField(max_length=255, null=True)
     fco = models.IntegerField()
     exs = models.IntegerField()
+    loc = models.IntegerField()
+    soc = models.CharField(max_length=255, null=True)
+    geom = models.MultiLineStringField(srid=4326, geography=True)
+
+
+class MitWaterLines(models.Model):
+    f_code = models.CharField(max_length=255, null=True)
+    hyc = models.IntegerField()
+    lit = models.IntegerField()
+    nam = models.CharField(max_length=255, null=True)
+    soc = models.CharField(max_length=255, null=True)
+    geom = models.MultiLineStringField(srid=4326, geography=True)
+
+
+class MitRoadLines(models.Model):
+    f_code = models.CharField(max_length=255, null=True)
+    acc = models.IntegerField()
+    exs = models.IntegerField()
+    rst = models.IntegerField()
+    med = models.IntegerField()
+    rtt = models.IntegerField()
+    rsu = models.IntegerField()
     loc = models.IntegerField()
     soc = models.CharField(max_length=255, null=True)
     geom = models.MultiLineStringField(srid=4326, geography=True)
