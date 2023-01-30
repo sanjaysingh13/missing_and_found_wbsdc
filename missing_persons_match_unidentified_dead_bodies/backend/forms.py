@@ -467,7 +467,7 @@ class BoundedBoxSearchForm(forms.Form):
 
 class PublicForm(forms.Form):
     captcha = ReCaptchaField()
-    location = SpatialLocationField(map_attrs=default_map_attrs, required=False)
+    location = SpatialLocationField(map_attrs=default_map_attrs)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

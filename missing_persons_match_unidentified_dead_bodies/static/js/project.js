@@ -256,23 +256,40 @@ $(document).on('focus', "input[id$='police_station_with_distt']", function() {
 
 
 });
-document.getElementById("button-id-confirm_nw").addEventListener("click", function(){
-  var map = document.getElementById("map");
-  console.log(map.value)
-  document.getElementById("id_north_west_location").value = map.value;
+var confirm_nw = document.getElementById("button-id-confirm_nw");
+if (confirm_nw) {
+        confirm_nw.addEventListener("click", function(){
+        var map = document.getElementById("map");
+        console.log(map.value)
+        document.getElementById("id_north_west_location").value = map.value;
 });
 
-document.getElementById("button-id-confirm_se").addEventListener("click", function(){
+}
+
+var confirm_se = document.getElementById("button-id-confirm_se");
+if (confirm_se) {
+    confirm_se.addEventListener("click", function(){
   var map = document.getElementById("map");
   console.log(map.value)
   document.getElementById("id_south_east_location").value = map.value;
 });
-document.getElementById("button-id-clear").addEventListener("click", function(){
-  document.getElementById("id_south_east_location").value = null;
-  document.getElementById("id_north_west_location").value = null;
+}
+var clear = document.getElementById("button-id-clear")
+if (clear) {
+clear.addEventListener("click", function(){
+  document.getElementById("id_north_west_location").value  = "";
+  document.getElementById("id_south_east_location").value = "";
 });
-document.getElementById("button-id-clear").addEventListener("click", function(){
-    document.getElementById("id_north_west_location").value = "";
-    document.getElementById("id_south_east_location").value = "";
-    });
+}
+$(document).ready(function() {
+  $("input[value='F']").click(function() {
+    $("#id_name").prop("disabled", true);
+    $("#id_guardian_name_and_address").prop("disabled", true);
+  });
+  $("input[value!='F']").click(function() {
+    $("#id_name").prop("disabled", false);
+    $("#id_guardian_name_and_address").prop("disabled", false);
+  });
+});
+
 });
