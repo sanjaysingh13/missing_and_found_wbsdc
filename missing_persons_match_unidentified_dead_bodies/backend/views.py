@@ -36,7 +36,13 @@ from missing_persons_match_unidentified_dead_bodies.backend.serializers import (
 # from django.views.decorators.csrf import csrf_protect
 from missing_persons_match_unidentified_dead_bodies.users.models import PoliceStation
 
-from .forms import BoundedBoxSearchForm, PublicForm, ReportForm, ReportSearchForm
+from .forms import (
+    BoundedBoxSearchForm,
+    PublicForm,
+    ReportForm,
+    ReportFormEdit,
+    ReportSearchForm,
+)
 from .utils import generate_map_from_reports, get_reports_within_bbox, resize_image
 
 # from .filters import ReportSearchFilter
@@ -201,6 +207,98 @@ def view_report(request, object_id):
     context["matches"] = page_obj
     template_name = "backend/report_detail.html"
     return render(request, template_name, context)
+
+
+def edit_report(request, pk):
+    report = Report.objects.get(id=pk)
+    report_params = {
+        k: report.__dict__[k]
+        for k in set(report.__dict__.keys())
+        & {
+            "pk",
+            "reference",
+            "entry_date",
+            "name",
+            "gender",
+            "missing_or_found",
+            "description",
+            "height",
+            "age",
+            "guardian_name_and_address",
+            "latitude",
+            "longitude",
+        }
+    }
+    police_station = report.police_station.ps_with_distt
+    report_params["police_station_with_distt"] = police_station
+    if request.method == "POST":
+        reportsform = ReportFormEdit(request.POST, request.FILES)
+        if reportsform.is_valid():
+            files = request.FILES.getlist("photo")
+            cleaned_data = reportsform.cleaned_data
+            reference = cleaned_data.get("reference", "")
+            entry_date = cleaned_data.get("entry_date", "")
+            name = cleaned_data.get("name", "")
+            gender = cleaned_data.get("gender", "")
+            age = cleaned_data.get("age", "")
+            guardian_name_and_address = cleaned_data.get(
+                "guardian_name_and_address", ""
+            )
+            missing_or_found = cleaned_data.get("missing_or_found", "")
+            height = cleaned_data.get("height", "")
+            description = cleaned_data.get("description", "")
+            latitude = cleaned_data.get("latitude", "")
+            longitude = cleaned_data.get("longitude", "")
+            police_station_with_distt = cleaned_data.get(
+                "police_station_with_distt", ""
+            )
+            location = cleaned_data.get("location", "")
+            if files:
+                for f in files:
+                    resized_image, icon = resize_image(f, 600, 64)
+                    report.photo = resized_image
+                    report.icon = icon
+                    img = cv2.imdecode(
+                        np.fromstring(resized_image.read(), np.uint8),
+                        cv2.IMREAD_UNCHANGED,
+                    )
+                    _, img_encoded = cv2.imencode(".jpeg", img)
+                    memory_file_output = io.BytesIO()
+                    memory_file_output.write(img_encoded)
+                    memory_file_output.seek(0)
+                    image = face_recognition.load_image_file(memory_file_output)
+                    face_encoding = face_recognition.face_encodings(image)
+                    if len(face_encoding) != 0:
+                        face_encoding = face_encoding[0]
+                        face_encoding = json.dumps(face_encoding.tolist())
+                        report.face_encoding = face_encoding
+            police_station = PoliceStation.objects.get(
+                ps_with_distt=police_station_with_distt.strip()
+            )
+            entry_date = cleaned_data.get("entry_date", "")
+            report.police_station = police_station
+
+            report.year = str(entry_date.year)[-2:]
+            if location:
+                report.location = location
+            else:
+                report.location = Point(longitude, latitude)
+            report.reference = reference
+            report.entry_date = entry_date
+            report.name = name
+            report.gender = gender
+            report.age = age
+            report.guardian_name_and_address = guardian_name_and_address
+            report.missing_or_found = missing_or_found
+            report.height = height
+            report.description = description
+            report.save()
+            return redirect("backend:view_report", object_id=report.id)
+    else:
+        reportsform = ReportFormEdit(initial=report_params)
+    return render(
+        request, "backend/photo_upload_form.html", {"reportsform": reportsform}
+    )
 
 
 @login_required

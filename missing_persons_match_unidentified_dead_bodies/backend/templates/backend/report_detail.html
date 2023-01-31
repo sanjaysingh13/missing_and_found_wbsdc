@@ -62,10 +62,20 @@
             <p>{{ report.name}}</p>
             <p>{{ report.police_station.ps_with_distt}}</p>
             <p id = "searched_report", style="display:none;">{{report.pk}}</p>
-            <form method="post" action="{% url 'backend:report_delete' report.pk %}">
-                {% csrf_token %}
-                <input type="submit" value="Delete" class="btn btn-danger">
-            </form>
+            <div class = "row">
+                <div class="col-md-6">
+                    <form method="post" action="{% url 'backend:report_delete' report.pk %}">
+                        {% csrf_token %}
+                        <input type="submit" value="Delete" class="btn btn-danger">
+                    </form>
+                </div>
+                <div class="col-md-6">
+                    <form method="get" action="{% url 'backend:edit_report' report.pk %}">
+                        {% csrf_token %}
+                        <input type="submit" value="Edit" class="btn btn-info">
+                    </form>
+                </div>
+            </div>
 
         </div>
 

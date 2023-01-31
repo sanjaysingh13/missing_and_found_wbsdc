@@ -16,9 +16,11 @@ try:
         (ps.id, ps.ps_with_distt)
         for ps in PoliceStation.objects.all().order_by("ps_with_distt")
     ]
+    POLICE_STATIONS = [(None, "---")] + POLICE_STATIONS
     DISTRICTS = [
         (distt.id, distt.name) for distt in District.objects.all().order_by("name")
     ]
+    DISTRICTS = [(None, "---")] + DISTRICTS
 except Exception as e:
     print(str(e))
     POLICE_STATIONS = [("foo", "foo")]

@@ -15,6 +15,7 @@ urlpatterns = [
     path("public/", views.public, name="public"),
     path("upload_photo/", views.upload_photo, name="upload_photo"),
     path("view_report/<int:object_id>/", views.view_report, name="view_report"),
+    path("edit_report/<int:pk>/", views.edit_report, name="edit_report"),
     path("report_search/", views.report_search, name="report_search"),
     path("bounded_box_search/", views.bounded_box_search, name="bounded_box_search"),
     path("matches/", views.matches, name="matches"),
