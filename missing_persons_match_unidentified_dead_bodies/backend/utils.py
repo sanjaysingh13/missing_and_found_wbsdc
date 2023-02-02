@@ -123,7 +123,7 @@ def initial_migration():
                 reference=reference,
                 missing_or_found=missing_or_found,
                 gender=gender,
-                description=description,
+                guardian_name_and_address=description,
                 face_encoding=face_encoding,
             )
             ps = PoliceStation.objects.get(pk=int(row[11]))
