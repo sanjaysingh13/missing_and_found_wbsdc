@@ -26,9 +26,12 @@ from django.shortcuts import redirect, render
 from django.views.generic.edit import DeleteView
 from fuzzywuzzy import process
 from rest_framework import viewsets
-from rest_framework.renderers import JSONRenderer
 
-from missing_persons_match_unidentified_dead_bodies.backend.models import Match, Report
+from missing_persons_match_unidentified_dead_bodies.backend.models import (
+    AdvancedReportSearch,
+    Match,
+    Report,
+)
 from missing_persons_match_unidentified_dead_bodies.backend.serializers import (
     ReportSerializer,
 )
@@ -45,8 +48,8 @@ from .forms import (
 )
 from .utils import generate_map_from_reports, get_reports_within_bbox, resize_image
 
+# from rest_framework.renderers import JSONRenderer
 # from .filters import ReportSearchFilter
-
 mapbox_access_token = settings.MAP_BOX_ACCESS_TOKEN
 gmap_access_token = settings.GOOGLE_MAPS_API
 
@@ -336,103 +339,139 @@ def report_search(request):
             location = cleaned_data.get("location", "")
             map_or_list = cleaned_data.get("map_or_list", "")
             if advanced_search_report:
-                if not min_date:
-                    min_date = date.today() - timedelta(days=30)
-                if not max_date:
-                    max_date = date.today()
-                query_object = Q(entry_date__gte=min_date) & Q(entry_date__lte=max_date)
-
-                if districts != "Null":
-                    query_object = query_object & Q(
-                        police_station__district__in=[int(districts)]
-                    )
-                    districts = districts
-                if ps_list != "":
-                    police_stations = ps_list.split(", ")
-                    police_stations = [int(ps.strip()) for ps in police_stations if ps]
-                    police_stations = list(filter(None, police_stations))
-                    query_object = query_object & Q(
-                        police_station__pk__in=police_stations
-                    )
-                if missing_or_found != "All":
-                    query_object = query_object & Q(missing_or_found=missing_or_found)
-                if gender != "All":
-                    query_object = query_object & Q(gender=gender)
-                given_location = None
-                if location:
-                    given_location = location
-                elif latitude != "":
-                    given_location = GEOSGeometry(
-                        f"POINT({longitude} {latitude})", srid=4326
-                    )
-                if given_location:
-                    distance = distance * 1000
-                    query_object = query_object & Q(
-                        location__dwithin=(given_location, distance)
-                    )
-                reports = Report.objects.filter(query_object)
-                if keywords != "":
-                    if full_text_search_type == 0:
-                        query = SearchQuery(keywords, search_type="websearch")
-                        vector = SearchVector("description", config="english")
-                        reports = reports.annotate(search=vector).filter(search=query)
-                    elif full_text_search_type == 1:
-                        choices = [
-                            r.description + f" $primary_key={r.pk}" for r in reports
-                        ]
-                        results = process.extract(keywords, choices, limit=10)
-                        results = [result for (result, score) in results if score > 50]
-                        print(results)
-                        results = [
-                            int(pk_pattern.search(string).group(1))
-                            for string in results
-                        ]
-                        print(results)
-                        reports = reports.filter(pk__in=results)
-                # testing serialisation
-                serializer = ReportSerializer(reports, many=True)
-                print(JSONRenderer().render(serializer.data))
-
-                reports = reports.only(
-                    "id",
-                    "name",
-                    "description",
-                    "photo",
-                    "icon",
-                    "entry_date",
-                    "age",
-                    "guardian_name_and_address",
-                    "height",
-                    "location",
-                    "gender",
-                    "missing_or_found",
-                    "police_station",
-                )
-                print(f"-------{len(reports)}------")
                 if map_or_list == "L":
-                    reports = reports.values()
-                    report_list = []
-                    for report in reports:
-                        rep = Report.objects.get(pk=report["id"])
-                        report["matched"] = (
-                            Match.objects.filter(report_found=rep).exists()
-                            or Match.objects.filter(report_missing=rep).exists()
-                        )
-                        report["photo"] = Report.objects.get(pk=report["id"]).photo.url
-                        report["ps"] = rep.police_station.ps_with_distt
-                        report["oc"] = rep.police_station.officer_in_charge
-                        report["tel"] = rep.police_station.telephones
-                        report_list.append(report)
-                    reports = report_list
-                    context = {}
-                    context["title"] = "Advanced Search Results"
-                    paginator = Paginator(reports, 5)
-                    page_number = request.GET.get("page")
-                    page_obj = paginator.get_page(page_number)
-                    context["reports"] = page_obj
-                    template_name = "backend/advanced_report_search_results.html"
-                    return render(request, template_name, context)
+                    advanced_report_search = AdvancedReportSearch.objects.create(
+                        keywords=keywords,
+                        full_text_search_type=full_text_search_type,
+                        districts=districts,
+                        ps_list=ps_list,
+                        min_date=min_date,
+                        max_date=max_date,
+                        missing_or_found=missing_or_found,
+                        gender=gender,
+                        latitude=latitude,
+                        longitude=longitude,
+                        distance=distance,
+                        location=location,
+                    )
+                    return redirect(advanced_report_search)
                 else:
+                    if not min_date:
+                        min_date = date.today() - timedelta(days=30)
+                    if not max_date:
+                        max_date = date.today()
+                    query_object = Q(entry_date__gte=min_date) & Q(
+                        entry_date__lte=max_date
+                    )
+
+                    if districts != "Null":
+                        query_object = query_object & Q(
+                            police_station__district__in=[int(districts)]
+                        )
+                        districts = districts
+                    if ps_list != "":
+                        police_stations = ps_list.split(", ")
+                        police_stations = [
+                            int(ps.strip()) for ps in police_stations if ps
+                        ]
+                        police_stations = list(filter(None, police_stations))
+                        query_object = query_object & Q(
+                            police_station__pk__in=police_stations
+                        )
+                    if missing_or_found != "All":
+                        query_object = query_object & Q(
+                            missing_or_found=missing_or_found
+                        )
+                    if gender != "All":
+                        query_object = query_object & Q(gender=gender)
+                    given_location = None
+                    if location:
+                        given_location = location
+                    elif latitude != "":
+                        given_location = GEOSGeometry(
+                            f"POINT({longitude} {latitude})", srid=4326
+                        )
+                    if given_location:
+                        distance = distance * 1000
+                        query_object = query_object & Q(
+                            location__dwithin=(given_location, distance)
+                        )
+                    reports = Report.objects.filter(query_object)
+                    if keywords != "":
+                        if full_text_search_type == 0:
+                            query = SearchQuery(keywords, search_type="websearch")
+                            vector = SearchVector("description", config="english")
+                            reports = reports.annotate(search=vector).filter(
+                                search=query
+                            )
+                        elif full_text_search_type == 1:
+                            choices = [
+                                r.description + f" $primary_key={r.pk}" for r in reports
+                            ]
+                            results = process.extract(keywords, choices, limit=10)
+                            results = [
+                                result for (result, score) in results if score > 50
+                            ]
+                            print(results)
+                            results = [
+                                int(pk_pattern.search(string).group(1))
+                                for string in results
+                            ]
+                            print(results)
+                            reports = reports.filter(pk__in=results)
+                            # testing serialisation
+                            # serializer = ReportSerializer(reports, many=True)
+                            # print(JSONRenderer().render(serializer.data))
+
+                            reports = reports.only(
+                                "id",
+                                "name",
+                                "description",
+                                "photo",
+                                "icon",
+                                "entry_date",
+                                "age",
+                                "guardian_name_and_address",
+                                "height",
+                                "location",
+                                "gender",
+                                "missing_or_found",
+                                "police_station",
+                            )
+                    # if map_or_list == "L":
+                    #     reports = reports.values()
+                    #     report_list = []
+                    #     for report in reports:
+                    #         id_ = report["id"]
+                    #         report_ = {} # Solving N+1
+                    #         rep = Report.objects.get(pk=id_)
+                    #         # N+1
+                    #         report_["id"] = id_
+                    #         report_["name"] = rep.name
+                    #         report_["missing_or_found"] = rep.missing_or_found
+                    #         report_["guardian_name_and_address"] = rep.guardian_name_and_address
+                    #         report_["age"] = rep.age
+                    #         report_["height"] = rep.height
+                    #         report_["entry_date"] = rep.entry_date
+                    #         report_["description"] = rep.description
+                    #         report_["matched"] = (
+                    #             Match.objects.filter(report_found=rep).exists()
+                    #             or Match.objects.filter(report_missing=rep).exists()
+                    #         )
+                    #         report_["photo"] = rep.photo.url
+                    #         report_["ps"] = rep.police_station.ps_with_distt
+                    #         report_["oc"] = rep.police_station.officer_in_charge
+                    #         report_["tel"] = rep.police_station.telephones
+                    #         report_list.append(report_)
+                    #     reports = report_list
+                    #     context = {}
+                    #     context["title"] = "Advanced Search Results"
+                    #     paginator = Paginator(reports, 5)
+                    #     page_number = request.GET.get("page")
+                    #     page_obj = paginator.get_page(page_number)
+                    #     context["reports"] = page_obj
+                    #     template_name = "backend/advanced_report_search_results.html"
+                    #     return render(request, template_name, context)
                     report_dicts = generate_map_from_reports(reports)
                     template_name = "backend/reports_map.html"
                     context = {}
@@ -446,7 +485,6 @@ def report_search(request):
                         context["location"] = json.dumps(None)
                         print(context["location"])
                     return render(request, template_name, context)
-                return render(request, template_name, context)
             else:
                 reference = int(cleaned_data.get("ref_no", ""))
                 entry_date = cleaned_data.get("ref_date", "")
@@ -488,6 +526,116 @@ def report_search(request):
     context["mapbox_access_token"] = mapbox_access_token
     context["form_title"] = "Basic and Advanced Search for Reports"
     context["title"] = "Report Search"
+    return render(request, template_name, context)
+
+
+@permission_required("users.view_user", raise_exception=True)
+@login_required
+def report_search_results(request, pk):
+    advanced_report_search = AdvancedReportSearch.objects.get(pk=pk)
+    min_date = advanced_report_search.min_date
+    max_date = advanced_report_search.max_date
+    districts = advanced_report_search.districts
+    ps_list = advanced_report_search.ps_list
+    missing_or_found = advanced_report_search.missing_or_found
+    gender = advanced_report_search.gender
+    location = advanced_report_search.location
+    latitude = advanced_report_search.latitude
+    longitude = advanced_report_search.longitude
+    keywords = advanced_report_search.keywords
+    distance = advanced_report_search.distance
+    full_text_search_type = advanced_report_search.full_text_search_type
+
+    if not min_date:
+        min_date = date.today() - timedelta(days=30)
+    if not max_date:
+        max_date = date.today()
+    query_object = Q(entry_date__gte=min_date) & Q(entry_date__lte=max_date)
+
+    if districts != "Null":
+        query_object = query_object & Q(police_station__district__in=[int(districts)])
+        districts = districts
+    if ps_list != "":
+        police_stations = ps_list.split(", ")
+        police_stations = [int(ps.strip()) for ps in police_stations if ps]
+        police_stations = list(filter(None, police_stations))
+        query_object = query_object & Q(police_station__pk__in=police_stations)
+    if missing_or_found != "All":
+        query_object = query_object & Q(missing_or_found=missing_or_found)
+    if gender != "All":
+        query_object = query_object & Q(gender=gender)
+    given_location = None
+    if location:
+        given_location = location
+    elif latitude != "":
+        given_location = GEOSGeometry(f"POINT({longitude} {latitude})", srid=4326)
+    if given_location:
+        distance = distance * 1000
+        query_object = query_object & Q(location__dwithin=(given_location, distance))
+    reports = Report.objects.filter(query_object)
+    if keywords != "":
+        if full_text_search_type == 0:
+            query = SearchQuery(keywords, search_type="websearch")
+            vector = SearchVector("description", config="english")
+            reports = reports.annotate(search=vector).filter(search=query)
+        elif full_text_search_type == 1:
+            choices = [r.description + f" $primary_key={r.pk}" for r in reports]
+            results = process.extract(keywords, choices, limit=10)
+            results = [result for (result, score) in results if score > 50]
+            results = [int(pk_pattern.search(string).group(1)) for string in results]
+        reports = reports.filter(pk__in=results)
+        # testing serialisation
+        # serializer = ReportSerializer(reports, many=True)
+        # print(JSONRenderer().render(serializer.data))
+
+    reports = reports.only(
+        "id",
+        "name",
+        "description",
+        "photo",
+        "icon",
+        "entry_date",
+        "age",
+        "guardian_name_and_address",
+        "height",
+        "location",
+        "gender",
+        "missing_or_found",
+        "police_station",
+    )
+    reports = reports.values()
+    report_list = []
+    for report in reports:
+        id_ = report["id"]
+        report_ = {}  # Solving N+1
+        rep = Report.objects.get(pk=id_)
+        # N+1
+        report_["id"] = id_
+        report_["name"] = rep.name
+        report_["missing_or_found"] = rep.missing_or_found
+        report_["guardian_name_and_address"] = rep.guardian_name_and_address
+        report_["age"] = rep.age
+        report_["height"] = rep.height
+        report_["entry_date"] = rep.entry_date
+        report_["description"] = rep.description
+        report_["matched"] = (
+            Match.objects.filter(report_found=rep).exists()
+            or Match.objects.filter(report_missing=rep).exists()
+        )
+        report_["photo"] = rep.photo.url
+        report_["ps"] = rep.police_station.ps_with_distt
+        report_["oc"] = rep.police_station.officer_in_charge
+        report_["tel"] = rep.police_station.telephones
+        report_list.append(report_)
+    reports = report_list
+    context = {}
+    context["title"] = "Advanced Search Results"
+    paginator = Paginator(reports, 5)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    context["reports"] = page_obj
+    messages.info(request, f"Your search has {len(reports)} results.")
+    template_name = "backend/advanced_report_search_results.html"
     return render(request, template_name, context)
 
 

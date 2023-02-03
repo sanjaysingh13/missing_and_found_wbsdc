@@ -10,9 +10,9 @@
         <!--Pagination-->
         <nav aria-label="Page navigation example">
             <ul class="pagination justify-content-center">
-                {% if matches.has_previous %}
+                {% if reports.has_previous %}
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ matches.previous_page_number }}">Previous</a>
+                    <a class="page-link" href="?page={{ reports.previous_page_number }}">Previous</a>
                 </li>
                 {% else %}
                 <li class="page-item disabled">
@@ -20,30 +20,30 @@
                 </li>
                 {% endif %}
 
-                {% if matches.number|add:'-4' > 1 %}
-                <li class="page-item"><a class="page-link" href="?page={{ matches.number|add:'-5' }}">&hellip;</a></li>
+                {% if reports.number|add:'-4' > 1 %}
+                <li class="page-item"><a class="page-link" href="?page={{ reports.number|add:'-5' }}">&hellip;</a></li>
                 {% endif %}
 
-                {% for i in matches.paginator.page_range %}
-                {% if matches.number == i %}
+                {% for i in reports.paginator.page_range %}
+                {% if reports.number == i %}
                 <li class="page-item active" aria-current="page">
                   <span class="page-link">
                     {{ i }}
                     <span class="sr-only">(current)</span>
                 </span>
             </li>
-            {% elif i > matches.number|add:'-5' and i < matches.number|add:'5' %}
+            {% elif i > reports.number|add:'-5' and i < reports.number|add:'5' %}
             <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
             {% endif %}
             {% endfor %}
 
-            {% if matches.paginator.num_pages > matches.number|add:'4' %}
-            <li class="page-item"><a class="page-link" href="?page={{ matches.number|add:'5' }}">&hellip;</a></li>
+            {% if reports.paginator.num_pages > reports.number|add:'4' %}
+            <li class="page-item"><a class="page-link" href="?page={{ reports.number|add:'5' }}">&hellip;</a></li>
             {% endif %}
 
-            {% if matches.has_next %}
+            {% if reports.has_next %}
             <li class="page-item">
-                <a class="page-link" href="?page={{ matches.next_page_number }}">Next</a>
+                <a class="page-link" href="?page={{ reports.next_page_number }}">Next</a>
             </li>
             {% else %}
             <li class="page-item disabled">

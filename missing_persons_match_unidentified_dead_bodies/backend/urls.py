@@ -17,6 +17,11 @@ urlpatterns = [
     path("view_report/<int:object_id>/", views.view_report, name="view_report"),
     path("edit_report/<int:pk>/", views.edit_report, name="edit_report"),
     path("report_search/", views.report_search, name="report_search"),
+    path(
+        "advanced_report_search/<int:pk>",
+        views.report_search_results,
+        name="advanced_report_search",
+    ),
     path("bounded_box_search/", views.bounded_box_search, name="bounded_box_search"),
     path("matches/", views.matches, name="matches"),
     path("report/<pk>/delete/", views.ReportDeleteView.as_view(), name="report_delete"),

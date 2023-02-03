@@ -3,6 +3,7 @@
 from django.contrib.gis.db import models
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVectorField
+from django.urls import reverse
 # from django.core.files import File
 from django.utils.translation import gettext_lazy as _
 
@@ -67,6 +68,24 @@ class Report(TimeStampedModel):
     #         # Save the thumbnail to the icon field
     #         self.icon.save(self.photo.name, File(thumb_io), save=False)
     #         super().save(*args, **kwargs)
+
+
+class AdvancedReportSearch(TimeStampedModel):
+    keywords = models.CharField(max_length=100, null=True)
+    full_text_search_type = models.IntegerField(null=True)
+    missing_or_found = models.CharField(max_length=3, null=True)
+    gender = models.CharField(max_length=3, null=True)
+    latitude = models.CharField(max_length=20, null=True)
+    longitude = models.CharField(max_length=20, null=True)
+    location = models.PointField(srid=4326, geography=True, null=True)
+    distance = models.IntegerField(null=True)
+    ps_list = models.CharField(max_length=500, null=True)
+    districts = models.CharField(max_length=200, null=True)
+    min_date = models.DateField(null=True)
+    max_date = models.DateField(null=True)
+
+    def get_absolute_url(self):
+        return reverse("backend:advanced_report_search", kwargs={"pk": self.pk})
 
 
 class Match(TimeStampedModel):
