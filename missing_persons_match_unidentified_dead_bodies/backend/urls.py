@@ -14,7 +14,15 @@ urlpatterns = [
     path("", include(router.urls)),
     path("public/", views.public, name="public"),
     path("upload_photo/", views.upload_photo, name="upload_photo"),
+    path(
+        "upload_public_report/", views.upload_public_report, name="upload_public_report"
+    ),
     path("view_report/<int:object_id>/", views.view_report, name="view_report"),
+    path(
+        "view_public_report/<str:object_id>/",
+        views.view_public_report,
+        name="view_public_report",
+    ),
     path("edit_report/<int:pk>/", views.edit_report, name="edit_report"),
     path("report_search/", views.report_search, name="report_search"),
     path(

@@ -1,6 +1,8 @@
 # import io
+import hashlib
 import io
 import json
+import random
 import re
 from datetime import date, timedelta
 
@@ -16,6 +18,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.gis.geos import GEOSGeometry, Point
 from django.contrib.postgres.search import SearchQuery, SearchVector
+from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.db.models import Q
 # from django.contrib.gis.geos import Point
@@ -30,6 +33,7 @@ from rest_framework import viewsets
 from missing_persons_match_unidentified_dead_bodies.backend.models import (
     AdvancedReportSearch,
     Match,
+    PublicReport,
     Report,
 )
 from missing_persons_match_unidentified_dead_bodies.backend.serializers import (
@@ -41,7 +45,9 @@ from missing_persons_match_unidentified_dead_bodies.users.models import PoliceSt
 
 from .forms import (
     BoundedBoxSearchForm,
+    ConfirmPublicReportForm,
     PublicForm,
+    PublicReportForm,
     ReportForm,
     ReportFormEdit,
     ReportSearchForm,
@@ -173,10 +179,139 @@ def upload_photo(request):
     return render(
         request,
         template_name,
-        {"reportsform": reportsform, "mapbox_access_token": mapbox_access_token},
+        {
+            "reportsform": reportsform,
+            "mapbox_access_token": mapbox_access_token,
+            "heading": "Upload photo of missing/found person",
+        },
     )
 
 
+def upload_public_report(request):
+    template_name = "backend/photo_upload_form.html"
+    if request.method == "GET":
+        reportsform = PublicReportForm(request.GET or None)
+    elif request.method == "POST":
+        reportsform = PublicReportForm(request.POST, request.FILES)
+        if reportsform.is_valid():
+            files = request.FILES.getlist("photo")
+            cleaned_data = reportsform.cleaned_data
+            name = cleaned_data.get("name", "")
+            gender = cleaned_data.get("gender", "")
+            age = cleaned_data.get("age", "")
+            guardian_name_and_address = cleaned_data.get(
+                "guardian_name_and_address", ""
+            )
+            missing_or_found = "M"
+            height = cleaned_data.get("height", "")
+            description = cleaned_data.get("description", "")
+            police_station_with_distt = cleaned_data.get(
+                "police_station_with_distt", ""
+            )
+            location = cleaned_data.get("location", "")
+            telephone_of_missing = cleaned_data.get("telephone_of_missing", "")
+            telephone_of_reporter = cleaned_data.get("telephone_of_reporter", "")
+            email_of_reporter = cleaned_data.get("email_of_reporter", "")
+            entry_date = cleaned_data.get("entry_date", "")
+            otp = cleaned_data.get("otp", "")
+            token = str(random.randint(10000000, 99999999))
+            random_string = "s86hjaulop9&^2@"
+            string = random_string + telephone_of_reporter
+            string_hash = hashlib.sha256(string.encode()).hexdigest()
+            num = int(string_hash, 16)
+            num_str = str(num)[:6].zfill(6)
+            print(f"OTP is {otp} Num String is {num_str}")
+            if otp == num_str:
+                # Encoding face
+                for f in files:
+                    resized_image, icon = resize_image(f, 600, 64)
+                    report = PublicReport(
+                        photo=resized_image,
+                        icon=icon,
+                        telephone_of_missing=telephone_of_missing,
+                        telephone_of_reporter=telephone_of_reporter,
+                        email_of_reporter=email_of_reporter,
+                        token=token,
+                        entry_date=entry_date,
+                        name=name,
+                        gender=gender,
+                        missing_or_found=missing_or_found,
+                        height=height,
+                        description=description,
+                        age=age,
+                        location=location,
+                        guardian_name_and_address=guardian_name_and_address,
+                    )
+                    police_station = PoliceStation.objects.get(
+                        ps_with_distt=police_station_with_distt.strip()
+                    )
+                    report.police_station = police_station
+                    img = cv2.imdecode(
+                        np.fromstring(resized_image.read(), np.uint8),
+                        cv2.IMREAD_UNCHANGED,
+                    )
+                    _, img_encoded = cv2.imencode(".jpeg", img)
+                    memory_file_output = io.BytesIO()
+                    memory_file_output.write(img_encoded)
+                    memory_file_output.seek(0)
+                    image = face_recognition.load_image_file(memory_file_output)
+                    face_encoding = face_recognition.face_encodings(image)
+                    if len(face_encoding) != 0:
+                        face_encoding = face_encoding[0]
+                        face_encoding = json.dumps(face_encoding.tolist())
+                        report.face_encoding = face_encoding
+                    report.year = str(entry_date.year)[-2:]
+                    report.save()
+                    token_message = "Your token for missing person "
+                    +report.name
+                    +"reported by you on WB Khoya Paya is "
+                    +report.token
+                    alert_oc_message = "A Public missing report has"
+                    +"been filed in your jurisdiction."
+                    +"Please visit "
+                    +f"https://wwww.wbkhoyapaya/backend/view_public_report/{report.token}/"
+                    +f" and contact the person at {report.telephone_of_reporter}."
+                    send_mail(
+                        "Your token for missing person reported by you on WB Khoya Paya",
+                        token_message,
+                        "support@wbpcrime.info",
+                        [report.email_of_reporter],
+                        fail_silently=False,
+                    )
+                    send_mail(
+                        "Public Missing Report on WB Khoya Paya",
+                        alert_oc_message,
+                        "support@wbpcrime.info",
+                        [report.police_station.emails],
+                        fail_silently=False,
+                    )
+                    return redirect(
+                        "backend:view_public_report", object_id=report.token
+                    )
+                else:
+                    messages.info(request, "Please enter the correct OTP")
+                    return render(
+                        request,
+                        template_name,
+                        {
+                            "reportsform": reportsform,
+                            "mapbox_access_token": mapbox_access_token,
+                        },
+                    )
+
+    return render(
+        request,
+        template_name,
+        {
+            "reportsform": reportsform,
+            "mapbox_access_token": mapbox_access_token,
+            "heading": "Upload photo of missing person",
+        },
+    )
+
+
+@login_required
+@permission_required("users.add_user", raise_exception=True)
 def view_report(request, object_id):
     report = Report.objects.get(id=object_id)
     context = {}
@@ -210,6 +345,69 @@ def view_report(request, object_id):
     context["matches"] = page_obj
     template_name = "backend/report_detail.html"
     return render(request, template_name, context)
+
+
+def view_public_report(request, object_id):
+    if request.method == "GET":
+        confirmform = ConfirmPublicReportForm(request.GET or None)
+        report = PublicReport.objects.get(token=object_id)
+        context = {}
+        reports = []
+        if report.face_encoding:
+            matched_reports = match_encodings(report)
+            if matched_reports:
+                reports = Report.objects.filter(pk__in=matched_reports).only(
+                    "pk", "photo", "description", "entry_date", "name", "police_station"
+                )
+                for report_found in reports:
+                    if not Match.objects.filter(
+                        report_missing=report, report_found=report_found
+                    ).exists():
+                        match = Match(report_missing=report, report_found=report_found)
+                        match.save()
+        context["report"] = report
+        paginator = Paginator(reports, 2)
+        page_number = request.GET.get("page")
+        page_obj = paginator.get_page(page_number)
+        context["matches"] = page_obj
+        context["form"] = confirmform
+        template_name = "backend/public_report_detail.html"
+        return render(request, template_name, context)
+    elif request.method == "POST":
+        public_report = PublicReport.objects.get(token=object_id)
+        confirmform = ConfirmPublicReportForm(request.POST)
+        if confirmform.is_valid():
+            cleaned_data = confirmform.cleaned_data
+            reference = cleaned_data.get("reference", "")
+            entry_date = cleaned_data.get("entry_date", "")
+            new_report = Report(
+                photo=public_report.photo,
+                reference=reference,
+                entry_date=entry_date,
+                name=public_report.name,
+                gender=public_report.gender,
+                missing_or_found="M",
+                height=public_report.height,
+                description=public_report.description,
+                location=public_report.location,
+                age=public_report.age,
+                guardian_name_and_address=public_report.guardian_name_and_address,
+                police_station=public_report.police_station,
+            )
+            new_report.save()
+            report_created_message = f"""A missing report has been filed at
+            {new_report.police_station.ps_with_distt}
+            vide Reference No {reference}
+            dated {entry_date.strftime('%d,%b,%Y')}"""
+            send_mail(
+                "Police Station reference for missing person reported by you on WB Khoya Paya",
+                report_created_message,
+                "support@wbpcrime.info",
+                [public_report.email_of_reporter],
+                fail_silently=False,
+            )
+
+            return redirect("backend:view_report", object_id=new_report.id)
 
 
 def edit_report(request, pk):

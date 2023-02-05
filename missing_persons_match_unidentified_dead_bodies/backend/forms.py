@@ -217,6 +217,179 @@ class ReportForm(forms.Form):
         return cleaned_data
 
 
+class PublicReportForm(forms.Form):
+    acknowledgement_checkbox = forms.BooleanField(label="Acknowledgement")
+    captcha = ReCaptchaField()
+    photo = forms.FileField(label="Photos ", widget=forms.ClearableFileInput())
+    police_station_with_distt = forms.CharField(
+        label="Police Station",
+        max_length=100,
+        validators=[
+            RegexValidator(
+                r".*:.*",
+                message='Your internet is slow. Police Station name must be of form "PS Name : District name"',
+                code="invalid_ps",
+            ),
+        ],
+    )
+    entry_date = forms.DateField(label="Date of Missing")
+    name = forms.CharField(
+        required=False, label="Name of Missing Person", max_length=100
+    )
+    gender = forms.CharField(
+        label="Gender",
+        widget=forms.RadioSelect(choices=[("M", "Male"), ("F", "Female")]),
+    )
+    height = forms.IntegerField()
+    age = forms.IntegerField()
+    guardian_name_and_address = forms.CharField(
+        max_length=300, required=False, widget=forms.Textarea()
+    )
+    telephone_of_missing = forms.CharField(
+        required=False,
+        label="Missing person's phone (10 digits)",
+        max_length=10,
+        validators=[
+            RegexValidator(
+                r"\d{10}",
+                message="Telephone number must be 10-digit",
+                code="invalid_telephone",
+            ),
+        ],
+    )
+    telephone_of_reporter = forms.CharField(
+        label="Your telephone (10 digits)",
+        max_length=10,
+        validators=[
+            RegexValidator(
+                r"\d{10}",
+                message="Telephone number must be 10-digit",
+                code="invalid_telephone",
+            ),
+        ],
+    )
+    email_of_reporter = forms.EmailField(label="Your Email")
+    description = forms.CharField(max_length=500, widget=forms.Textarea())
+    location = SpatialLocationField(map_attrs=default_map_attrs)
+    otp = forms.CharField(
+        label="Check your Email for OTP", max_length=6, required=False
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Div(
+                Row(
+                    HTML(
+                        "<p class='col-md-12 mb-0 card text-white bg-danger'>"
+                        + "1) I understand that this is not a legal document. "
+                        + " I must visit the Police Station with the token "
+                        + "given to me and validate my input"
+                        + " given here physically.</br>"
+                        + "2) The missing person is not a minor. "
+                        + "  As per the orders of the Hon'ble Supreme Court of India,"
+                        + " I must visit the Police Station physically "
+                        + " to register a specific FIR "
+                        + "if the missing person is a minor.</p>"
+                    ),
+                ),
+                Row(
+                    Column(
+                        "acknowledgement_checkbox",
+                        css_class="form-group  col-md-6 mb-0",
+                    ),
+                ),
+            ),
+            Div(
+                Column(
+                    Row(
+                        Column(
+                            "photo",
+                            css_class="form-group card text-dark bg-light col-md-6 mb-0",
+                        ),
+                        HTML(
+                            """<p class='col-md-6 mb-0 card text-white bg-primary'>
+                            Use a clear, vertical frontal face picture.
+                            </p>"""
+                        ),
+                    ),
+                    Row(HTML("</br>")),
+                    Column(
+                        Row("telephone_of_missing"),
+                        Row("telephone_of_reporter"),
+                        Row("email_of_reporter"),
+                        css_class="form-group col-md-12 mb-0 card text-dark bg-light",
+                    ),
+                    Column(
+                        "gender",
+                        css_class="form-group col-md-12 mb-0 card text-dark bg-light",
+                    ),
+                    Row("name", css_class="form-group "),
+                    Row("guardian_name_and_address", css_class="form-group "),
+                    Row("police_station_with_distt", css_class="form-group"),
+                    css_class="col-md-6 mb-0",
+                ),
+                Column(
+                    Row(
+                        Column(
+                            "height",
+                            css_class="form-group card text-dark bg-light col-md-6 mb-0",
+                        ),
+                        HTML(
+                            """<p class='col-md-6 mb-0 card text-white bg-primary'>
+                            It is very important to record height.
+                            Make a best guess by recording
+                            statements of 3/4 close acquaintances.</p>"""
+                        ),
+                    ),
+                    Row("age", css_class="form-group"),
+                    Row("description", css_class="form-group"),
+                    Row("entry_date", css_class="form-group "),
+                    Row("captcha", css_class="form-group "),
+                    Row(HTML("<div id='map' class='map'></div>")),
+                    css_class="col-md-6 mb-0",
+                ),
+                css_class="row",
+            ),
+            HTML("<hr>"),
+            Div(
+                Row(
+                    HTML(
+                        "<p class='col-md-12 mb-0 card-title'>"
+                        + "You can enter location where missing person was "
+                        + "last seen by selecting a point on the map,</p>"
+                    )
+                ),
+                Row(HTML("</br>")),
+                Row(
+                    Column("location", css_class="form-group col-md-8 mb-0"),
+                ),
+                css_class="row card text-dark bg-light",
+            ),
+            Row(Column("otp", required=False, css_class="form-group col-md-2 mb-0")),
+        )
+
+        self.helper.form_method = "post"
+        self.helper.form_tag = False
+        self.helper.form_id = "blueForms"
+        self.helper.add_input(Submit("submit", "Submit"))
+
+    def clean(self):
+        cleaned_data = super().clean()
+        messages = []
+        age = cleaned_data.get("age", "")
+        if age < 18:
+            msg_ = "The missing person is a minor. Please visit the Police Station and register a specific FIR"
+            messages.append(msg_)
+
+        if messages != []:
+            messages = list(set(messages))
+            raise forms.ValidationError(messages)
+
+        return cleaned_data
+
+
 class ReportFormEdit(forms.Form):
     photo = forms.FileField(
         label="Photos ", required=False, widget=forms.ClearableFileInput()
@@ -623,6 +796,29 @@ class PublicForm(forms.Form):
                     Column("captcha", css_class="form-group col-md-2 mb-0"),
                 ),
             ),
+        )
+        self.helper.form_id = "id-exampleForm"
+        self.helper.form_class = "blueForms"
+        self.helper.form_method = "post"
+        self.helper.add_input(Submit("submit", "Submit"))
+
+
+class ConfirmPublicReportForm(forms.Form):
+    reference = forms.IntegerField()
+    entry_date = forms.DateField(label="Ref Date")
+    confirm_checkbox = forms.BooleanField(label="Confirmed by OC")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Row(
+                Column("confirm_checkbox", css_class="form-group col-md-12 mb-0"),
+                Row(
+                    Column("reference", css_class="form-group col-md-12 mb-0"),
+                ),
+                Row(Column("entry_date", css_class="form-group col-md-12 mb-0")),
+            )
         )
         self.helper.form_id = "id-exampleForm"
         self.helper.form_class = "blueForms"

@@ -291,5 +291,38 @@ $(document).ready(function() {
     $("#id_guardian_name_and_address").prop("disabled", false);
   });
 });
+var telephone_of_reporter = document.getElementById("id_telephone_of_reporter")
+if (telephone_of_reporter) {
+console.log("hello sir");
+document.getElementById("div_id_otp").style.display = "none";
+var showOtp = false;
+
+document.getElementById("submit-id-submit").addEventListener("click", function(event){
+  if (!showOtp) {
+    document.getElementById("div_id_otp").style.display = "block";
+    showOtp = true;
+    event.preventDefault();
+    $.ajax({
+                url: '/ajax/send_otp/',
+                data: {
+                    'telephone_of_reporter':telephone_of_reporter.value,
+                    'email_of_reporter':document.getElementById("id_email_of_reporter").value
+                },
+                dataType: 'json',
+
+            });
+  } else {
+    var otp = document.getElementById("id_otp").value;
+    if (otp.length === 6) {
+      document.getElementById("public_report").submit();
+    } else {
+      alert("The length of the OTP should be 6 characters!");
+      event.preventDefault();
+    }
+  }
+});
+
+}
+
 
 });

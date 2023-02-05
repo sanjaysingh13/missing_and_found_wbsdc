@@ -52,6 +52,38 @@ class Report(TimeStampedModel):
     class Meta:
         indexes = (GinIndex(fields=["description_search_vector"]),)  # add index
 
+
+class PublicReport(TimeStampedModel):
+    photo = models.FileField()
+    telephone_of_missing = models.CharField(max_length=10)
+    telephone_of_reporter = models.CharField(max_length=10)
+    email_of_reporter = models.EmailField()
+    icon = models.FileField(null=True)
+    police_station = models.ForeignKey(
+        PoliceStation, blank=True, null=True, on_delete=models.SET_NULL
+    )
+    entry_date = models.DateField(null=True)
+    missing_or_found = models.CharField(("Missing Or Found"), blank=False, max_length=1)
+
+    name = models.CharField(("Name"), max_length=100)
+    gender = models.CharField(("Gender"), blank=True, null=True, max_length=1)
+    description = models.CharField(blank=False, max_length=500)
+    description_search_vector = SearchVectorField(null=True)
+    height = models.IntegerField()
+    age = models.IntegerField()
+    guardian_name_and_address = models.CharField(
+        ("Name if known"), blank=True, null=True, max_length=300
+    )
+    face_encoding = models.CharField(blank=True, null=True, max_length=4000)
+    location = models.PointField(srid=4326, geography=True, null=True)
+    # spatial_location = SpatialLocationField()
+    matches = models.ForeignKey(Report, blank=True, null=True, on_delete=models.CASCADE)
+    token = models.CharField(max_length=8)
+    year = models.CharField(blank=True, max_length=2)
+
+    class Meta:
+        indexes = (GinIndex(fields=["description_search_vector"]),)  # add index
+
     # def save(self, *args, **kwargs): # Will use this later in CCS
     #     # Open the uploaded photo
     #     with Image.open(self.photo) as img:

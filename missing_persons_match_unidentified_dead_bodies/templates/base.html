@@ -99,7 +99,7 @@
 
               <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Reports
+            Police
           </a>
           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
             <li><a class="dropdown-item" href="{% url 'backend:upload_photo' %}">Upload New Report</a></li>
@@ -109,6 +109,15 @@
             <li><a class="dropdown-item" href="{% url 'backend:matches' %}">Matched Reports</a></li>
           </ul>
         </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Public
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <li><a class="dropdown-item" href="{% url 'backend:upload_public_report' %}">Upload Missing person Report</a></li>
+          </ul>
+        </li>
+
 
             </ul>
           </div>

@@ -2,8 +2,8 @@
 {% load crispy_forms_tags %}
 {% block title %}Upload Photo{% endblock title %}
 {% block content %}
-<h6>Upload Photo of Missing/Found Person</h6>
-<form method="post" enctype="multipart/form-data">
+<h6>{{heading}}</h6>
+<form method="post" id="public_report" enctype="multipart/form-data">
 	{% csrf_token %}
     {% crispy reportsform  %}
 
