@@ -5,6 +5,7 @@ import json
 import random
 import re
 from datetime import date, timedelta
+from itertools import chain
 
 import cv2
 import face_recognition
@@ -34,6 +35,7 @@ from missing_persons_match_unidentified_dead_bodies.backend.models import (
     AdvancedReportSearch,
     Match,
     PublicReport,
+    PublicReportMatch,
     Report,
 )
 from missing_persons_match_unidentified_dead_bodies.backend.serializers import (
@@ -102,6 +104,37 @@ def match_encodings(report):
         matched_images = [id_ for idx, id_ in enumerate(ids) if all_matches[idx]]
     else:
         matched_images = None
+    return matched_images
+
+
+def match_encodings_with_public_reports(report):
+    matched_images = None
+    face_encoding = report.face_encoding
+    face_encoding = json.loads(face_encoding)
+    face_encoding = np.array(face_encoding, dtype="float64")
+    gender = report.gender
+    missing_or_found = report.missing_or_found
+    height = report.height
+    # entry_date = report.entry_date
+    if missing_or_found == "F":
+        reports_under_consideration = PublicReport.objects.filter(gender=gender)
+        if height:
+            reports_under_consideration = reports_under_consideration.filter(
+                height__gte=height - 10, height__lte=height + 10
+            )
+        face_encodings = []
+        ids = []
+        for report in reports_under_consideration:
+            if report.face_encoding:
+                face_encodings.append(
+                    np.array(json.loads(report.face_encoding), dtype="float64")
+                )
+                ids.append(report.token)
+        if face_encodings != []:
+            all_matches = face_recognition.compare_faces(
+                face_encodings, face_encoding, tolerance=0.5
+            )
+            matched_images = [id_ for idx, id_ in enumerate(ids) if all_matches[idx]]
     return matched_images
 
 
@@ -262,15 +295,20 @@ def upload_public_report(request):
                         report.face_encoding = face_encoding
                     report.year = str(entry_date.year)[-2:]
                     report.save()
-                    token_message = "Your token for missing person "
-                    +report.name
-                    +"reported by you on WB Khoya Paya is "
-                    +report.token
-                    alert_oc_message = "A Public missing report has"
-                    +"been filed in your jurisdiction."
-                    +"Please visit "
-                    +f"https://wwww.wbkhoyapaya/backend/view_public_report/{report.token}/"
-                    +f" and contact the person at {report.telephone_of_reporter}."
+                    token_message = (
+                        "Your token for missing person "
+                        + f"{report.name}"
+                        + " reported by you on WB Khoya Paya is "
+                        + f"{report.token}"
+                    )
+
+                    alert_oc_message = (
+                        "A Public missing report has been filed in your jurisdiction. "
+                        + "Please visit "
+                        + f"https://wwww.wbkhoyapaya/backend/view_public_report/{report.token}/"
+                        + f" and contact the person at {report.telephone_of_reporter}."
+                    )
+
                     send_mail(
                         "Your token for missing person reported by you on WB Khoya Paya",
                         token_message,
@@ -338,6 +376,30 @@ def view_report(request, object_id):
                             report_missing=report_missing, report_found=report
                         )
                         match.save()
+        matched_public_reports = match_encodings_with_public_reports(report)
+        if matched_public_reports:
+            public_reports = PublicReport.objects.filter(
+                token__in=matched_public_reports
+            ).only(
+                "pk",
+                "token",
+                "photo",
+                "description",
+                "entry_date",
+                "name",
+                "police_station",
+            )
+            for report_missing in public_reports:
+                if not PublicReportMatch.objects.filter(
+                    report_missing=report_missing, report_found=report
+                ).exists():
+                    match = PublicReportMatch(
+                        report_missing=report_missing, report_found=report
+                    )
+                    match.save()
+            reports = list(chain(public_reports, reports))
+    print(f"<<<<<<<<{reports}")
+
     context["report"] = report
     paginator = Paginator(reports, 2)
     page_number = request.GET.get("page")
@@ -360,10 +422,12 @@ def view_public_report(request, object_id):
                     "pk", "photo", "description", "entry_date", "name", "police_station"
                 )
                 for report_found in reports:
-                    if not Match.objects.filter(
+                    if not PublicReportMatch.objects.filter(
                         report_missing=report, report_found=report_found
                     ).exists():
-                        match = Match(report_missing=report, report_found=report_found)
+                        match = PublicReportMatch(
+                            report_missing=report, report_found=report_found
+                        )
                         match.save()
         context["report"] = report
         paginator = Paginator(reports, 2)
@@ -393,6 +457,7 @@ def view_public_report(request, object_id):
                 age=public_report.age,
                 guardian_name_and_address=public_report.guardian_name_and_address,
                 police_station=public_report.police_station,
+                face_encoding=public_report.face_encoding,
             )
             new_report.save()
             report_created_message = f"""A missing report has been filed at

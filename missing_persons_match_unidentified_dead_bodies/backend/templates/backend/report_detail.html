@@ -86,7 +86,13 @@
         {% for match in matches %}
         <div class="col">
             <h5>Match</h5>
+            {% if match.token %}
+                <a href="{% url 'backend:view_public_report'  match.token %}" class="card-link"><img src="{{ match.photo.url }}" class="card-img-top" alt="..."></a>
+            {% elif match.pk %}
             <a href="{% url 'backend:view_report'  match.pk %}" class="card-link"><img src="{{ match.photo.url }}" class="card-img-top" alt="..."></a>
+
+            {% endif %}
+
             <input class="form-check-input dup_id" type="checkbox"  value= {{match.pk}} aria-label="...">
             <p>{{ match.name}}</p>
             <p>{{ match.entry_date}}</p>

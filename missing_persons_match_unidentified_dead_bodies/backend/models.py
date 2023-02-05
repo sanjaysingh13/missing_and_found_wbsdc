@@ -77,7 +77,6 @@ class PublicReport(TimeStampedModel):
     face_encoding = models.CharField(blank=True, null=True, max_length=4000)
     location = models.PointField(srid=4326, geography=True, null=True)
     # spatial_location = SpatialLocationField()
-    matches = models.ForeignKey(Report, blank=True, null=True, on_delete=models.CASCADE)
     token = models.CharField(max_length=8)
     year = models.CharField(blank=True, max_length=2)
 
@@ -126,6 +125,16 @@ class Match(TimeStampedModel):
     )
     report_found = models.ForeignKey(
         Report, on_delete=models.CASCADE, related_name="report_found"
+    )
+    mail_sent = models.DateField(null=True)
+
+
+class PublicReportMatch(TimeStampedModel):
+    report_missing = models.ForeignKey(
+        "PublicReport", on_delete=models.CASCADE, related_name="public_report_missing"
+    )
+    report_found = models.ForeignKey(
+        Report, on_delete=models.CASCADE, related_name="public_report_found"
     )
     mail_sent = models.DateField(null=True)
 
