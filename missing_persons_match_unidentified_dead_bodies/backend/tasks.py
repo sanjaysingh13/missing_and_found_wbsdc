@@ -10,7 +10,11 @@ from django.core.mail import send_mail
 from PIL import Image
 
 from config.celery_app import app
-from missing_persons_match_unidentified_dead_bodies.backend.models import Match, Report
+from missing_persons_match_unidentified_dead_bodies.backend.models import (
+    Match,
+    PublicReportMatch,
+    Report,
+)
 
 
 @app.task(task_soft_time_limit=3000, ignore_result=True)
@@ -111,6 +115,68 @@ def send_matched_mail(pk):
             + f" of {ps_found} at {ps_missing}."
             + "\n"
             + f"Please contact the O/C {oc_missing} regarding their PS Ref: {reference_missing}."
+            + "\n"
+            + f"Contact details are Tel: {oc_missing_tel} and Email: {oc_missing_email}"
+        )
+        send_mail(
+            "Unidentified Dead Body Matched with Missing Person",
+            found_message,
+            "support@wbpcrime.info",
+            [oc_found_email],
+            fail_silently=False,
+        )
+        match.mail_sent = date.today()
+        match.save()
+    except Exception as e:
+        print(str(e))
+
+
+@app.task(task_soft_time_limit=3000, ignore_result=True)
+def send_public_report_matched_mail(pk):
+    match = PublicReportMatch.objects.get(pk=pk)
+    report_missing = match.report_missing
+    ps_missing = match.report_missing.police_station.ps_with_distt
+    oc_missing = match.report_missing.police_station.officer_in_charge
+    oc_missing_tel = match.report_missing.police_station.telephones
+    oc_missing_email = report_missing.police_station.emails
+    reference_missing = (
+        str(report_missing.telephone_of_reporter)
+        + " on "
+        + report_missing.entry_date.strftime("%d,%b,%Y")
+    )
+    name_missing = report_missing.name
+
+    report_found = match.report_found
+    ps_found = match.report_found.police_station.ps_with_distt
+    oc_found = match.report_found.police_station.officer_in_charge
+    oc_found_tel = match.report_found.police_station.telephones
+    oc_found_email = report_found.police_station.emails
+    reference_found = (
+        str(report_found.reference)
+        + " dt. "
+        + report_missing.entry_date.strftime("%d,%b,%Y")
+    )
+    try:
+        missing_message = (
+            f"There is a match for missing person {name_missing} of your Police Station"
+            + f" reported by public from tel: {reference_missing} in {ps_missing}."
+            + "\n"
+            + f"Please contact the O/C {oc_found} regarding their PS Ref: {reference_found}."
+            + "\n"
+            + f"Contact details are Tel:  {oc_found_tel} and Email: {oc_found_email}"
+        )
+        send_mail(
+            "Missing Person Matched with Dead Body",
+            missing_message,
+            "support@wbpcrime.info",
+            [oc_missing_email],
+            fail_silently=False,
+        )
+        found_message = (
+            f"There is a match for an unidentified dead body reported by you vide  {reference_found}"
+            + f" of {ps_found} at {ps_missing}."
+            + "\n"
+            + f"Please contact the O/C {oc_missing} regarding a public missing reported by: {reference_missing}."
             + "\n"
             + f"Contact details are Tel: {oc_missing_tel} and Email: {oc_missing_email}"
         )

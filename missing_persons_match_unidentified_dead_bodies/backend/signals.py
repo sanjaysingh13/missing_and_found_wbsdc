@@ -1,9 +1,17 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from missing_persons_match_unidentified_dead_bodies.backend.models import Match, Report
+from missing_persons_match_unidentified_dead_bodies.backend.models import (
+    Match,
+    PublicReportMatch,
+    Report,
+)
 
-from .tasks import add_icon_to_report, send_matched_mail
+from .tasks import (
+    add_icon_to_report,
+    send_matched_mail,
+    send_public_report_matched_mail,
+)
 
 
 @receiver(post_save, sender=Report)
@@ -16,6 +24,12 @@ def report_created_add_icon(sender, instance, **kwargs):
 def report_send_mail_for_match(sender, instance, **kwargs):
     if not instance.mail_sent:
         send_matched_mail.apply_async(args=[instance.pk], countdown=5)
+
+
+@receiver(post_save, sender=PublicReportMatch)
+def report_send_mail_for_public_match(sender, instance, **kwargs):
+    if not instance.mail_sent:
+        send_public_report_matched_mail.apply_async(args=[instance.pk], countdown=5)
 
 
 # @receiver(post_save, sender=Report)
