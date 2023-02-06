@@ -98,7 +98,7 @@ class ReportForm(forms.Form):
     height = forms.IntegerField()
     age = forms.IntegerField()
     guardian_name_and_address = forms.CharField(
-        max_length=300, required=False, widget=forms.Textarea()
+        max_length=300, required=False
     )
     description = forms.CharField(max_length=500, widget=forms.Textarea())
     latitude = forms.FloatField(required=False)
@@ -138,6 +138,7 @@ class ReportForm(forms.Form):
                     Row("name", css_class="form-group "),
                     Row("guardian_name_and_address", css_class="form-group "),
                     Row("police_station_with_distt", css_class="form-group"),
+                    Row("reference", css_class="form-group "),
                     css_class="col-md-6 mb-0",
                 ),
                 Column(
@@ -156,7 +157,6 @@ class ReportForm(forms.Form):
                     ),
                     Row("age", css_class="form-group"),
                     Row("description", css_class="form-group"),
-                    Row("reference", css_class="form-group "),
                     Row("entry_date", css_class="form-group "),
                     Row(HTML("<div id='map' class='map'></div>")),
                     css_class="col-md-6 mb-0",
@@ -243,7 +243,7 @@ class PublicReportForm(forms.Form):
     height = forms.IntegerField()
     age = forms.IntegerField()
     guardian_name_and_address = forms.CharField(
-        max_length=300, required=False, widget=forms.Textarea()
+        max_length=300, required=False
     )
     telephone_of_missing = forms.CharField(
         required=False,
