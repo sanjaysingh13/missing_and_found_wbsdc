@@ -682,20 +682,24 @@ class ReportSearchForm(forms.Form):
             distance = cleaned_data.get("distance", "")
             location = cleaned_data.get("location", "")
             if latitude:
+                latitude = float(latitude)
                 if not longitude:
                     msg_ = "Please fill both lat and long"
                     messages.append(msg_)
                 else:
+                    longitude = float(longitude)
                     if (not (21 <= latitude <= 28)) or (not (86.5 <= longitude <= 90)):
                         msg_ = (
                             "Please fill lat and long within the State of West Bengal."
                         )
                         messages.append(msg_)
             if longitude:
+                longitude = float(longitude)
                 if not latitude:
                     msg_ = "Please fill both lat and long"
                     messages.append(msg_)
                 else:
+                    latitude = float(latitude)
                     if (not (21 <= latitude <= 28)) or (not (86.5 <= longitude <= 90)):
                         msg_ = (
                             "Please fill lat and long within the State of West Bengal."
