@@ -12,6 +12,7 @@ from PIL import Image
 from config.celery_app import app
 from missing_persons_match_unidentified_dead_bodies.backend.models import (
     Match,
+    PublicReport,
     PublicReportMatch,
     Report,
 )
@@ -191,3 +192,35 @@ def send_public_report_matched_mail(pk):
         match.save()
     except Exception as e:
         print(str(e))
+
+
+@app.task(task_soft_time_limit=300, ignore_result=True)
+def send_public_report_created_mail(pk):
+    report = PublicReport.objects.get(pk=pk)
+    token_message = (
+        "Your token for missing person "
+        + f"{report.name}"
+        + " reported by you on WB Khoya Paya is "
+        + f"{report.token}"
+    )
+
+    alert_oc_message = (
+        "A Public missing report has been filed in your jurisdiction. "
+        + "Please visit "
+        + f"https://wwww.wbkhoyapaya/backend/view_public_report/{report.token}/"
+        + f" and contact the person at {report.telephone_of_reporter}."
+    )
+    send_mail(
+        "Your token for missing person reported by you on WB Khoya Paya",
+        token_message,
+        "support@wbpcrime.info",
+        [report.email_of_reporter],
+        fail_silently=False,
+    )
+    send_mail(
+        "Public Missing Report on WB Khoya Paya",
+        alert_oc_message,
+        "support@wbpcrime.info",
+        [report.police_station.emails],
+        fail_silently=False,
+    )

@@ -41,6 +41,9 @@ from missing_persons_match_unidentified_dead_bodies.backend.models import (
 from missing_persons_match_unidentified_dead_bodies.backend.serializers import (
     ReportSerializer,
 )
+from missing_persons_match_unidentified_dead_bodies.backend.tasks import (
+    send_public_report_created_mail,
+)
 # from django.views.decorators.cache import cache_page
 # from django.views.decorators.csrf import csrf_protect
 from missing_persons_match_unidentified_dead_bodies.users.models import PoliceStation
@@ -295,33 +298,8 @@ def upload_public_report(request):
                         report.face_encoding = face_encoding
                     report.year = str(entry_date.year)[-2:]
                     report.save()
-                    token_message = (
-                        "Your token for missing person "
-                        + f"{report.name}"
-                        + " reported by you on WB Khoya Paya is "
-                        + f"{report.token}"
-                    )
-
-                    alert_oc_message = (
-                        "A Public missing report has been filed in your jurisdiction. "
-                        + "Please visit "
-                        + f"https://wwww.wbkhoyapaya/backend/view_public_report/{report.token}/"
-                        + f" and contact the person at {report.telephone_of_reporter}."
-                    )
-
-                    send_mail(
-                        "Your token for missing person reported by you on WB Khoya Paya",
-                        token_message,
-                        "support@wbpcrime.info",
-                        [report.email_of_reporter],
-                        fail_silently=False,
-                    )
-                    send_mail(
-                        "Public Missing Report on WB Khoya Paya",
-                        alert_oc_message,
-                        "support@wbpcrime.info",
-                        [report.police_station.emails],
-                        fail_silently=False,
+                    send_public_report_created_mail.apply_async(
+                        args=[report.pk], countdown=5
                     )
                     return redirect(
                         "backend:view_public_report", object_id=report.token
