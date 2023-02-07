@@ -97,9 +97,7 @@ class ReportForm(forms.Form):
     )
     height = forms.IntegerField()
     age = forms.IntegerField()
-    guardian_name_and_address = forms.CharField(
-        max_length=300, required=False
-    )
+    guardian_name_and_address = forms.CharField(max_length=300, required=False)
     description = forms.CharField(max_length=500, widget=forms.Textarea())
     latitude = forms.FloatField(required=False)
     longitude = forms.FloatField(required=False)
@@ -242,9 +240,7 @@ class PublicReportForm(forms.Form):
     )
     height = forms.IntegerField()
     age = forms.IntegerField()
-    guardian_name_and_address = forms.CharField(
-        max_length=300, required=False
-    )
+    guardian_name_and_address = forms.CharField(max_length=300, required=False)
     telephone_of_missing = forms.CharField(
         required=False,
         label="Missing person's phone (10 digits)",
@@ -780,6 +776,45 @@ class BoundedBoxSearchForm(forms.Form):
         self.helper.form_class = "blueForms"
         self.helper.form_method = "post"
         self.helper.add_input(Submit("submit", "Submit"))
+
+    def clean(self):
+        cleaned_data = super().clean()
+        messages = []
+        north_west_location = cleaned_data.get("north_west_location", "")
+        south_east_location = cleaned_data.get("south_east_location", "")
+        print("<<<")
+        print(not (("," in north_west_location) and ("," in south_east_location)))
+        if not (("," in north_west_location) and ("," in south_east_location)):
+            print("wrong coordinates")
+            msg_ = "Please select NW and SE corners correctly"
+            messages.append(msg_)
+        else:
+            north_west_location = north_west_location.split(",")
+
+            south_east_location = south_east_location.split(",")
+
+            xmin = float(north_west_location[1])
+            ymax = float(north_west_location[0])
+
+            xmax = float(south_east_location[1])
+            ymin = float(south_east_location[0])
+            if not (
+                (86.5 <= xmin <= 90)
+                and (86.5 <= xmax <= 90)
+                and (21 <= ymin <= 28)
+                and (21 <= ymax <= 28)
+            ):
+                msg_ = "Please fill lat and long within the State of West Bengal."
+                messages.append(msg_)
+            if not ((xmax > xmin) and (ymax > ymin)):
+                msg_ = "Please select NW and SE corners correctly"
+                messages.append(msg_)
+
+        if messages != []:
+            messages = list(set(messages))
+            raise forms.ValidationError(messages)
+
+        return cleaned_data
 
 
 class PublicForm(forms.Form):

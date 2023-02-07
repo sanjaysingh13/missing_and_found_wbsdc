@@ -28,7 +28,7 @@ def send_otp(request):
     send_mail(
         "OTP for registering missing person report on WB Khoya Paya",
         otp_message,
-        "support@wbpcrime.info",
+        None,
         [email_of_reporter],
         fail_silently=False,
     )

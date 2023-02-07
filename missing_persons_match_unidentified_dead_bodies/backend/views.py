@@ -445,7 +445,7 @@ def view_public_report(request, object_id):
             send_mail(
                 "Police Station reference for missing person reported by you on WB Khoya Paya",
                 report_created_message,
-                "support@wbpcrime.info",
+                None,
                 [public_report.email_of_reporter],
                 fail_silently=False,
             )

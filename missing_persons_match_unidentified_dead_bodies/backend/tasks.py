@@ -107,7 +107,7 @@ def send_matched_mail(pk):
         send_mail(
             "Missing Person Matched with Dead Body",
             missing_message,
-            "support@wbpcrime.info",
+            None,
             [oc_missing_email],
             fail_silently=False,
         )
@@ -122,7 +122,7 @@ def send_matched_mail(pk):
         send_mail(
             "Unidentified Dead Body Matched with Missing Person",
             found_message,
-            "support@wbpcrime.info",
+            None,
             [oc_found_email],
             fail_silently=False,
         )
@@ -169,7 +169,7 @@ def send_public_report_matched_mail(pk):
         send_mail(
             "Missing Person Matched with Dead Body",
             missing_message,
-            "support@wbpcrime.info",
+            None,
             [oc_missing_email],
             fail_silently=False,
         )
@@ -184,7 +184,7 @@ def send_public_report_matched_mail(pk):
         send_mail(
             "Unidentified Dead Body Matched with Missing Person",
             found_message,
-            "support@wbpcrime.info",
+            None,
             [oc_found_email],
             fail_silently=False,
         )
@@ -213,14 +213,14 @@ def send_public_report_created_mail(pk):
     send_mail(
         "Your token for missing person reported by you on WB Khoya Paya",
         token_message,
-        "support@wbpcrime.info",
+        None,
         [report.email_of_reporter],
         fail_silently=False,
     )
     send_mail(
         "Public Missing Report on WB Khoya Paya",
         alert_oc_message,
-        "support@wbpcrime.info",
+        None,
         [report.police_station.emails],
         fail_silently=False,
     )
