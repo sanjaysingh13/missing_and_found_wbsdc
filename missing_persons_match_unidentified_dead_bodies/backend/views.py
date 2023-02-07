@@ -1088,5 +1088,5 @@ def public(request):
     context["form"] = form
     context["mapbox_access_token"] = mapbox_access_token
     context["form_title"] = "Missing Persons Near You"
-    context["title"] = "Area for River Search"
+    context["title"] = "Missing Persons Near You"
     return render(request, template_name, context)

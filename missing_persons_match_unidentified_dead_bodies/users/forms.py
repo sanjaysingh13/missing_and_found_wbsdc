@@ -65,7 +65,6 @@ class CustomSignupForm(SignupForm):
 
     def save(self, request):
         user = super().save(request)
-        print(user.__dict__)
         print(self.cleaned_data)
         user.name = self.cleaned_data["name"]
         user.rank = self.cleaned_data["rank"]

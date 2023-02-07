@@ -841,6 +841,19 @@ class PublicForm(forms.Form):
         self.helper.form_method = "post"
         self.helper.add_input(Submit("submit", "Submit"))
 
+    def clean(self):
+        cleaned_data = super().clean()
+        messages = []
+        location = cleaned_data.get("location", "")
+        if not location:
+            msg_ = "Please select your location on map"
+            messages.append(msg_)
+        if messages != []:
+            messages = list(set(messages))
+            raise forms.ValidationError(messages)
+
+        return cleaned_data
+
 
 class ConfirmPublicReportForm(forms.Form):
     reference = forms.IntegerField()
