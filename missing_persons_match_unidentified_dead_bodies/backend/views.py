@@ -46,11 +46,16 @@ from missing_persons_match_unidentified_dead_bodies.backend.tasks import (
 )
 # from django.views.decorators.cache import cache_page
 # from django.views.decorators.csrf import csrf_protect
-from missing_persons_match_unidentified_dead_bodies.users.models import PoliceStation
+from missing_persons_match_unidentified_dead_bodies.users.models import (
+    District,
+    PoliceStation,
+    User,
+)
 
 from .forms import (
     BoundedBoxSearchForm,
     ConfirmPublicReportForm,
+    DistrictForm,
     PublicForm,
     PublicReportForm,
     ReportForm,
@@ -1089,4 +1094,37 @@ def public(request):
     context["mapbox_access_token"] = mapbox_access_token
     context["form_title"] = "Missing Persons Near You"
     context["title"] = "Missing Persons Near You"
+    return render(request, template_name, context)
+
+
+def district(request):
+    template_name = "backend/district.html"
+    if request.method == "GET":
+        form = DistrictForm()
+    elif request.method == "POST":
+        form = DistrictForm(request.POST)
+        if form.is_valid():
+            cleaned_data = form.cleaned_data
+            district_id = cleaned_data.get("districts", "")
+            district = District.objects.get(pk=district_id)
+            sp_or_cp_users = User.objects.filter(district=district, is_sp_or_cp=True)
+            distt_admins = User.objects.filter(
+                district=district, category="DISTRICT_ADMIN"
+            )
+            oc_users = User.objects.filter(
+                district=district, police_station__isnull=False, category="PS_ADMIN"
+            ).order_by("police_station__name")
+            empty_police_stations = district.policestation_set.exclude(user__is_oc=True)
+            print(district_id)
+            context = {}
+            context["form"] = form
+            context["sp_or_cp_users"] = sp_or_cp_users
+            context["distt_admins"] = distt_admins
+            context["oc_users"] = oc_users
+            context["empty_police_stations"] = empty_police_stations
+            return render(request, template_name, context)
+    context = {}
+    context["form"] = form
+    context["form_title"] = "Districts At A Glance"
+    context["title"] = "Districts At A Glance"
     return render(request, template_name, context)

@@ -33,4 +33,5 @@ urlpatterns = [
     path("bounded_box_search/", views.bounded_box_search, name="bounded_box_search"),
     path("matches/", views.matches, name="matches"),
     path("report/<pk>/delete/", views.ReportDeleteView.as_view(), name="report_delete"),
+    path("district/", views.district, name="district"),
 ]

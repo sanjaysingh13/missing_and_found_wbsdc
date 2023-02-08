@@ -1,0 +1,122 @@
+{% extends "base_maps.html" %}
+{% load crispy_forms_tags %}
+{% block title %} Districts at a Glance{% endblock title %}
+{% block content %}
+<div >
+	</br>
+	<h6> {{form_title}}</h6>
+</div>
+
+{% crispy form form.helper %}
+<h6> SP/CP </h6>
+<table class="table table-condensed table-responsive table-striped">
+      <tr>
+            <th >Sl. No.</th>
+            <th >Name</th>
+
+            <th >Email</th>
+            <th> Telephone </th>
+
+
+
+        </tr>
+        <tbody>
+          {% for sp_or_cp_user in sp_or_cp_users %}
+
+            <tr>
+              <td>{{forloop.counter}}</td>
+                <td>{{sp_or_cp_user.name}}</td>
+                <td>{{sp_or_cp_user.email}}</td>
+
+                <td> {{sp_or_cp_user.telephone}}</td>
+
+
+
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <h6> District Admins </h6>
+    <table class="table table-condensed table-responsive table-striped">
+      <tr>
+            <th >Sl. No.</th>
+            <th >Name</th>
+
+            <th >Email</th>
+            <th> Telephone </th>
+
+
+
+        </tr>
+        <tbody>
+          {% for distt_admin in distt_admins %}
+
+            <tr>
+              <td>{{forloop.counter}}</td>
+                <td>{{distt_admin.name}}</td>
+                <td>{{distt_admin.email}}</td>
+
+                <td> {{distt_admin.telephone}}</td>
+
+
+
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <h6> OCs </h6>
+    <table class="table table-condensed table-responsive table-striped">
+      <tr>
+            <th >Sl. No.</th>
+            <th> PS </th>
+            <th >Name</th>
+
+            <th >Email</th>
+            <th> Telephone </th>
+
+
+
+        </tr>
+        <tbody>
+          {% for oc_user in oc_users %}
+
+            <tr>
+              <td>{{forloop.counter}}</td>
+              <td>{{oc_user.police_station.name}}
+                <td>{{oc_user.name}}</td>
+                <td>{{oc_user.email}}</td>
+
+                <td> {{oc_user.telephone}}</td>
+
+
+
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <h6> Police Stations without Admin</h6>
+    <table class="table table-condensed table-responsive table-striped">
+      <tr>
+            <th >Sl. No.</th>
+            <th >Name</th>
+
+
+
+
+
+        </tr>
+        <tbody>
+          {% for empty_police_station in empty_police_stations %}
+
+            <tr>
+              <td>{{forloop.counter}}</td>
+                <td>{{empty_police_station.name}}</td>
+
+
+
+
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock content %}

@@ -876,3 +876,19 @@ class ConfirmPublicReportForm(forms.Form):
         self.helper.form_class = "blueForms"
         self.helper.form_method = "post"
         self.helper.add_input(Submit("submit", "Submit"))
+
+
+class DistrictForm(forms.Form):
+    districts = forms.ChoiceField(choices=DISTRICTS, required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Row(Column("districts", css_class="form-group col-md-12 mb-0"))
+        )
+
+        self.helper.form_id = "id-exampleForm"
+        self.helper.form_class = "blueForms"
+        self.helper.form_method = "post"
+        self.helper.add_input(Submit("submit", "Submit"))
