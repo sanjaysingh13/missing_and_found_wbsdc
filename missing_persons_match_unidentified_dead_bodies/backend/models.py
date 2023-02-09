@@ -30,7 +30,7 @@ class Report(TimeStampedModel):
         PoliceStation, blank=True, null=True, on_delete=models.SET_NULL
     )
     reference = models.IntegerField("PS Reference")
-    entry_date = models.DateField()
+    entry_date = models.DateField(db_index=True)
     name = models.CharField(("Name if known"), blank=True, null=True, max_length=100)
     gender = models.CharField(("Gender"), blank=True, null=True, max_length=1)
     missing_or_found = models.CharField(("Missing Or Found"), blank=False, max_length=1)
