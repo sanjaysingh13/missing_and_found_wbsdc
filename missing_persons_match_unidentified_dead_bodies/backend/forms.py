@@ -76,7 +76,7 @@ except Exception as e:
 
 
 class ReportForm(forms.Form):
-    photo = forms.FileField(label="Photos ", widget=forms.ClearableFileInput())
+    photo = forms.ImageField(label="Photos ", widget=forms.ClearableFileInput())
     police_station_with_distt = forms.CharField(
         label="Police Station",
         max_length=100,
@@ -208,6 +208,11 @@ class ReportForm(forms.Form):
                 if (not (21 <= latitude <= 28)) or (not (86.5 <= longitude <= 90)):
                     msg_ = "Please fill lat and long within the State of West Bengal."
                     messages.append(msg_)
+        photo = cleaned_data.get("photo")
+        if photo.size > 5 * 1024 * 1024:
+            msg_ = "Please pick image below 5 Mb"
+            messages.append(msg_)
+
         if messages != []:
             messages = list(set(messages))
             raise forms.ValidationError(messages)
@@ -218,7 +223,7 @@ class ReportForm(forms.Form):
 class PublicReportForm(forms.Form):
     acknowledgement_checkbox = forms.BooleanField(label="Acknowledgement")
     captcha = ReCaptchaField()
-    photo = forms.FileField(label="Photos ", widget=forms.ClearableFileInput())
+    photo = forms.ImageField(label="Photos ", widget=forms.ClearableFileInput())
     police_station_with_distt = forms.CharField(
         label="Police Station",
         max_length=100,
@@ -375,6 +380,10 @@ class PublicReportForm(forms.Form):
         cleaned_data = super().clean()
         messages = []
         age = cleaned_data.get("age", "")
+        photo = cleaned_data.get("photo")
+        if photo.size > 5 * 1024 * 1024:
+            msg_ = "Please pick image below 5 Mb"
+            messages.append(msg_)
         if age < 18:
             msg_ = "The missing person is a minor. Please visit the Police Station and register a specific FIR"
             messages.append(msg_)
@@ -387,7 +396,7 @@ class PublicReportForm(forms.Form):
 
 
 class ReportFormEdit(forms.Form):
-    photo = forms.FileField(
+    photo = forms.ImageField(
         label="Photos ", required=False, widget=forms.ClearableFileInput()
     )
     police_station_with_distt = forms.CharField(
@@ -523,6 +532,10 @@ class ReportFormEdit(forms.Form):
                 if (not (21 <= latitude <= 28)) or (not (86.5 <= longitude <= 90)):
                     msg_ = "Please fill lat and long within the State of West Bengal."
                     messages.append(msg_)
+        photo = cleaned_data.get("photo")
+        if photo.size > 5 * 1024 * 1024:
+            msg_ = "Please pick image below 5 Mb"
+            messages.append(msg_)
         if messages != []:
             messages = list(set(messages))
             raise forms.ValidationError(messages)

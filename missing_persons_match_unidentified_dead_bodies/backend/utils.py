@@ -73,40 +73,42 @@ def initial_migration():
         next(csvreader)  # Skip the first row (header row)
         for row in csvreader:
             try:
-                report = Report.objects.get(name=row[1], reference=int(row[7]))
+                report = Report.objects.get(name=row[1], reference=int(row[12]))
             except Exception as e:
                 print(str(e))
                 name = row[1]
-                if row[3] != "":
-                    age = int(row[3])
+                if row[10] != "":
+                    age = int(row[10])
                 else:
                     age = 0
-                if row[4] != "":
-                    height = int(row[4])
+                if row[11] != "":
+                    height = int(row[11])
                 else:
                     height = 0
-                if row[5] != "":
-                    latitude = float(row[5])
+                if row[6] != "":
+                    latitude = float(row[6])
                 else:
                     latitude = None
-                if row[6] != "":
-                    longitude = float(row[6])
+                if row[7] != "":
+                    longitude = float(row[7])
                 else:
                     longitude = None
-                if row[7] != "":
-                    reference = int(row[7])
+                if row[12] != "":
+                    reference = int(row[12])
                 else:
                     reference = None
-                if row[8] != "":
-                    entry_date = datetime.strptime(row[8], "%Y-%m-%d").date()
+                if row[13] != "":
+                    entry_date = datetime.strptime(row[13], "%Y-%m-%d").date()
                 else:
                     entry_date = None
-                if row[13] != "":
-                    description = row[13]
+                if row[5] != "":
+                    description = row[5]
                 else:
                     description = ""
-                missing_or_found = row[10]
-                gender = row[9]
+                if row[9] != "":
+                    particulars = row[9]
+                missing_or_found = row[4]
+                gender = row[3]
                 if missing_or_found == "Unknown" or gender == "Unknown":
                     continue
                 if row[14] != "":
@@ -127,10 +129,13 @@ def initial_migration():
                     reference=reference,
                     missing_or_found=missing_or_found,
                     gender=gender,
-                    guardian_name_and_address=description,
+                    guardian_name_and_address=particulars,
+                    description=description,
                     face_encoding=face_encoding,
                 )
-                ps = PoliceStation.objects.get(pk=int(row[11]))
+                print(">>>>>>")
+                ps = PoliceStation.objects.get(ps_with_distt=row[8])
+                print(ps.id)
                 report.police_station = ps
                 with open(photo_file, "rb") as f:
                     file = ContentFile(f.read())
@@ -220,7 +225,7 @@ def create_mit_layers(verbose=True):
     r = open("ganga.pkl", "rb")
     path = pickle.load(r)
     r.close()
-    lines = [LineString(path[i: i + 2]) for i in range(len(path) - 1)]
+    lines = [LineString(path[i:i + 2]) for i in range(len(path) - 1)]
     multiline = MultiLineString(lines, srid=4326)
     new_waterline = MitWaterLines(
         f_code="BH140",
