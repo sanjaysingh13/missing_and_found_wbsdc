@@ -1,10 +1,9 @@
-import csv
 import pickle
-from datetime import datetime
 from io import BytesIO
 
 import cv2
 import numpy as np
+import pandas as pd
 import regex as re
 from django.contrib.gis.geos import LineString, MultiLineString, Point, Polygon
 from django.contrib.gis.measure import D
@@ -67,82 +66,84 @@ def resize_image(file, size_image, size_icon):
 
 
 def initial_migration():
-    filename = "./filtered_data.csv"
-    with open(filename) as csvfile:
-        csvreader = csv.reader(csvfile)
-        next(csvreader)  # Skip the first row (header row)
-        for row in csvreader:
-            try:
-                report = Report.objects.get(name=row[1], reference=int(row[12]))
-            except Exception as e:
-                print(str(e))
-                name = row[1]
-                if row[10] != "":
-                    age = int(row[10])
-                else:
-                    age = 0
-                if row[11] != "":
-                    height = int(row[11])
-                else:
-                    height = 0
-                if row[6] != "":
-                    latitude = float(row[6])
-                else:
-                    latitude = None
-                if row[7] != "":
-                    longitude = float(row[7])
-                else:
-                    longitude = None
-                if row[12] != "":
-                    reference = int(row[12])
-                else:
-                    reference = None
-                if row[13] != "":
-                    entry_date = datetime.strptime(row[13], "%Y-%m-%d").date()
-                else:
-                    entry_date = None
-                if row[5] != "":
-                    description = row[5]
-                else:
-                    description = ""
-                if row[9] != "":
-                    particulars = row[9]
-                missing_or_found = row[4]
-                gender = row[3]
-                if missing_or_found == "Unknown" or gender == "Unknown":
-                    continue
-                if row[14] != "":
-                    face_encoding = row[14]
-                else:
-                    face_encoding = None
-                print(row[0])
-                photo_file = f"./resized_photos/{row[0]}"
-                # photo_file = photo_file.replace(" ", "_")
+    filename = "./filtered_data.pkl"
+    r = open(filename, "rb")
+    df = pickle.load(r)
+    r.close()
+    for i in range(len(df)):
+        try:
+            report = Report.objects.get(
+                name=df.iloc[i, 1], reference=int(df.iloc[i, 12])
+            )
+        except Report.DoesNotExist:
+            name = df.iloc[i, 1]
+            if pd.notna(df.iloc[i, 10]):
+                age = int(df.iloc[i, 10])
+            else:
+                age = 0
+            if pd.notna(df.iloc[i, 11]):
+                height = int(df.iloc[i, 11])
+            else:
+                height = 0
+            if pd.notna(df.iloc[i, 6]):
+                latitude = float(df.iloc[i, 6])
+            else:
+                latitude = None
+            if pd.notna(df.iloc[i, 7]):
+                longitude = float(df.iloc[i, 7])
+            else:
+                longitude = None
+            if pd.notna(df.iloc[i, 12]):
+                reference = int(df.iloc[i, 12])
+            else:
+                reference = None
+            if pd.notna(df.iloc[i, 13]):
+                entry_date = df.iloc[i, 13]
+            else:
+                entry_date = None
+            if pd.notna(df.iloc[i, 5]):
+                description = df.iloc[i, 5]
+            else:
+                description = None
+            if pd.notna(df.iloc[i, 9]):
+                particulars = df.iloc[i, 9]
+            else:
+                particulars = None
+            missing_or_found = df.iloc[i, 4]
+            if missing_or_found == "Unknown":
+                missing_or_found = "F"
+            gender = df.iloc[i, 3]
+            if gender == "Unknown":
+                gender = None
+            if pd.notna(df.iloc[i, 14]):
+                face_encoding = df.iloc[i, 14]
+            else:
+                face_encoding = None
+            photo_file = f"./resized_photos/{df.iloc[i, 0]}"
+            # photo_file = photo_file.replace(" ", "_")
 
-                report = Report(
-                    name=name,
-                    age=age,
-                    height=height,
-                    latitude=latitude,
-                    longitude=longitude,
-                    entry_date=entry_date,
-                    reference=reference,
-                    missing_or_found=missing_or_found,
-                    gender=gender,
-                    guardian_name_and_address=particulars,
-                    description=description,
-                    face_encoding=face_encoding,
-                )
-                print(">>>>>>")
-                ps = PoliceStation.objects.get(ps_with_distt=row[8])
-                print(ps.id)
-                report.police_station = ps
-                with open(photo_file, "rb") as f:
-                    file = ContentFile(f.read())
-                    report.photo.save(row[0], file, save=True)
-                    if longitude:
-                        report.location = Point(longitude, latitude)
-                    report.save()
+            report = Report(
+                name=name,
+                age=age,
+                height=height,
+                latitude=latitude,
+                longitude=longitude,
+                entry_date=entry_date,
+                reference=reference,
+                missing_or_found=missing_or_found,
+                gender=gender,
+                guardian_name_and_address=particulars,
+                description=description,
+                face_encoding=face_encoding,
+            )
+            ps = PoliceStation.objects.get(ps_with_distt=df.iloc[i, 8])
+            report.police_station = ps
+            with open(photo_file, "rb") as f:
+                file = ContentFile(f.read())
+                report.photo.save(df.iloc[i, 0], file, save=True)
+                if longitude:
+                    report.location = Point(longitude, latitude)
+                report.save()
 
 
 def tokenize(text):

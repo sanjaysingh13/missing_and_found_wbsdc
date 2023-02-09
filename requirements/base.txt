@@ -40,3 +40,5 @@ sentry-sdk
 
 # Recaptcha
 django-recaptcha
+
+pandas
