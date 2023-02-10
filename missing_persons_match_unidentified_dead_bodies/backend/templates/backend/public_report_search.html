@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %} {{title}} {% endblock title %}
+{% block content %}
+<div >
+	</br>
+	<h1> {{form_title}}</h1>
+</div>
+<form method="POST" action="{% url 'backend:public_report_search' %}">
+        {% csrf_token %}
+       {% crispy form form.helper %}
+        <button class="btn btn-primary" type="submit" name="action">Search</button>
+    </form>
+
+
+{% endblock content %}

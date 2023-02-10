@@ -14,4 +14,8 @@ urlpatterns = [
     path("~redirect/", view=user_redirect_view, name="redirect"),
     path("~update/", view=user_update_view, name="update"),
     path("<str:username>/", view=user_detail_view, name="detail"),
+    path("<str:username>/edit/", views.edit_user, name="edit_user"),
+    path(
+        "<str:username>/change_password/", views.change_password, name="change_password"
+    ),
 ]

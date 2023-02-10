@@ -905,3 +905,46 @@ class DistrictForm(forms.Form):
         self.helper.form_class = "blueForms"
         self.helper.form_method = "post"
         self.helper.add_input(Submit("submit", "Submit"))
+
+
+class PublicReportSearchForm(forms.Form):
+    telephone_of_public = forms.CharField(
+        label="Public's telephone (10 digits)",
+        max_length=10,
+        validators=[
+            RegexValidator(
+                r"\d{10}",
+                message="Telephone number must be 10-digit",
+                code="invalid_telephone",
+            ),
+        ],
+    )
+    email_of_public = forms.EmailField(label="Public's Email")
+
+    token_given_via_mail = forms.CharField(
+        label="Token given to public via email", max_length=8
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Div(
+                Row(
+                    Column("telephone_of_public", css_class="form-group col-md-4 mb-0"),
+                    Column(
+                        "email_of_public",
+                        css_class="form-group col-md-4 mb-0",
+                    ),
+                    Column(
+                        "token_given_via_mail",
+                        css_class="fform-group col-md-4 mb-0",
+                    ),
+                )
+            )
+        )
+
+        self.helper.form_method = "post"
+        self.helper.form_tag = False
+        self.helper.form_id = "blueForms"
+        # self.helper.add_input(Submit("submit", "Search"))

@@ -1,0 +1,34 @@
+{% extends "base_maps.html" %}
+{% load crispy_forms_tags %}
+{% block title %} {{title}} {% endblock title %}
+{% block content %}
+<h1> {{title}} </h1>
+<table class="table table-condensed table-responsive table-striped">
+      <tr>
+            <th >Sl no.</th>
+            <th >Name</th>
+
+            <th >Total Missing</th>
+            <th> Total Found </th>
+            <th >24 hours Missing</th>
+            <th> 24 hours Found </th>
+
+
+
+        </tr>
+        <tbody>
+          {% for district_report in district_reports %}
+
+            <tr>
+              <td>{{forloop.counter}}</td>
+                <td>{{district_report.name}}</td>
+                <td>{{district_report.missing_count}}</td>
+                <td>{{district_report.found_count}}</td>
+                <td>{{district_report.missing_last_24_hours}}</td>
+                <td>{{district_report.missing_last_24_hours}}</td>
+
+
+            </tr>
+            {% endfor %}
+        </tbody>
+{% endblock content %}

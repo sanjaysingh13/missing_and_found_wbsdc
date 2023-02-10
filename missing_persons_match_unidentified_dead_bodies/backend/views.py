@@ -21,12 +21,13 @@ from django.contrib.gis.geos import GEOSGeometry, Point
 from django.contrib.postgres.search import SearchQuery, SearchVector
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Count, Q
 # from django.contrib.gis.geos import Point
 # from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 # from django.core.paginator import Paginator
 # from django.http import HttpResponse  # , JsonResponse, request
 from django.shortcuts import redirect, render
+from django.utils import timezone
 from django.views.generic.edit import DeleteView
 from fuzzywuzzy import process
 from rest_framework import viewsets
@@ -58,6 +59,7 @@ from .forms import (
     DistrictForm,
     PublicForm,
     PublicReportForm,
+    PublicReportSearchForm,
     ReportForm,
     ReportFormEdit,
     ReportSearchForm,
@@ -802,7 +804,7 @@ def report_search_results(request, pk):
         query_object = query_object & Q(police_station__district__in=[int(districts)])
         districts = districts
     if ps_list != "":
-        police_stations = ps_list.split(", ")
+        police_stations = ps_list.split(",")
         police_stations = [int(ps.strip()) for ps in police_stations if ps]
         police_stations = list(filter(None, police_stations))
         query_object = query_object & Q(police_station__pk__in=police_stations)
@@ -1127,4 +1129,140 @@ def district(request):
     context["form"] = form
     context["form_title"] = "Districts At A Glance"
     context["title"] = "Districts At A Glance"
+    return render(request, template_name, context)
+
+
+@login_required
+@permission_required("users.add_user", raise_exception=True)
+def districts_at_glance_reports(request):
+    template_name = "backend/districts_at_glance_reports.html"
+    if request.method == "GET":
+        now = timezone.now()
+        yesterday = now - timezone.timedelta(hours=24)
+        district_reports = (
+            District.objects.annotate(
+                missing_count=Count(
+                    "policestation__report",
+                    filter=Q(policestation__report__missing_or_found="M"),
+                ),
+                found_count=Count(
+                    "policestation__report",
+                    filter=Q(policestation__report__missing_or_found="F"),
+                ),
+                missing_last_24_hours=Count(
+                    "policestation__report",
+                    filter=Q(
+                        policestation__report__missing_or_found="M",
+                        policestation__report__created__gte=yesterday,
+                    ),
+                ),
+                found_last_24_hours=Count(
+                    "policestation__report",
+                    filter=Q(
+                        policestation__report__missing_or_found="F",
+                        policestation__report__created__gte=yesterday,
+                    ),
+                ),
+            )
+            .values(
+                "name",
+                "missing_count",
+                "found_count",
+                "missing_last_24_hours",
+                "found_last_24_hours",
+            )
+            .order_by("name")
+        )
+
+        context = {}
+        context["district_reports"] = district_reports
+        context["form_title"] = "Districts At A Glance (Reports)"
+        context["title"] = "Districts At A Glance (Reports)"
+    return render(request, template_name, context)
+
+
+@login_required
+@permission_required("users.add_user", raise_exception=True)
+def districts_at_glance_public_reports(request):
+    template_name = "backend/districts_at_glance_reports.html"
+    if request.method == "GET":
+        now = timezone.now()
+        yesterday = now - timezone.timedelta(hours=24)
+        district_reports = (
+            District.objects.annotate(
+                missing_count=Count(
+                    "policestation__publicreport",
+                    filter=Q(policestation__publicreport__missing_or_found="M"),
+                ),
+                found_count=Count(
+                    "policestation__publicreport",
+                    filter=Q(policestation__publicreport__missing_or_found="F"),
+                ),
+                missing_last_24_hours=Count(
+                    "policestation__publicreport",
+                    filter=Q(
+                        policestation__publicreport__missing_or_found="M",
+                        policestation__publicreport__created__gte=yesterday,
+                    ),
+                ),
+                found_last_24_hours=Count(
+                    "policestation__publicreport",
+                    filter=Q(
+                        policestation__publicreport__missing_or_found="F",
+                        policestation__publicreport__created__gte=yesterday,
+                    ),
+                ),
+            )
+            .values(
+                "name",
+                "missing_count",
+                "found_count",
+                "missing_last_24_hours",
+                "found_last_24_hours",
+            )
+            .order_by("name")
+        )
+
+        context = {}
+        context["district_reports"] = district_reports
+        context["form_title"] = "Districts At A Glance (Public Reports)"
+        context["title"] = "Districts At A Glance (Public Reports)"
+    return render(request, template_name, context)
+
+
+@login_required
+@permission_required("users.add_user", raise_exception=True)
+def public_report_search(request):
+    template_name = "backend/public_report_search.html"
+    if request.method == "GET":
+        form = PublicReportSearchForm()
+    elif request.method == "POST":
+        print("hi")
+        form = PublicReportSearchForm(request.POST)
+        if form.is_valid():
+            cleaned_data = form.cleaned_data
+            print(cleaned_data)
+            token = cleaned_data.get("token_given_via_mail", "")
+            email_of_reporter = cleaned_data.get("email_of_public", "")
+            telephone_of_reporter = cleaned_data.get("telephone_of_public", "")
+            # Start with a Q object that matches all Report objects
+            # Use the Q object to filter the Report objects
+            public_reports = PublicReport.objects.filter(
+                token=token,
+                email_of_reporter=email_of_reporter,
+                telephone_of_reporter=telephone_of_reporter,
+            )
+            if not public_reports.exists():
+                context = {}
+                context["form"] = form
+                context["form_title"] = "Search for Public Report"
+                context["title"] = "Search for Public Report"
+                messages.info(request, "No report found")
+                return render(request, template_name, context)
+            else:
+                return redirect("backend:view_public_report", public_reports[0].token)
+    context = {}
+    context["form"] = form
+    context["form_title"] = "Search for Public Report"
+    context["title"] = "Search for Public Report"
     return render(request, template_name, context)

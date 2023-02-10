@@ -76,10 +76,16 @@
                 <a class="nav-link" href="{% url 'about' %}">About</a>
               </li>
               {% if request.user.is_authenticated %}
-                <li class="nav-item">
-                  {# URL provided by django-allauth/account/urls.py #}
-                  <a class="nav-link" href="{% url 'users:detail' request.user.username  %}">{% translate "My Profile" %}</a>
-                </li>
+              <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            User
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <li><a class="dropdown-item" href="{% url 'users:edit_user' request.user.username  %}">{% translate "Edit User" %}</a></li>
+            <li><a class="dropdown-item" href="{% url 'users:change_password' request.user.username  %}">{% translate "Change Password" %}</a></li>
+          </ul>
+        </li>
+
                 <li class="nav-item">
                   {# URL provided by django-allauth/account/urls.py #}
                   <a class="nav-link" href="{% url 'account_logout' %}">{% translate "Sign Out" %}</a>
@@ -103,10 +109,11 @@
           </a>
           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
             <li><a class="dropdown-item" href="{% url 'backend:upload_photo' %}">Upload New Report</a></li>
-            <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="{% url 'backend:report_search' %}"> Search Reports</a></li>
             <li><a class="dropdown-item" href="{% url 'backend:bounded_box_search' %}"> Curated Search: River/Rail/Road</a></li>
             <li><a class="dropdown-item" href="{% url 'backend:matches' %}">Matched Reports</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="{% url 'backend:public_report_search' %}">Regularize Public Report</a></li>
           </ul>
         </li>
         <li class="nav-item dropdown">
@@ -124,6 +131,8 @@
           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
             <li><a class="dropdown-item" href="{% url 'backend:district' %}">Users</a></li>
             <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="{% url 'backend:districts_at_glance_reports' %}">District-wise Reports</a></li>
+            <li><a class="dropdown-item" href="{% url 'backend:districts_at_glance_public_reports' %}">District-wise Public Reports</a></li>
           </ul>
         </li>
 

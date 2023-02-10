@@ -26,6 +26,9 @@ urlpatterns = [
     path("edit_report/<int:pk>/", views.edit_report, name="edit_report"),
     path("report_search/", views.report_search, name="report_search"),
     path(
+        "public_report_search/", views.public_report_search, name="public_report_search"
+    ),
+    path(
         "advanced_report_search/<int:pk>",
         views.report_search_results,
         name="advanced_report_search",
@@ -34,4 +37,14 @@ urlpatterns = [
     path("matches/", views.matches, name="matches"),
     path("report/<pk>/delete/", views.ReportDeleteView.as_view(), name="report_delete"),
     path("district/", views.district, name="district"),
+    path(
+        "districts_at_glance_reports/",
+        views.districts_at_glance_reports,
+        name="districts_at_glance_reports",
+    ),
+    path(
+        "districts_at_glance_public_reports/",
+        views.districts_at_glance_public_reports,
+        name="districts_at_glance_public_reports",
+    ),
 ]
