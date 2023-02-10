@@ -25,7 +25,7 @@ from django.db.models import Count, Q
 # from django.contrib.gis.geos import Point
 # from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 # from django.core.paginator import Paginator
-# from django.http import HttpResponse  # , JsonResponse, request
+from django.http import JsonResponse  # , , request
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.views.generic.edit import DeleteView
@@ -34,6 +34,7 @@ from rest_framework import viewsets
 
 from missing_persons_match_unidentified_dead_bodies.backend.models import (
     AdvancedReportSearch,
+    EmailRecord,
     Match,
     PublicReport,
     PublicReportMatch,
@@ -1266,3 +1267,18 @@ def public_report_search(request):
     context["form_title"] = "Search for Public Report"
     context["title"] = "Search for Public Report"
     return render(request, template_name, context)
+
+
+def handle_sendgrid_post(request):
+    if request.method == "POST":
+        # Get the incoming request data
+        request_data = json.loads(request.body)
+
+        # Store the data in the database
+        EmailRecord.objects.create(email=request_data["email"], data=request_data)
+
+        # Return a success response
+        return JsonResponse({"status": "success"})
+    else:
+        # Return an error response for other request methods
+        return JsonResponse({"status": "error"})

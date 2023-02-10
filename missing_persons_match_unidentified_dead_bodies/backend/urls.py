@@ -47,4 +47,7 @@ urlpatterns = [
         views.districts_at_glance_public_reports,
         name="districts_at_glance_public_reports",
     ),
+    path(
+        "handle_sendgrid_post/", views.handle_sendgrid_post, name="handle_sendgrid_post"
+    ),
 ]

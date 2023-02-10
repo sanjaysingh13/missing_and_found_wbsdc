@@ -168,3 +168,8 @@ class MitRoadLines(models.Model):
     loc = models.IntegerField()
     soc = models.CharField(max_length=255, null=True)
     geom = models.MultiLineStringField(srid=4326, geography=True)
+
+
+class EmailRecord(models.Model):
+    data = models.CharField(max_length=4000)
+    email = models.CharField(max_length=100)
