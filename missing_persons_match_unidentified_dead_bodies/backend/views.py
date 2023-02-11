@@ -829,6 +829,7 @@ def report_search_results(request, pk):
             vector = SearchVector("description", config="english")
             reports = reports.annotate(search=vector).filter(search=query)
         elif full_text_search_type == 1:
+            results = []
             choices = [r.description + f" $primary_key={r.pk}" for r in reports]
             results = process.extract(keywords, choices, limit=10)
             results = [result for (result, score) in results if score > 50]
