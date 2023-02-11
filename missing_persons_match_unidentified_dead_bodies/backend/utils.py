@@ -72,79 +72,80 @@ def initial_migration():
     df = pickle.load(r)
     r.close()
     for i in range(len(df)):
-        try:
-            report = Report.objects.get(
-                name=df.iloc[i, 1], reference=int(df.iloc[i, 12])
-            )
-        except Report.DoesNotExist:
-            name = df.iloc[i, 1]
-            if pd.notna(df.iloc[i, 10]):
-                age = int(df.iloc[i, 10])
-            else:
-                age = 0
-            if pd.notna(df.iloc[i, 11]):
-                height = int(df.iloc[i, 11])
-            else:
-                height = 0
-            if pd.notna(df.iloc[i, 6]):
-                latitude = float(df.iloc[i, 6])
-            else:
-                latitude = None
-            if pd.notna(df.iloc[i, 7]):
-                longitude = float(df.iloc[i, 7])
-            else:
-                longitude = None
-            if pd.notna(df.iloc[i, 12]):
-                reference = int(df.iloc[i, 12])
-            else:
-                reference = None
-            if pd.notna(df.iloc[i, 13]):
-                entry_date = df.iloc[i, 13]
-            else:
-                entry_date = None
-            if pd.notna(df.iloc[i, 5]):
-                description = df.iloc[i, 5]
-            else:
-                description = None
-            if pd.notna(df.iloc[i, 9]):
-                particulars = df.iloc[i, 9]
-            else:
-                particulars = None
-            missing_or_found = df.iloc[i, 4]
-            if missing_or_found == "Unknown":
-                missing_or_found = "F"
-            gender = df.iloc[i, 3]
-            if gender == "Unknown":
-                gender = None
-            if pd.notna(df.iloc[i, 14]):
-                face_encoding = df.iloc[i, 14]
-            else:
-                face_encoding = None
-            photo_file = f"./resized_photos/{df.iloc[i, 0]}"
-            # photo_file = photo_file.replace(" ", "_")
+        if "Basirhat Police District" not in df.iloc[i, 8]:
+            try:
+                report = Report.objects.get(
+                    name=df.iloc[i, 1], reference=int(df.iloc[i, 12])
+                )
+            except Report.DoesNotExist:
+                name = df.iloc[i, 1]
+                if pd.notna(df.iloc[i, 10]):
+                    age = int(df.iloc[i, 10])
+                else:
+                    age = 0
+                if pd.notna(df.iloc[i, 11]):
+                    height = int(df.iloc[i, 11])
+                else:
+                    height = 0
+                if pd.notna(df.iloc[i, 6]):
+                    latitude = float(df.iloc[i, 6])
+                else:
+                    latitude = None
+                if pd.notna(df.iloc[i, 7]):
+                    longitude = float(df.iloc[i, 7])
+                else:
+                    longitude = None
+                if pd.notna(df.iloc[i, 12]):
+                    reference = int(df.iloc[i, 12])
+                else:
+                    reference = None
+                if pd.notna(df.iloc[i, 13]):
+                    entry_date = df.iloc[i, 13]
+                else:
+                    entry_date = None
+                if pd.notna(df.iloc[i, 5]):
+                    description = df.iloc[i, 5]
+                else:
+                    description = None
+                if pd.notna(df.iloc[i, 9]):
+                    particulars = df.iloc[i, 9]
+                else:
+                    particulars = None
+                missing_or_found = df.iloc[i, 4]
+                if missing_or_found == "Unknown":
+                    continue
+                gender = df.iloc[i, 3]
+                if gender == "Unknown":
+                    gender = None
+                if pd.notna(df.iloc[i, 14]):
+                    face_encoding = df.iloc[i, 14]
+                else:
+                    face_encoding = None
+                photo_file = f"./resized_photos/{df.iloc[i, 0]}"
+                # photo_file = photo_file.replace(" ", "_")
 
-            report = Report(
-                name=name,
-                age=age,
-                height=height,
-                latitude=latitude,
-                longitude=longitude,
-                entry_date=entry_date,
-                reference=reference,
-                missing_or_found=missing_or_found,
-                gender=gender,
-                guardian_name_and_address=particulars,
-                description=description,
-                face_encoding=face_encoding,
-            )
-            ps = PoliceStation.objects.get(ps_with_distt=df.iloc[i, 8])
-            report.police_station = ps
-            with open(photo_file, "rb") as f:
-                file = ContentFile(f.read())
-                report.photo.save(df.iloc[i, 0], file, save=True)
-                if longitude:
-                    report.location = Point(longitude, latitude)
-                report.save()
+                report = Report(
+                    name=name,
+                    age=age,
+                    height=height,
+                    latitude=latitude,
+                    longitude=longitude,
+                    entry_date=entry_date,
+                    reference=reference,
+                    missing_or_found=missing_or_found,
+                    gender=gender,
+                    guardian_name_and_address=particulars,
+                    description=description,
+                    face_encoding=face_encoding,
+                )
+                ps = PoliceStation.objects.get(ps_with_distt=df.iloc[i, 8])
+                report.police_station = ps
+                with open(photo_file, "rb") as f:
+                    file = ContentFile(f.read())
+                    report.photo.save(df.iloc[i, 0], file, save=True)
+                    if longitude:
+                        report.location = Point(longitude, latitude)
+                    report.save()
 
 
 def tokenize(text):
