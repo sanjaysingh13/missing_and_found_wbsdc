@@ -137,6 +137,7 @@ def initial_migration():
                     guardian_name_and_address=particulars,
                     description=description,
                     face_encoding=face_encoding,
+                    reconciled=False,
                 )
                 ps = PoliceStation.objects.get(ps_with_distt=df.iloc[i, 8])
                 report.police_station = ps
@@ -272,6 +273,7 @@ def get_reports_within_bbox(xmin, ymin, xmax, ymax, layer="waterlines"):
             reports = reports | new_reports
 
     reports = reports.distinct()
+    reports = reports.filter(reconciled=False)
     return reports
 
 

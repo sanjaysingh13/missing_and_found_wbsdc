@@ -433,6 +433,7 @@ class ReportFormEdit(forms.Form):
     latitude = forms.FloatField(required=False)
     longitude = forms.FloatField(required=False)
     location = SpatialLocationField(map_attrs=default_map_attrs, required=False)
+    reconciled = forms.BooleanField(required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -457,11 +458,15 @@ class ReportFormEdit(forms.Form):
                     Row(
                         Column(
                             "missing_or_found",
-                            css_class="form-group col-md-6 mb-0 card text-dark bg-light",
+                            css_class="form-group col-md-4 mb-0 card text-dark bg-light",
+                        ),
+                        Column(
+                            "reconciled",
+                            css_class="form-group col-md-4 mb-0 card text-dark bg-light",
                         ),
                         Column(
                             "gender",
-                            css_class="form-group col-md-6 mb-0 card text-dark bg-light",
+                            css_class="form-group col-md-4 mb-0 card text-dark bg-light",
                         ),
                     ),
                     Row("name", css_class="form-group "),
@@ -540,8 +545,12 @@ class ReportFormEdit(forms.Form):
                     msg_ = "Please fill lat and long within the State of West Bengal."
                     messages.append(msg_)
         photo = cleaned_data.get("photo")
-        if photo.size > 5 * 1024 * 1024:
-            msg_ = "Please pick image below 5 Mb"
+        if photo:
+            if photo.size > 5 * 1024 * 1024:
+                msg_ = "Please pick image below 5 Mb"
+                messages.append(msg_)
+        else:
+            msg_ = "Please pick an image"
             messages.append(msg_)
         if messages != []:
             messages = list(set(messages))
@@ -823,10 +832,10 @@ class BoundedBoxSearchForm(forms.Form):
             xmax = float(south_east_location[1])
             ymin = float(south_east_location[0])
             if not (
-                (86.5 <= xmin <= 90)
-                and (86.5 <= xmax <= 90)
-                and (21 <= ymin <= 28)
-                and (21 <= ymax <= 28)
+                (86 <= xmin <= 91)
+                and (86 <= xmax <= 91)
+                and (20 <= ymin <= 29)
+                and (20 <= ymax <= 29)
             ):
                 msg_ = "Please fill lat and long within the State of West Bengal."
                 messages.append(msg_)

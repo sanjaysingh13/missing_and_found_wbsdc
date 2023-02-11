@@ -95,7 +95,7 @@ def match_encodings(report):
     else:
         required = "M"
     reports_under_consideration = Report.objects.filter(
-        gender=gender, missing_or_found=required
+        gender=gender, missing_or_found=required, reconciled=False
     )
     if height:
         reports_under_consideration = reports_under_consideration.filter(
@@ -219,6 +219,7 @@ def upload_photo(request):
                     report.location = location
                 else:
                     report.location = Point(longitude, latitude)
+                report.reconciled = False
                 report.save()
                 return redirect("backend:view_report", object_id=report.id)
     return render(
@@ -306,6 +307,7 @@ def upload_public_report(request):
                         face_encoding = json.dumps(face_encoding.tolist())
                         report.face_encoding = face_encoding
                     report.year = str(entry_date.year)[-2:]
+                    report.reconciled = False
                     report.save()
                     send_public_report_created_mail.apply_async(
                         args=[report.pk], countdown=5
@@ -480,6 +482,7 @@ def edit_report(request, pk):
             "guardian_name_and_address",
             "latitude",
             "longitude",
+            "reconciled",
         }
     }
     police_station = report.police_station.ps_with_distt
@@ -506,6 +509,7 @@ def edit_report(request, pk):
                 "police_station_with_distt", ""
             )
             location = cleaned_data.get("location", "")
+            reconciled = cleaned_data.get("reconciled", "")
             if files:
                 for f in files:
                     resized_image, icon = resize_image(f, 600, 64)
@@ -545,6 +549,8 @@ def edit_report(request, pk):
             report.missing_or_found = missing_or_found
             report.height = height
             report.description = description
+            if reconciled:
+                report.reconciled = True
             report.save()
             return redirect("backend:view_report", object_id=report.id)
     else:
@@ -610,8 +616,10 @@ def report_search(request):
                         min_date = date.today() - timedelta(days=30)
                     if not max_date:
                         max_date = date.today()
-                    query_object = Q(entry_date__gte=min_date) & Q(
-                        entry_date__lte=max_date
+                    query_object = (
+                        Q(entry_date__gte=min_date)
+                        & Q(entry_date__lte=max_date)
+                        & Q(reconciled=False)
                     )
 
                     if districts != "Null":
@@ -800,7 +808,9 @@ def report_search_results(request, pk):
         min_date = date.today() - timedelta(days=30)
     if not max_date:
         max_date = date.today()
-    query_object = Q(entry_date__gte=min_date) & Q(entry_date__lte=max_date)
+    query_object = (
+        Q(entry_date__gte=min_date) & Q(entry_date__lte=max_date) & Q(reconciled=False)
+    )
 
     if districts != "Null":
         query_object = query_object & Q(police_station__district__in=[int(districts)])
