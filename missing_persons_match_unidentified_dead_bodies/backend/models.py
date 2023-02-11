@@ -47,10 +47,17 @@ class Report(TimeStampedModel):
     location = models.PointField(srid=4326, geography=True, null=True)
     # spatial_location = SpatialLocationField()
     year = models.CharField(blank=True, max_length=2)
+    reconciled = models.BooleanField()
     matches = models.ManyToManyField("self", related_name="matched_by", through="Match")
 
     class Meta:
         indexes = (GinIndex(fields=["description_search_vector"]),)  # add index
+        constraints = [
+            models.UniqueConstraint(
+                fields=["police_station", "reference", "entry_date"],
+                name="unique_report",
+            )
+        ]
 
 
 class PublicReport(TimeStampedModel):
@@ -79,6 +86,7 @@ class PublicReport(TimeStampedModel):
     # spatial_location = SpatialLocationField()
     token = models.CharField(max_length=8)
     year = models.CharField(blank=True, max_length=2)
+    reconciled = models.BooleanField()
 
     class Meta:
         indexes = (GinIndex(fields=["description_search_vector"]),)  # add index
