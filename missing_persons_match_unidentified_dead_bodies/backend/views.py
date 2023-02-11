@@ -178,6 +178,18 @@ def upload_photo(request):
                 "police_station_with_distt", ""
             )
             location = cleaned_data.get("location", "")
+            police_station = PoliceStation.objects.get(
+                ps_with_distt=police_station_with_distt.strip()
+            )
+            try:
+                existing_report = Report.objects.get(
+                    police_station=police_station,
+                    entry_date=entry_date,
+                    reference=reference,
+                )
+                return redirect("backend:view_report", object_id=existing_report.id)
+            except Report.DoesNotExist:
+                pass
             # Encoding face
             for f in files:
                 resized_image, icon = resize_image(f, 600, 64)
@@ -195,9 +207,6 @@ def upload_photo(request):
                     longitude=longitude,
                     age=age,
                     guardian_name_and_address=guardian_name_and_address,
-                )
-                police_station = PoliceStation.objects.get(
-                    ps_with_distt=police_station_with_distt.strip()
                 )
                 report.police_station = police_station
                 img = cv2.imdecode(
@@ -510,6 +519,28 @@ def edit_report(request, pk):
             )
             location = cleaned_data.get("location", "")
             reconciled = cleaned_data.get("reconciled", "")
+            police_station = PoliceStation.objects.get(
+                ps_with_distt=police_station_with_distt.strip()
+            )
+            try:
+                existing_report = Report.objects.get(
+                    police_station=police_station,
+                    entry_date=entry_date,
+                    reference=reference,
+                )
+                message = (
+                    "A report with this reference already"
+                    + "exists at https://www.wbkhoyapaya.com/backend/"
+                    + f"view_report/{existing_report.pk}/ "
+                )
+                messages.info(request, message)
+                return render(
+                    request,
+                    "backend/photo_upload_form.html",
+                    {"reportsform": reportsform},
+                )
+            except Report.DoesNotExist:
+                pass
             if files:
                 for f in files:
                     resized_image, icon = resize_image(f, 600, 64)
@@ -529,10 +560,7 @@ def edit_report(request, pk):
                         face_encoding = face_encoding[0]
                         face_encoding = json.dumps(face_encoding.tolist())
                         report.face_encoding = face_encoding
-            police_station = PoliceStation.objects.get(
-                ps_with_distt=police_station_with_distt.strip()
-            )
-            entry_date = cleaned_data.get("entry_date", "")
+
             report.police_station = police_station
 
             report.year = str(entry_date.year)[-2:]
