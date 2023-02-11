@@ -65,6 +65,10 @@ class User(AbstractUser):
     name = CharField(_("Name of User"), blank=True, max_length=255)
     first_name = None  # type: ignore
     last_name = None  # type: ignore
+    next_pk = 4000
+
+    class Meta:
+        ordering = ["pk"]
 
     class Categories(TextChoices):
         UNAUTHORIZED = "UNAUTHORIZED", "Unauthorized"
@@ -89,6 +93,12 @@ class User(AbstractUser):
     is_sp_or_cp = BooleanField(null=True)
     rank = CharField(_("Rank of User"), blank=True, max_length=50)
     telephone = CharField(_("Cellphone of User"), blank=True, max_length=10)
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.pk = User.next_pk
+            User.next_pk += 1
+        super().save(*args, **kwargs)
 
     def get_absolute_url(self):
         """Get url for user's detail view.
