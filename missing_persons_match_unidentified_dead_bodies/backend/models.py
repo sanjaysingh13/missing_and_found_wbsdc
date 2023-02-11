@@ -52,12 +52,12 @@ class Report(TimeStampedModel):
 
     class Meta:
         indexes = (GinIndex(fields=["description_search_vector"]),)  # add index
-        # constraints = [
-        #     models.UniqueConstraint(
-        #         fields=["police_station", "reference", "entry_date"],
-        #         name="unique_report",
-        #     )
-        # ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["police_station", "reference", "entry_date"],
+                name="unique_report",
+            )
+        ]
 
 
 class PublicReport(TimeStampedModel):
