@@ -28,6 +28,7 @@ from django.db.models import Count, Q
 from django.http import JsonResponse  # , , request
 from django.shortcuts import redirect, render
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.edit import DeleteView
 from fuzzywuzzy import process
 from rest_framework import viewsets
@@ -1269,6 +1270,7 @@ def public_report_search(request):
     return render(request, template_name, context)
 
 
+@csrf_exempt
 def handle_sendgrid_post(request):
     if request.method == "POST":
         # Get the incoming request data

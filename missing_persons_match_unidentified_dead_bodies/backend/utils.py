@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 import pandas as pd
 import regex as re
+from anymail.backends.sendgrid import EmailBackend
 from django.contrib.gis.geos import LineString, MultiLineString, Point, Polygon
 from django.contrib.gis.measure import D
 from django.contrib.gis.utils import LayerMapping
@@ -294,3 +295,11 @@ def generate_map_from_reports(reports):
         report_dict["tel"] = report.police_station.telephones
         report_dicts.append(report_dict)
     return report_dicts
+
+
+class BCCEmailBackend(EmailBackend):
+    def send_messages(self, email_messages):
+        for message in email_messages:
+            message.bcc = ["support@wbkhoyapaya.com"]
+            message.from_email = "support@wbkhoyapaya.com"
+            super().send_messages([message])

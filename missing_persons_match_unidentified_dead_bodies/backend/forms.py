@@ -209,10 +209,13 @@ class ReportForm(forms.Form):
                     msg_ = "Please fill lat and long within the State of West Bengal."
                     messages.append(msg_)
         photo = cleaned_data.get("photo")
-        if photo.size > 5 * 1024 * 1024:
-            msg_ = "Please pick image below 5 Mb"
+        if photo:
+            if photo.size > 5 * 1024 * 1024:
+                msg_ = "Please pick image below 5 Mb"
+                messages.append(msg_)
+        else:
+            msg_ = "Please pick an image"
             messages.append(msg_)
-
         if messages != []:
             messages = list(set(messages))
             raise forms.ValidationError(messages)
@@ -381,8 +384,12 @@ class PublicReportForm(forms.Form):
         messages = []
         age = cleaned_data.get("age", "")
         photo = cleaned_data.get("photo")
-        if photo.size > 5 * 1024 * 1024:
-            msg_ = "Please pick image below 5 Mb"
+        if photo:
+            if photo.size > 5 * 1024 * 1024:
+                msg_ = "Please pick image below 5 Mb"
+                messages.append(msg_)
+        else:
+            msg_ = "Please pick an image"
             messages.append(msg_)
         if age < 18:
             msg_ = "The missing person is a minor. Please visit the Police Station and register a specific FIR"
