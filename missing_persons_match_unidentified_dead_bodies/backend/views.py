@@ -229,6 +229,7 @@ def upload_photo(request):
                 else:
                     report.location = Point(longitude, latitude)
                 report.reconciled = False
+                report.uploaded_by = request.user
                 report.save()
                 return redirect("backend:view_report", object_id=report.id)
     return render(
