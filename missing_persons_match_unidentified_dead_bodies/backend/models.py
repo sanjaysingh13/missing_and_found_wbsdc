@@ -7,7 +7,10 @@ from django.urls import reverse
 # from django.core.files import File
 from django.utils.translation import gettext_lazy as _
 
-from missing_persons_match_unidentified_dead_bodies.users.models import PoliceStation
+from missing_persons_match_unidentified_dead_bodies.users.models import (
+    PoliceStation,
+    User,
+)
 
 # from PIL import Image
 
@@ -49,6 +52,9 @@ class Report(TimeStampedModel):
     year = models.CharField(blank=True, max_length=2)
     reconciled = models.BooleanField(default=False)
     matches = models.ManyToManyField("self", related_name="matched_by", through="Match")
+    uploaded_by = models.ForeignKey(
+        User, blank=True, null=True, on_delete=models.SET_NULL
+    )
 
     class Meta:
         indexes = (GinIndex(fields=["description_search_vector"]),)  # add index

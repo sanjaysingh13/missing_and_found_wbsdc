@@ -1224,6 +1224,30 @@ def districts_at_glance_reports(request):
 
 @login_required
 @permission_required("users.add_user", raise_exception=True)
+def users_at_glance(request):
+    template_name = "backend/users_at_glance.html"
+    if request.method == "GET":
+
+        users_with_reports = (
+            Report.objects.select_related("uploaded_by")
+            .values(
+                "uploaded_by__username",
+                "uploaded_by__name",
+                "uploaded_by__rank",
+                "uploaded_by__police_station__district__name",
+            )
+            .annotate(report_count=Count("id"))
+            .order_by("-report_count")
+        )
+        context = {}
+        context["users"] = users_with_reports
+        context["form_title"] = "Users At A Glance"
+        context["title"] = "Users At A Glance"
+    return render(request, template_name, context)
+
+
+@login_required
+@permission_required("users.add_user", raise_exception=True)
 def districts_at_glance_public_reports(request):
     template_name = "backend/districts_at_glance_reports.html"
     if request.method == "GET":

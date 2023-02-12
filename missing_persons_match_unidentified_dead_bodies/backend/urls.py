@@ -43,6 +43,11 @@ urlpatterns = [
         name="districts_at_glance_reports",
     ),
     path(
+        "users_at_glance/",
+        views.users_at_glance,
+        name="users_at_glance",
+    ),
+    path(
         "districts_at_glance_public_reports/",
         views.districts_at_glance_public_reports,
         name="districts_at_glance_public_reports",

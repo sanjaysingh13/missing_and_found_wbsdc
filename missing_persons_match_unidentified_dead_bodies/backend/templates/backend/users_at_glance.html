@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %} {{title}}{% endblock title %}
+{% block content %}
+
+<h1> Reports uploaded by Users </h1>
+<table class="table table-condensed table-responsive table-striped">
+      <tr>
+            <th >Sl. No.</th>
+            <th >Username</th>
+
+            <th >Name</th>
+            <th> Rank </th>
+            <th> Unit </th>
+            <th> Reports </th>
+
+
+
+        </tr>
+        <tbody>
+          {% for user in users %}
+
+            <tr>
+              <td>{{forloop.counter}}</td>
+                <td>{{user.uploaded_by__username}}</td>
+                <td>{{user.uploaded_by__name}}</td>
+                <td>{{user.uploaded_by__rank}}</td>
+                <td>{{user.uploaded_by__police_station__district__name}}</td>
+                <td>{{user.report_count}}</td>
+
+
+
+
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock content %}
