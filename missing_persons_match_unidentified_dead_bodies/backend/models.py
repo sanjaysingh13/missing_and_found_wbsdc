@@ -65,6 +65,21 @@ class Report(TimeStampedModel):
             )
         ]
 
+    def __str__(self):
+        if self.missing_or_found == "M":
+            person = "Missing : "
+        else:
+            person = "Found : "
+        if self.name:
+            person = person + self.name
+        if self.guardian_name_and_address:
+            person = person + " " + self.guardian_name_and_address
+        if self.entry_date:
+            person = person + " dt. " + self.entry_date.strftime("%d,%b,%Y")
+        if self.police_station:
+            person = person + " P.S. " + self.police_station.name
+        return person
+
 
 class PublicReport(TimeStampedModel):
     photo = models.FileField()
@@ -96,6 +111,18 @@ class PublicReport(TimeStampedModel):
 
     class Meta:
         indexes = (GinIndex(fields=["description_search_vector"]),)  # add index
+
+    def __str__(self):
+        person = "Missing : "
+        if self.name:
+            person = person + self.name
+        if self.guardian_name_and_address:
+            person = person + " " + self.guardian_name_and_address
+        if self.entry_date:
+            person = person + " dt. " + self.entry_date.strftime("%d,%b,%Y")
+        if self.police_station:
+            person = person + " P.S. " + self.police_station.name
+        return person
 
     # def save(self, *args, **kwargs): # Will use this later in CCS
     #     # Open the uploaded photo

@@ -94,6 +94,36 @@
             {% endfor %}
         </tbody>
     </table>
+    <h6> Remaining </h6>
+    <table class="table table-condensed table-responsive table-striped">
+      <tr>
+            <th >Sl. No.</th>
+            <th> PS </th>
+            <th >Name</th>
+
+            <th >Email</th>
+            <th> Telephone </th>
+
+
+
+        </tr>
+        <tbody>
+          {% for unauthorized_user in unauthorized_users %}
+
+            <tr>
+              <td>{{forloop.counter}}</td>
+              <td>{{unauthorized_user.police_station.name}}
+                <td>{{unauthorized_user.name}}</td>
+                <td>{{unauthorized_user.email}}</td>
+
+                <td> {{unauthorized_user.telephone}}</td>
+
+
+
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
     <h6> Police Stations without Admin</h6>
     <table class="table table-condensed table-responsive table-striped">
       <tr>

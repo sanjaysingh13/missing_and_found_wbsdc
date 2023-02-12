@@ -20,7 +20,11 @@
 
             <tr>
               <td>{{forloop.counter}}</td>
-                <td>{{district_report.name}}</td>
+              {% if title == "Districts At A Glance (Public Reports)" %}
+              <td><a href="{% url 'backend:public_reports_by_district' name=district_report.name %}">{{district_report.name}}</td>
+              	{% else %}
+              	<td><a href="{% url 'backend:reports_by_district' name=district_report.name %}">{{district_report.name}}</td>
+              	{% endif %}
                 <td>{{district_report.missing_count}}</td>
                 <td>{{district_report.found_count}}</td>
                 <td>{{district_report.missing_last_24_hours}}</td>

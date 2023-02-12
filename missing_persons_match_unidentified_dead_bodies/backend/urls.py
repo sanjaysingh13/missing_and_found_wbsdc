@@ -53,6 +53,16 @@ urlpatterns = [
         name="districts_at_glance_public_reports",
     ),
     path(
+        "public_reports_by_district/<str:name>/",
+        views.public_reports_by_district,
+        name="public_reports_by_district",
+    ),
+    path(
+        "reports_by_district/<str:name>/",
+        views.reports_by_district,
+        name="reports_by_district",
+    ),
+    path(
         "handle_sendgrid_post/", views.handle_sendgrid_post, name="handle_sendgrid_post"
     ),
 ]

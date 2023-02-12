@@ -1158,6 +1158,9 @@ def district(request):
             oc_users = User.objects.filter(
                 district=district, police_station__isnull=False, category="PS_ADMIN"
             ).order_by("police_station__name")
+            unauthorized_users = User.objects.filter(
+                district=district, category="UNAUTHORIZED"
+            )
             empty_police_stations = district.policestation_set.exclude(user__is_oc=True)
             print(district_id)
             context = {}
@@ -1165,6 +1168,7 @@ def district(request):
             context["sp_or_cp_users"] = sp_or_cp_users
             context["distt_admins"] = distt_admins
             context["oc_users"] = oc_users
+            context["unauthorized_users"] = unauthorized_users
             context["empty_police_stations"] = empty_police_stations
             return render(request, template_name, context)
     context = {}
@@ -1332,6 +1336,30 @@ def public_report_search(request):
     context["form_title"] = "Search for Public Report"
     context["title"] = "Search for Public Report"
     return render(request, template_name, context)
+
+
+def public_reports_by_district(request, name):
+    district = District.objects.get(name=name)
+    police_stations = PoliceStation.objects.filter(district=district)
+    public_reports = PublicReport.objects.filter(
+        police_station__in=police_stations
+    ).order_by("-entry_date")
+    return render(
+        request,
+        "backend/public_reports.html",
+        {"public_reports": public_reports, "district": name},
+    )
+
+
+def reports_by_district(request, name):
+    district = District.objects.get(name=name)
+    police_stations = PoliceStation.objects.filter(district=district)
+    reports = Report.objects.filter(police_station__in=police_stations).order_by(
+        "-entry_date"
+    )
+    return render(
+        request, "backend/reports.html", {"reports": reports, "district": name}
+    )
 
 
 @csrf_exempt

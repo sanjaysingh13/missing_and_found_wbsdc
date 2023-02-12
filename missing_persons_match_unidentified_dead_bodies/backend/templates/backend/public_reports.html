@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %} Public Reports for {{district}} {% endblock title %}
+{% block content %}
+
+<h1> Public Reports for {{district}} </h1>
+<div class="panel panel-default">
+  <div class="panel-body">
+    <div class="list-group">
+      {% for report in public_reports %}
+
+    <a href= "{% url 'backend:view_public_report' object_id=report.token %}" class="list-group-item">
+          <img src= {{report.icon.url}}  height= "50" class = "d-inline">
+
+          <p class="list-group-item-heading d-inline">{{ report }}  </p>
+        </a>
+      {% endfor %}
+
+
+    </div>
+  </div>
+</div>
+{% endblock content %}
