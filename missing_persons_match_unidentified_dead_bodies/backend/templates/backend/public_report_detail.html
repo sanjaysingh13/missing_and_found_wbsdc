@@ -58,9 +58,14 @@
         <div class="col">
             <h5>Reported Case</h5>
             <img src="{{ report.photo.url }}" class="img-fluid">
-            <p>{{ report.detail}}</p>
+
             <p>{{ report.entry_date}}</p>
             <p>{{ report.name}}</p>
+            <p><strong>C/o </strong>{{ report.guardian_name_and_address}}</p>
+            <p>{{report.description}}</p>
+            <p>Height: {{report.height}} Age: {{report.age}}</p>
+            <p><strong>Tel of Missing: </strong>{{ report.telephone_of_missing}}</p>
+            <p><strong>Tel of Guardian: </strong>{{ report.telephone_of_reporter}}</p>
             <p>{{ report.police_station.ps_with_distt}}</p>
             <p id = "searched_report", style="display:none;">{{report.pk}}</p>
 

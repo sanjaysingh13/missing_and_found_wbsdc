@@ -357,7 +357,15 @@ def view_report(request, object_id):
         matched_reports = match_encodings(report)
         if matched_reports:
             reports = Report.objects.filter(pk__in=matched_reports).only(
-                "pk", "photo", "description", "entry_date", "name", "police_station"
+                "pk",
+                "photo",
+                "description",
+                "entry_date",
+                "name",
+                "police_station",
+                "guardian_name_and_address",
+                "height",
+                "age",
             )
             if report.missing_or_found == "M":
                 for report_found in reports:
@@ -387,6 +395,9 @@ def view_report(request, object_id):
                 "entry_date",
                 "name",
                 "police_station",
+                "guardian_name_and_address",
+                "height",
+                "age",
             )
             for report_missing in public_reports:
                 if not PublicReportMatch.objects.filter(
@@ -418,7 +429,13 @@ def view_public_report(request, object_id):
             matched_reports = match_encodings(report)
             if matched_reports:
                 reports = Report.objects.filter(pk__in=matched_reports).only(
-                    "pk", "photo", "description", "entry_date", "name", "police_station"
+                    "pk",
+                    "photo",
+                    "description",
+                    "entry_date",
+                    "name",
+                    "police_station",
+                    "guardian_name_and_address",
                 )
                 for report_found in reports:
                     if not PublicReportMatch.objects.filter(
@@ -1369,7 +1386,7 @@ def handle_sendgrid_post(request):
         request_data = json.loads(request.body)
 
         # Store the data in the database
-        EmailRecord.objects.create(email=request_data["email"], data=request_data)
+        EmailRecord.objects.create(email=request_data["to"], data=request_data)
 
         # Return a success response
         return JsonResponse({"status": "success"})

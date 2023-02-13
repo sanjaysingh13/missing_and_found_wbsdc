@@ -57,9 +57,11 @@
         <div class="col">
             <h5>Reported Case</h5>
             <img src="{{ report.photo.url }}" class="img-fluid">
-            <p>{{ report.detail}}</p>
             <p>{{ report.entry_date}}</p>
             <p>{{ report.name}}</p>
+            <p><strong>C/o: </strong>{{ report.guardian_name_and_address}}</p>
+            <p>{{ report.description}}</p>
+            <p>Height: {{report.height}} Age: {{report.age}}</p>
             <p>{{ report.police_station.ps_with_distt}}</p>
             <p id = "searched_report", style="display:none;">{{report.pk}}</p>
             <div class = "row">
@@ -95,9 +97,11 @@
 
             <input class="form-check-input dup_id" type="checkbox"  value= {{match.pk}} aria-label="...">
             <p>{{ match.name}}</p>
+            <p><strong>C/o: </strong>{{ match.guardian_name_and_address}}</p>
             <p>{{ match.entry_date}}</p>
             <p>{{ match.description}}</p>
             <p>{{ match.police_station.ps_with_distt}}</p>
+            <p>Height: {{match.height}} Age: {{match.age}}</p>
 
         </div>
         {% endfor %}
