@@ -7,6 +7,8 @@ from django.conf import settings
 from django.contrib.postgres.search import SearchVector
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.core.mail import send_mail
+from django.db.models import Count
+from django.utils import timezone
 from PIL import Image
 
 from config.celery_app import app
@@ -16,6 +18,7 @@ from missing_persons_match_unidentified_dead_bodies.backend.models import (
     PublicReportMatch,
     Report,
 )
+from missing_persons_match_unidentified_dead_bodies.users.models import User
 
 
 @app.task(task_soft_time_limit=3000, ignore_result=True)
@@ -222,5 +225,38 @@ def send_public_report_created_mail(pk):
         alert_oc_message,
         None,
         [report.police_station.emails],
+        fail_silently=False,
+    )
+
+
+@app.task
+def send_summary_mail(ask_soft_time_limit=300, ignore_result=True):
+    now = timezone.now()
+
+    last_24_hours = now - timezone.timedelta(hours=24)
+
+    report_count = Report.objects.filter(created__gte=last_24_hours).aggregate(
+        Count("id")
+    )
+    public_report_count = PublicReport.objects.filter(
+        created__gte=last_24_hours
+    ).aggregate(Count("id"))
+    matches_count = Match.objects.filter(created__gte=last_24_hours).aggregate(
+        Count("id")
+    )
+    users_count = User.objects.filter(last_login__gte=last_24_hours).aggregate(
+        Count("id")
+    )
+
+    send_mail(
+        f"Activity summary for {now} - {last_24_hours}",
+        f"""
+            Reports Added : {report_count}
+            Public Reports Added : {public_report_count}
+            Matches  Made : {matches_count}
+            Users Visited : {users_count}
+            """,
+        None,
+        ["sanjaysingh13@gmail.com"],
         fail_silently=False,
     )
