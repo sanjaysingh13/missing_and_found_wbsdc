@@ -12,7 +12,7 @@ from missing_persons_match_unidentified_dead_bodies.users.models import (
     PoliceStation,
 )
 
-GENDER = [("M", "Male"), ("F", "Female"), ("U", "Unknown")]
+GENDER = [("Male", "Male"), ("Female", "Female"), ("U", "Unknown")]
 MISSING_OR_FOUND = [("M", "Missing"), ("F", "Unidentified Dead Body")]
 # POLICE_STATIONS = [
 #         (ps.id, ps.ps_with_distt)
@@ -192,6 +192,12 @@ class ReportForm(forms.Form):
         messages = []
         latitude = cleaned_data.get("latitude")
         longitude = cleaned_data.get("longitude", "")
+        missing_or_found = cleaned_data.get("missing_or_found", "")
+        name = cleaned_data.get("name", "")
+        if missing_or_found == "F" and name:
+            msg_ = "An unidentified dead body cannot have a name"
+            messages.append(msg_)
+
         if latitude:
             if not longitude:
                 msg_ = "Please fill both lat and long"

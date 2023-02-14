@@ -165,6 +165,10 @@ def upload_photo(request):
             entry_date = cleaned_data.get("entry_date", "")
             name = cleaned_data.get("name", "")
             gender = cleaned_data.get("gender", "")
+            if gender == "Male":
+                gender = "M"
+            elif gender == "Female":
+                gender = "F"
             age = cleaned_data.get("age", "")
             guardian_name_and_address = cleaned_data.get(
                 "guardian_name_and_address", ""
@@ -254,6 +258,10 @@ def upload_public_report(request):
             cleaned_data = reportsform.cleaned_data
             name = cleaned_data.get("name", "")
             gender = cleaned_data.get("gender", "")
+            if gender == "Male":
+                gender = "M"
+            elif gender == "Female":
+                gender = "F"
             age = cleaned_data.get("age", "")
             guardian_name_and_address = cleaned_data.get(
                 "guardian_name_and_address", ""
@@ -523,6 +531,10 @@ def edit_report(request, pk):
             entry_date = cleaned_data.get("entry_date", "")
             name = cleaned_data.get("name", "")
             gender = cleaned_data.get("gender", "")
+            if gender == "Male":
+                gender = "M"
+            elif gender == "Female":
+                gender = "F"
             age = cleaned_data.get("age", "")
             guardian_name_and_address = cleaned_data.get(
                 "guardian_name_and_address", ""
@@ -635,6 +647,10 @@ def report_search(request):
             advanced_search_report = cleaned_data.get("advanced_search_report", "")
             missing_or_found = cleaned_data.get("missing_or_found", "")
             gender = cleaned_data.get("gender", "")
+            if gender == "Male":
+                gender = "M"
+            elif gender == "Female":
+                gender = "F"
             latitude = cleaned_data.get("latitude", "")
             longitude = cleaned_data.get("longitude", "")
             distance = cleaned_data.get("distance", "")
@@ -967,6 +983,10 @@ def bounded_box_search(request):
             cleaned_data = form.cleaned_data
             print(cleaned_data)
             gender = cleaned_data.get("gender", "")
+            if gender == "Male":
+                gender = "M"
+            elif gender == "Female":
+                gender = "F"
             min_date = cleaned_data.get("min_date", "")
             max_date = cleaned_data.get("max_date", "")
             north_west_location = cleaned_data.get("north_west_location", "").split(",")

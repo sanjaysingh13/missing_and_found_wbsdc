@@ -286,7 +286,7 @@ $(document).ready(function() {
     $("#id_name").prop("disabled", true);
     $("#id_guardian_name_and_address").prop("disabled", true);
   });
-  $("input[value!='F']").click(function() {
+  $("input[value='M']").click(function() {
     $("#id_name").prop("disabled", false);
     $("#id_guardian_name_and_address").prop("disabled", false);
   });
