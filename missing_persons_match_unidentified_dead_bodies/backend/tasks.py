@@ -114,24 +114,16 @@ def send_matched_mail(pk):
             [oc_missing_email],
             fail_silently=False,
         )
-        if (
-            len(
-                User.objects.filter(
+        for user in User.objects.filter(
                     category="DISTRICT_ADMIN",
                     district=report_missing.police_station.district,
-                )
-            )
-            != 0
-        ):
+                ):
             send_mail(
                 "Missing Person Matched with Dead Body",
                 missing_message,
                 None,
                 [
-                    User.objects.filter(
-                        category="DISTRICT_ADMIN",
-                        district=report_missing.police_station.district,
-                    )[0].email
+                    user.email
                 ],
                 fail_silently=False,
             )
@@ -150,24 +142,16 @@ def send_matched_mail(pk):
             [oc_found_email],
             fail_silently=False,
         )
-        if (
-            len(
-                User.objects.filter(
+        for user in User.objects.filter(
                     category="DISTRICT_ADMIN",
                     district=report_found.police_station.district,
-                )
-            )
-            != 0
-        ):
+                ):
             send_mail(
                 "Unidentified Dead Body Matched with Missing Person",
                 found_message,
                 None,
                 [
-                    User.objects.filter(
-                        category="DISTRICT_ADMIN",
-                        district=report_found.police_station.district,
-                    )[0].email
+                    user.email
                 ],
                 fail_silently=False,
             )
@@ -233,45 +217,29 @@ def send_public_report_matched_mail(pk):
             [oc_found_email],
             fail_silently=False,
         )
-        if (
-            len(
-                User.objects.filter(
+        for user in User.objects.filter(
                     category="DISTRICT_ADMIN",
                     district=report_found.police_station.district,
-                )
-            )
-            != 0
-        ):
+                ):
             send_mail(
                 "Unidentified Dead Body Matched with Missing Person",
                 found_message,
                 None,
                 [
-                    User.objects.filter(
-                        category="DISTRICT_ADMIN",
-                        district=report_found.police_station.district,
-                    )[0].email
+                    user.email
                 ],
                 fail_silently=False,
             )
-        if (
-            len(
-                User.objects.filter(
+        for user in User.objects.filter(
                     category="DISTRICT_ADMIN",
                     district=report_missing.police_station.district,
-                )
-            )
-            != 0
-        ):
+                ):
             send_mail(
                 "Missing Person Matched with Dead Body",
                 missing_message,
                 None,
                 [
-                    User.objects.filter(
-                        category="DISTRICT_ADMIN",
-                        district=report_missing.police_station.district,
-                    )[0].email
+                    user.email
                 ],
                 fail_silently=False,
             )
@@ -318,22 +286,15 @@ def send_public_report_created_mail(pk):
         ["sanjaysingh13@gmail.com"],
         fail_silently=False,
     )
-    if (
-        len(
-            User.objects.filter(
+    for user in User.objects.filter(
                 category="DISTRICT_ADMIN", district=report.police_station.district
-            )
-        )
-        != 0
-    ):
+            ):
         send_mail(
             "Public Missing Report on WB Khoya Paya",
             alert_oc_message,
             None,
             [
-                User.objects.filter(
-                    category="DISTRICT_ADMIN", district=report.police_station.district
-                )[0].email
+                user.email
             ],
             fail_silently=False,
         )
