@@ -77,9 +77,9 @@ def add_description_search_vector_to_report(pk):
 def send_matched_mail(pk):
     match = Match.objects.get(pk=pk)
     report_missing = match.report_missing
-    ps_missing = match.report_missing.police_station.ps_with_distt
-    oc_missing = match.report_missing.police_station.officer_in_charge
-    oc_missing_tel = match.report_missing.police_station.telephones
+    ps_missing = report_missing.police_station.ps_with_distt
+    oc_missing = report_missing.police_station.officer_in_charge
+    oc_missing_tel = report_missing.police_station.telephones
     oc_missing_email = report_missing.police_station.emails
     reference_missing = (
         str(report_missing.reference)
@@ -89,14 +89,14 @@ def send_matched_mail(pk):
     name_missing = report_missing.name
 
     report_found = match.report_found
-    ps_found = match.report_found.police_station.ps_with_distt
-    oc_found = match.report_found.police_station.officer_in_charge
-    oc_found_tel = match.report_found.police_station.telephones
+    ps_found = report_found.police_station.ps_with_distt
+    oc_found = report_found.police_station.officer_in_charge
+    oc_found_tel = report_found.police_station.telephones
     oc_found_email = report_found.police_station.emails
     reference_found = (
         str(report_found.reference)
         + " dt. "
-        + report_missing.entry_date.strftime("%d,%b,%Y")
+        + report_found.entry_date.strftime("%d,%b,%Y")
     )
     try:
         missing_message = (
@@ -114,6 +114,27 @@ def send_matched_mail(pk):
             [oc_missing_email],
             fail_silently=False,
         )
+        if (
+            len(
+                User.objects.filter(
+                    category="DISTRICT_ADMIN",
+                    district=report_missing.police_station.district,
+                )
+            )
+            != 0
+        ):
+            send_mail(
+                "Missing Person Matched with Dead Body",
+                missing_message,
+                None,
+                [
+                    User.objects.filter(
+                        category="DISTRICT_ADMIN",
+                        district=report_missing.police_station.district,
+                    )[0].email
+                ],
+                fail_silently=False,
+            )
         found_message = (
             f"There is a match for an unidentified dead body reported by you vide  {reference_found}"
             + f" of {ps_found} at {ps_missing}."
@@ -129,6 +150,27 @@ def send_matched_mail(pk):
             [oc_found_email],
             fail_silently=False,
         )
+        if (
+            len(
+                User.objects.filter(
+                    category="DISTRICT_ADMIN",
+                    district=report_found.police_station.district,
+                )
+            )
+            != 0
+        ):
+            send_mail(
+                "Unidentified Dead Body Matched with Missing Person",
+                found_message,
+                None,
+                [
+                    User.objects.filter(
+                        category="DISTRICT_ADMIN",
+                        district=report_found.police_station.district,
+                    )[0].email
+                ],
+                fail_silently=False,
+            )
         match.mail_sent = date.today()
         match.save()
     except Exception as e:
@@ -191,6 +233,48 @@ def send_public_report_matched_mail(pk):
             [oc_found_email],
             fail_silently=False,
         )
+        if (
+            len(
+                User.objects.filter(
+                    category="DISTRICT_ADMIN",
+                    district=report_found.police_station.district,
+                )
+            )
+            != 0
+        ):
+            send_mail(
+                "Unidentified Dead Body Matched with Missing Person",
+                found_message,
+                None,
+                [
+                    User.objects.filter(
+                        category="DISTRICT_ADMIN",
+                        district=report_found.police_station.district,
+                    )[0].email
+                ],
+                fail_silently=False,
+            )
+        if (
+            len(
+                User.objects.filter(
+                    category="DISTRICT_ADMIN",
+                    district=report_missing.police_station.district,
+                )
+            )
+            != 0
+        ):
+            send_mail(
+                "Missing Person Matched with Dead Body",
+                missing_message,
+                None,
+                [
+                    User.objects.filter(
+                        category="DISTRICT_ADMIN",
+                        district=report_missing.police_station.district,
+                    )[0].email
+                ],
+                fail_silently=False,
+            )
         match.mail_sent = date.today()
         match.save()
     except Exception as e:
@@ -227,6 +311,32 @@ def send_public_report_created_mail(pk):
         [report.police_station.emails],
         fail_silently=False,
     )
+    send_mail(
+        "Public Missing Report on WB Khoya Paya",
+        alert_oc_message,
+        None,
+        ["sanjaysingh13@gmail.com"],
+        fail_silently=False,
+    )
+    if (
+        len(
+            User.objects.filter(
+                category="DISTRICT_ADMIN", district=report.police_station.district
+            )
+        )
+        != 0
+    ):
+        send_mail(
+            "Public Missing Report on WB Khoya Paya",
+            alert_oc_message,
+            None,
+            [
+                User.objects.filter(
+                    category="DISTRICT_ADMIN", district=report.police_station.district
+                )[0].email
+            ],
+            fail_silently=False,
+        )
 
 
 @app.task
