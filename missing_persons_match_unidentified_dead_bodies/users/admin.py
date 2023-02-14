@@ -32,6 +32,7 @@ class UserAdmin(auth_admin.UserAdmin):
                 "is_superuser",
                 "user_permissions",
             }
+
         if not is_superuser and obj is not None and obj == request.user:
             disabled_fields |= {
                 "is_staff",
@@ -39,7 +40,7 @@ class UserAdmin(auth_admin.UserAdmin):
                 "groups",
                 "user_permissions",
             }
-        if not request.user.category == "ADMIN" or request.user.category == "CID_ADMIN":
+        if not (request.user.category == "ADMIN" or request.user.category == "CID_ADMIN"):
             disabled_fields |= {
                 "is_staff",
             }
