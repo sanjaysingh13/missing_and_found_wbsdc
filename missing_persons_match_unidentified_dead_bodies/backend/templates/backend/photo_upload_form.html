@@ -2,7 +2,7 @@
 {% load crispy_forms_tags %}
 {% block title %}Upload Photo{% endblock title %}
 {% block content %}
-<h6>{{heading}}</h6>
+<h1>{{heading}}</h1>
 <form method="post" id="public_report" enctype="multipart/form-data">
 	{% csrf_token %}
     {% crispy reportsform  %}

@@ -242,7 +242,7 @@ def upload_photo(request):
         {
             "reportsform": reportsform,
             "mapbox_access_token": mapbox_access_token,
-            "heading": "Upload photo of missing/found person",
+            "heading": "Upload photo of missing person /unidentified dead body.",
         },
     )
 
