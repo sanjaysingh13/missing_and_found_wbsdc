@@ -13,7 +13,7 @@ from missing_persons_match_unidentified_dead_bodies.users.models import (
 )
 
 GENDER = [("M", "Male"), ("F", "Female"), ("U", "Unknown")]
-MISSING_OR_FOUND = [("M", "Missing"), ("F", "Found")]
+MISSING_OR_FOUND = [("M", "Missing"), ("F", "Unidentified Dead Body")]
 # POLICE_STATIONS = [
 #         (ps.id, ps.ps_with_distt)
 #         for ps in PoliceStation.objects.all().order_by("ps_with_distt")
@@ -93,7 +93,7 @@ class ReportForm(forms.Form):
     name = forms.CharField(required=False, label="Name", max_length=100)
     gender = forms.CharField(label="Gender", widget=forms.RadioSelect(choices=GENDER))
     missing_or_found = forms.CharField(
-        label="Missing or Found", widget=forms.RadioSelect(choices=MISSING_OR_FOUND)
+        label="Missing or Unidentified Dead Body", widget=forms.RadioSelect(choices=MISSING_OR_FOUND)
     )
     height = forms.IntegerField()
     age = forms.IntegerField()
