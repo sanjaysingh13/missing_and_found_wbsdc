@@ -17,7 +17,7 @@ User = get_user_model()
 @admin.register(User)
 class UserAdmin(auth_admin.UserAdmin):
     def has_add_permission(self, request, obj=None):
-        if not request.user.category == "ADMIN" or request.user.category == "CID_ADMIN":
+        if not (request.user.category == "ADMIN" or request.user.category == "CID_ADMIN"):
             return False
         return True
 
