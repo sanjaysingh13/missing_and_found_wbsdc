@@ -9,7 +9,7 @@ from django.views.generic import TemplateView
 
 def home(request):
     if request.get_host() == "wbkhoyapaya.com":
-        return redirect("http://www.wbkhoyapaya.com/")
+        return redirect("https://www.wbkhoyapaya.com/")
     else:
         return TemplateView.as_view(template_name="pages/home.html")(request)
 
