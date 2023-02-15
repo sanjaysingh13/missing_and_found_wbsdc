@@ -16,6 +16,7 @@
 
             <th >Email</th>
             <th> Telephone </th>
+             <th> Last Seen </th>
 
 
 
@@ -29,6 +30,9 @@
                 <td>{{sp_or_cp_user.email}}</td>
 
                 <td> {{sp_or_cp_user.telephone}}</td>
+                {% if sp_or_cp_user.last_login %}
+                <td> {{sp_or_cp_user.last_login|date:'d-m-Y'}}</td>
+                {% endif %}
 
 
 
@@ -44,7 +48,7 @@
 
             <th >Email</th>
             <th> Telephone </th>
-
+            <th> Last Seen </th>
 
 
         </tr>
@@ -57,6 +61,10 @@
                 <td>{{distt_admin.email}}</td>
 
                 <td> {{distt_admin.telephone}}</td>
+                 {% if distt_admin.last_login %}
+                <td> {{distt_admin.last_login|date:'d-m-Y'}}</td>
+                {% endif %}
+
 
 
 
@@ -73,6 +81,7 @@
 
             <th >Email</th>
             <th> Telephone </th>
+            <th> Last Seen </th>
 
 
 
@@ -87,6 +96,10 @@
                 <td>{{oc_user.email}}</td>
 
                 <td> {{oc_user.telephone}}</td>
+                  {% if oc_user.last_login %}
+                <td> {{oc_user.last_login|date:'d-m-Y' }}</td>
+                {% endif %}
+
 
 
 

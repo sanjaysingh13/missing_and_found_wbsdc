@@ -91,12 +91,14 @@ def match_encodings(report):
     height = report.height
     # entry_date = report.entry_date
     if missing_or_found == "M":
-        required = "F"
+        reports_under_consideration = Report.objects.filter(
+            gender=gender, missing_or_found__in=["F", "U"], reconciled=False
+        )
     else:
-        required = "M"
-    reports_under_consideration = Report.objects.filter(
-        gender=gender, missing_or_found=required, reconciled=False
-    )
+        reports_under_consideration = Report.objects.filter(
+            gender=gender, missing_or_found="M", reconciled=False
+        )
+
     if height:
         reports_under_consideration = reports_under_consideration.filter(
             height__gte=height - 10, height__lte=height + 10
@@ -128,7 +130,7 @@ def match_encodings_with_public_reports(report):
     missing_or_found = report.missing_or_found
     height = report.height
     # entry_date = report.entry_date
-    if missing_or_found == "F":
+    if missing_or_found in ["F", "U"]:
         reports_under_consideration = PublicReport.objects.filter(gender=gender)
         if height:
             reports_under_consideration = reports_under_consideration.filter(
@@ -242,7 +244,7 @@ def upload_photo(request):
         {
             "reportsform": reportsform,
             "mapbox_access_token": mapbox_access_token,
-            "heading": "Upload photo of missing person /unidentified dead body.",
+            "heading": "Upload photo of missing person / unidentified dead body / unidentified recovered alive person.",
         },
     )
 

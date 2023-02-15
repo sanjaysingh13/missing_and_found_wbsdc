@@ -115,16 +115,14 @@ def send_matched_mail(pk):
             fail_silently=False,
         )
         for user in User.objects.filter(
-                    category="DISTRICT_ADMIN",
-                    district=report_missing.police_station.district,
-                ):
+            category="DISTRICT_ADMIN",
+            district=report_missing.police_station.district,
+        ):
             send_mail(
                 "Missing Person Matched with Dead Body",
                 missing_message,
                 None,
-                [
-                    user.email
-                ],
+                [user.email],
                 fail_silently=False,
             )
         found_message = (
@@ -143,16 +141,14 @@ def send_matched_mail(pk):
             fail_silently=False,
         )
         for user in User.objects.filter(
-                    category="DISTRICT_ADMIN",
-                    district=report_found.police_station.district,
-                ):
+            category="DISTRICT_ADMIN",
+            district=report_found.police_station.district,
+        ):
             send_mail(
                 "Unidentified Dead Body Matched with Missing Person",
                 found_message,
                 None,
-                [
-                    user.email
-                ],
+                [user.email],
                 fail_silently=False,
             )
         match.mail_sent = date.today()
@@ -218,29 +214,25 @@ def send_public_report_matched_mail(pk):
             fail_silently=False,
         )
         for user in User.objects.filter(
-                    category="DISTRICT_ADMIN",
-                    district=report_found.police_station.district,
-                ):
+            category="DISTRICT_ADMIN",
+            district=report_found.police_station.district,
+        ):
             send_mail(
                 "Unidentified Dead Body Matched with Missing Person",
                 found_message,
                 None,
-                [
-                    user.email
-                ],
+                [user.email],
                 fail_silently=False,
             )
         for user in User.objects.filter(
-                    category="DISTRICT_ADMIN",
-                    district=report_missing.police_station.district,
-                ):
+            category="DISTRICT_ADMIN",
+            district=report_missing.police_station.district,
+        ):
             send_mail(
                 "Missing Person Matched with Dead Body",
                 missing_message,
                 None,
-                [
-                    user.email
-                ],
+                [user.email],
                 fail_silently=False,
             )
         match.mail_sent = date.today()
@@ -287,15 +279,13 @@ def send_public_report_created_mail(pk):
         fail_silently=False,
     )
     for user in User.objects.filter(
-                category="DISTRICT_ADMIN", district=report.police_station.district
-            ):
+        category="DISTRICT_ADMIN", district=report.police_station.district
+    ):
         send_mail(
             "Public Missing Report on WB Khoya Paya",
             alert_oc_message,
             None,
-            [
-                user.email
-            ],
+            [user.email],
             fail_silently=False,
         )
 
@@ -320,7 +310,7 @@ def send_summary_mail(ask_soft_time_limit=300, ignore_result=True):
     )
 
     send_mail(
-        f"Activity summary for {now} - {last_24_hours}",
+        f"Activity summary Khoya Paya for {now.strftime('%Y-%m-%d')}",
         f"""
             Reports Added : {report_count}
             Public Reports Added : {public_report_count}
