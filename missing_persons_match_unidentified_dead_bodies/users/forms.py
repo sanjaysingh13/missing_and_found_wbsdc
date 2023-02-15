@@ -109,7 +109,7 @@ class UserCreationForm(admin_forms.UserCreationForm):
 
 
 class CustomSignupForm(SignupForm):
-    captcha = ReCaptchaField()
+
     name = forms.CharField(max_length=100)
     rank = forms.CharField(max_length=50, label="Rank")
     telephone = forms.CharField(
@@ -127,6 +127,7 @@ class CustomSignupForm(SignupForm):
         required=False, choices=POLICE_STATIONS, label="Police Station"
     )
     district = forms.ChoiceField(required=False, choices=DISTRICTS, label="District")
+    captcha = ReCaptchaField()
 
     def save(self, request):
         user = super(CustomSignupForm, self).save(request)

@@ -18,6 +18,7 @@ ALLOWED_HOSTS = [
     "3.111.96.240",
     ".ccsneo4jdigitalocean.com",
     ".wbkhoyapaya.com",
+    ".wbmissingfound.com",
 ]
 
 # CACHES
