@@ -18,6 +18,10 @@ MISSING_OR_FOUND = [
     ("F", "Unidentified Dead Body"),
     ("U", "Unidentified Recovered Person"),
 ]
+GDE_OR_FIR = [
+    ("GDE", "GDE"),
+    ("FIR", "FIR"),
+]
 # POLICE_STATIONS = [
 #         (ps.id, ps.ps_with_distt)
 #         for ps in PoliceStation.objects.all().order_by("ps_with_distt")
@@ -93,6 +97,10 @@ class ReportForm(forms.Form):
         ],
     )
     reference = forms.IntegerField()
+    gde_or_fir = forms.CharField(
+        label="GDE or FIR",
+        widget=forms.RadioSelect(choices=GDE_OR_FIR),
+    )
     entry_date = forms.DateField(label="Ref Date")
     name = forms.CharField(required=False, label="Name", max_length=100)
     gender = forms.CharField(label="Gender", widget=forms.RadioSelect(choices=GENDER))
@@ -142,6 +150,7 @@ class ReportForm(forms.Form):
                     Row("guardian_name_and_address", css_class="form-group "),
                     Row("police_station_with_distt", css_class="form-group"),
                     Row("reference", css_class="form-group "),
+                    Row("gde_or_fir", css_class="form-group "),
                     css_class="col-md-6 mb-0",
                 ),
                 Column(
@@ -580,6 +589,10 @@ class ReportSearchForm(forms.Form):
     ref_no = forms.CharField(
         label="Reference Number", widget=forms.TextInput(), required=False
     )
+    gde_or_fir = forms.CharField(
+        label="GDE or FIR",
+        widget=forms.RadioSelect(choices=GDE_OR_FIR),
+    )
     ref_date = forms.DateField(required=False)
     ref_year = forms.ChoiceField(choices=YEARS, required=False)
     advanced_search_report = forms.BooleanField(label="Advanced Search", required=False)
@@ -627,11 +640,12 @@ class ReportSearchForm(forms.Form):
         self.helper.layout = Layout(
             Row(
                 Column(
-                    "police_station_with_distt", css_class="form-group col-md-5 mb-0"
+                    "police_station_with_distt", css_class="form-group col-md-4 mb-0"
                 ),
-                Column("ref_no", css_class="form-group col-md-3 mb-0"),
-                Column("ref_date", css_class="form-group col-md-3 mb-0"),
-                Column("ref_year", css_class="form-group col-md-1 mb-0"),
+                Column("ref_no", css_class="form-group col-md-2 mb-0"),
+                Column("gde_or_fir", css_class="form-group col-md-2 mb-0"),
+                Column("ref_date", css_class="form-group col-md-2 mb-0"),
+                Column("ref_year", css_class="form-group col-md-2 mb-0"),
                 css_class="basic-search-fields",
             ),
             Field(

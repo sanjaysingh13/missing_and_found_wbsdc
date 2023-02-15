@@ -164,6 +164,7 @@ def upload_photo(request):
             files = request.FILES.getlist("photo")
             cleaned_data = reportsform.cleaned_data
             reference = cleaned_data.get("reference", "")
+            gde_or_fir = cleaned_data.get("gde_or_fir", "")
             entry_date = cleaned_data.get("entry_date", "")
             name = cleaned_data.get("name", "")
             gender = cleaned_data.get("gender", "")
@@ -192,6 +193,7 @@ def upload_photo(request):
                     police_station=police_station,
                     entry_date=entry_date,
                     reference=reference,
+                    gde_or_fir=gde_or_fir,
                 )
                 return redirect("backend:view_report", object_id=existing_report.id)
             except Report.DoesNotExist:
@@ -203,6 +205,7 @@ def upload_photo(request):
                     photo=resized_image,
                     icon=icon,
                     reference=reference,
+                    gde_or_fir=gde_or_fir,
                     entry_date=entry_date,
                     name=name,
                     gender=gender,
@@ -810,6 +813,7 @@ def report_search(request):
             else:
                 reference = int(cleaned_data.get("ref_no", ""))
                 entry_date = cleaned_data.get("ref_date", "")
+                gde_or_fir = cleaned_data.get("gde_or_fir", "")
                 ps_with_distt = cleaned_data.get("police_station_with_distt", "")
                 year = cleaned_data.get("ref_year", "")
                 # Start with a Q object that matches all Report objects
@@ -826,6 +830,10 @@ def report_search(request):
                 # Add a filter for entry date, if provided
                 if entry_date:
                     query &= Q(entry_date=entry_date)
+
+                # Add a filter for gde/fir, if provided
+                if gde_or_fir:
+                    query &= Q(gde_or_fir=gde_or_fir)
 
                 # Add a filter for year, if provided
                 if year:

@@ -55,6 +55,7 @@ class Report(TimeStampedModel):
     uploaded_by = models.ForeignKey(
         User, blank=True, null=True, on_delete=models.SET_NULL
     )
+    gde_or_fir = models.CharField(max_length=3)
 
     class Meta:
         indexes = (GinIndex(fields=["description_search_vector"]),)  # add index
