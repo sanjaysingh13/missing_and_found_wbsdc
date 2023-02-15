@@ -635,6 +635,7 @@ def report_search(request):
                 "missing_or_found": "All",
                 "gender": "All",
                 "map_or_list": "L",
+                "gde_or_fir": "GDE",
             }
         )
     elif request.method == "POST":
