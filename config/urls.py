@@ -8,8 +8,8 @@ from django.views.generic import TemplateView
 
 
 def home(request):
-    if request.get_host() == "wbkhoyapaya.com":
-        return redirect("https://www.wbkhoyapaya.com/")
+    if request.get_host() == "wbmissingfound.com":
+        return redirect("https://www.wbmissingfound.com/")
     else:
         return TemplateView.as_view(template_name="pages/home.html")(request)
 

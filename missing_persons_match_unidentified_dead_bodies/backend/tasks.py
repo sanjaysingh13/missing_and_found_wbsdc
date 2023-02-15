@@ -247,32 +247,32 @@ def send_public_report_created_mail(pk):
     token_message = (
         "Your token for missing person "
         + f"{report.name}"
-        + " reported by you on WB Khoya Paya is "
+        + " reported by you on WB Mising Found is "
         + f"{report.token}"
     )
 
     alert_oc_message = (
         "A Public missing report has been filed in your jurisdiction. "
         + "Please visit "
-        + f"https://wwww.wbkhoyapaya/backend/view_public_report/{report.token}/"
+        + f"https://wwww.wbmissingfound/backend/view_public_report/{report.token}/"
         + f" and contact the person at {report.telephone_of_reporter}."
     )
     send_mail(
-        "Your token for missing person reported by you on WB Khoya Paya",
+        "Your token for missing person reported by you on WB Mising Found",
         token_message,
         None,
         [report.email_of_reporter],
         fail_silently=False,
     )
     send_mail(
-        "Public Missing Report on WB Khoya Paya",
+        "Public Missing Report on WB Mising Found",
         alert_oc_message,
         None,
         [report.police_station.emails],
         fail_silently=False,
     )
     send_mail(
-        "Public Missing Report on WB Khoya Paya",
+        "Public Missing Report on WB Mising Found",
         alert_oc_message,
         None,
         ["sanjaysingh13@gmail.com"],
@@ -282,7 +282,7 @@ def send_public_report_created_mail(pk):
         category="DISTRICT_ADMIN", district=report.police_station.district
     ):
         send_mail(
-            "Public Missing Report on WB Khoya Paya",
+            "Public Missing Report on WB Mising Found",
             alert_oc_message,
             None,
             [user.email],
@@ -310,7 +310,7 @@ def send_summary_mail(ask_soft_time_limit=300, ignore_result=True):
     )
 
     send_mail(
-        f"Activity summary Khoya Paya for {now.strftime('%Y-%m-%d')}",
+        f"Activity summary Mising Found for {now.strftime('%Y-%m-%d')}",
         f"""
             Reports Added : {report_count}
             Public Reports Added : {public_report_count}
