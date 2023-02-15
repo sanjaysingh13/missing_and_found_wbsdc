@@ -129,7 +129,7 @@ class CustomSignupForm(SignupForm):
     district = forms.ChoiceField(required=False, choices=DISTRICTS, label="District")
 
     def save(self, request):
-        user = super().save(request)
+        user = super(CustomSignupForm, self).save(request)
         if user:
             user.name = self.cleaned_data["name"]
             user.rank = self.cleaned_data["rank"]
