@@ -1,7 +1,10 @@
+from django.contrib.sitemaps.views import sitemap
 from django.urls import include, path
 from rest_framework import routers
 
 from missing_persons_match_unidentified_dead_bodies.backend import views
+
+from .sitemap import StaticViewSitemap
 
 router = routers.DefaultRouter()
 
@@ -9,6 +12,9 @@ router.register(r"reports", views.ReportViewSet)
 # router.register(r'search_reports', views.ReportSearchViewSet)
 
 app_name = "backend"
+sitemaps = {
+    "static": StaticViewSitemap,
+}
 
 urlpatterns = [
     path("", include(router.urls)),
@@ -64,5 +70,11 @@ urlpatterns = [
     ),
     path(
         "handle_sendgrid_post/", views.handle_sendgrid_post, name="handle_sendgrid_post"
+    ),
+    path(
+        "sitemap.xml",
+        sitemap,
+        {"sitemaps": sitemaps},
+        name="django.contrib.sitemaps.views.sitemap",
     ),
 ]
