@@ -121,6 +121,7 @@ LOGIN_URL = "account_login"
 ACCOUNT_FORMS = {
     "login": "users.forms.CustomLoginForm",
     "signup": "users.forms.CustomSignupForm",
+    "reset_password": "users.forms.CustomResetPasswordForm",
 }
 # PASSWORDS
 # ------------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-from allauth.account.forms import LoginForm, SignupForm
+from allauth.account.forms import LoginForm, ResetPasswordForm, SignupForm
 from captcha.fields import ReCaptchaField
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Column, Layout, Row, Submit
@@ -147,4 +147,8 @@ class CustomSignupForm(SignupForm):
 
 
 class CustomLoginForm(LoginForm):
+    captcha = ReCaptchaField()
+
+
+class CustomResetPasswordForm(ResetPasswordForm):
     captcha = ReCaptchaField()
