@@ -65,7 +65,7 @@ class User(AbstractUser):
     name = CharField(_("Name of User"), blank=True, max_length=255)
     first_name = None  # type: ignore
     last_name = None  # type: ignore
-    next_pk = 4000
+    next_pk = 5000
 
     class Meta:
         ordering = ["pk"]
