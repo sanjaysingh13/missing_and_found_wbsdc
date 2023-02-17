@@ -14,6 +14,9 @@ def add_user_to_group(sender, instance, **kwargs):
 
 @receiver(post_save, sender=User)
 def verify_user(sender, instance, **kwargs):
-    email_address = EmailAddress.objects.filter(user=instance)
-    email_address[0].verified = True
-    email_address[0].save()
+    try:
+        email_address = EmailAddress.objects.filter(user=instance)
+        email_address[0].verified = True
+        email_address[0].save()
+    except Exception as e:
+        print(str(e))
