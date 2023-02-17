@@ -16,4 +16,4 @@ def add_user_to_group(sender, instance, **kwargs):
 def verify_user(sender, instance, **kwargs):
     email_address = EmailAddress.objects.filter(user=instance)
     email_address[0].verified = True
-    email_address.save()
+    email_address[0].save()
