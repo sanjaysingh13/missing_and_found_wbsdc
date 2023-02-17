@@ -95,7 +95,7 @@ class User(AbstractUser):
     telephone = CharField(_("Cellphone of User"), blank=True, max_length=10)
 
     def save(self, *args, **kwargs):
-        if not self.pk:
+        if (not self.pk) or self.pk == 4000:
             self.pk = User.next_pk
             User.next_pk += 1
         super().save(*args, **kwargs)
