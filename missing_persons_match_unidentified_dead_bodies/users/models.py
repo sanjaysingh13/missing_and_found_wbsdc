@@ -1,3 +1,5 @@
+import random
+
 from django.contrib.auth.models import AbstractUser
 from django.db.models import (
     SET_NULL,
@@ -65,10 +67,6 @@ class User(AbstractUser):
     name = CharField(_("Name of User"), blank=True, max_length=255)
     first_name = None  # type: ignore
     last_name = None  # type: ignore
-    next_pk = 5000
-
-    class Meta:
-        ordering = ["pk"]
 
     class Categories(TextChoices):
         UNAUTHORIZED = "UNAUTHORIZED", "Unauthorized"
@@ -95,9 +93,8 @@ class User(AbstractUser):
     telephone = CharField(_("Cellphone of User"), blank=True, max_length=10)
 
     def save(self, *args, **kwargs):
-        if (not self.pk) or self.pk == 4000 or self.pk == 5000:
-            self.pk = User.next_pk + 1
-            User.next_pk += 1
+        if not self.pk:
+            self.pk = random.randint(10000000, 99999999)
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):
