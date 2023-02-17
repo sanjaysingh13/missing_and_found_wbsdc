@@ -61,7 +61,7 @@ class Report(TimeStampedModel):
         indexes = (GinIndex(fields=["description_search_vector"]),)  # add index
         constraints = [
             models.UniqueConstraint(
-                fields=["police_station", "reference", "entry_date"],
+                fields=["police_station", "reference", "entry_date", "gde_or_fir"],
                 name="unique_report",
             )
         ]
