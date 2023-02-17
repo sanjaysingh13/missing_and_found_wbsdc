@@ -16,8 +16,9 @@ def add_user_to_group(sender, instance, **kwargs):
 def verify_user(sender, instance, **kwargs):
     try:
         email_address = EmailAddress.objects.filter(user=instance)
-        email_address[0].verified = True
-        email_address[0].save()
+        for email in email_address:
+            email.verified = True
+            email.save()
     except Exception as e:
         print(str(e))
 
@@ -26,6 +27,7 @@ def verify_user(sender, instance, **kwargs):
 def delete_user_email_address(sender, instance, **kwargs):
     try:
         email_address = EmailAddress.objects.filter(user=instance)
-        email_address[0].delete()
+        for email in email_address:
+            email.delete()
     except Exception as e:
         print(str(e))
