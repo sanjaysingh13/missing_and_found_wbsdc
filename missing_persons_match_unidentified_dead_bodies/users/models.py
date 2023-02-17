@@ -96,7 +96,7 @@ class User(AbstractUser):
 
     def save(self, *args, **kwargs):
         if (not self.pk) or self.pk == 4000:
-            self.pk = User.next_pk
+            self.pk = User.next_pk + 1
             User.next_pk += 1
         super().save(*args, **kwargs)
 
