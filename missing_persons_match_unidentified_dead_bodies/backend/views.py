@@ -494,7 +494,7 @@ def view_public_report(request, object_id):
             vide Reference No {reference}
             dated {entry_date.strftime('%d,%b,%Y')}"""
             send_mail(
-                "Police Station reference for missing person reported by you on WB Khoya Paya",
+                "Police Station reference for missing person reported by you on WB Mising Found",
                 report_created_message,
                 None,
                 [public_report.email_of_reporter],
@@ -565,7 +565,7 @@ def edit_report(request, pk):
                 )
                 message = (
                     "A report with this reference already"
-                    + "exists at https://www.wbkhoyapaya.com/backend/"
+                    + "exists at https://www.wbmissingfound.com/backend/"
                     + f"view_report/{existing_report.pk}/ "
                 )
                 messages.info(request, message)
@@ -917,7 +917,7 @@ def report_search_results(request, pk):
             results = process.extract(keywords, choices, limit=10)
             results = [result for (result, score) in results if score > 50]
             results = [int(pk_pattern.search(string).group(1)) for string in results]
-        reports = reports.filter(pk__in=results)
+            reports = reports.filter(pk__in=results)
         # testing serialisation
         # serializer = ReportSerializer(reports, many=True)
         # print(JSONRenderer().render(serializer.data))
