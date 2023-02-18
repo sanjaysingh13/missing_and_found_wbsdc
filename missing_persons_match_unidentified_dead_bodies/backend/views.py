@@ -1424,3 +1424,59 @@ def handle_sendgrid_post(request):
     else:
         # Return an error response for other request methods
         return JsonResponse({"status": "error"})
+
+
+@login_required
+@permission_required("users.add_user", raise_exception=True)
+def seven_days_missing(request):
+    if request.method == "GET":
+        last_week = timezone.now() - timedelta(days=7)
+        reports_missing = Report.objects.filter(
+            missing_or_found="M",
+            entry_date__gte=last_week,
+            entry_date__lte=timezone.now(),
+        ).order_by("-entry_date")
+        return render(
+            request,
+            "backend/reports.html",
+            {"reports": reports_missing, "district": "last seven days"},
+        )
+
+
+@login_required
+@permission_required("users.add_user", raise_exception=True)
+def seven_days_public_missing(request):
+    if request.method == "GET":
+        last_week = timezone.now() - timedelta(days=7)
+        public_reports_missing = PublicReport.objects.filter(
+            missing_or_found="M",
+            entry_date__gte=last_week,
+            entry_date__lte=timezone.now(),
+        ).order_by("-entry_date")
+
+        return render(
+            request,
+            "backend/reports.html",
+            {
+                "reports": public_reports_missing,
+                "district": "last seven days (Public missing)",
+            },
+        )
+
+
+@login_required
+@permission_required("users.add_user", raise_exception=True)
+def seven_days_found(request):
+    if request.method == "GET":
+        last_week = timezone.now() - timedelta(days=7)
+        reports_found_or_unknown = Report.objects.filter(
+            missing_or_found__in=["F", "U"],
+            entry_date__gte=last_week,
+            entry_date__lte=timezone.now(),
+        ).order_by("-entry_date")
+
+        return render(
+            request,
+            "backend/reports.html",
+            {"reports": reports_found_or_unknown, "district": "last seven days"},
+        )

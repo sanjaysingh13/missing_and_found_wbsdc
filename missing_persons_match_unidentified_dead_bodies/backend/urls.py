@@ -72,6 +72,21 @@ urlpatterns = [
         "handle_sendgrid_post/", views.handle_sendgrid_post, name="handle_sendgrid_post"
     ),
     path(
+        "seven_days_missing/",
+        views.seven_days_missing,
+        name="seven_days_missing",
+    ),
+    path(
+        "seven_days_public_missing/",
+        views.seven_days_public_missing,
+        name="seven_days_public_missing",
+    ),
+    path(
+        "seven_days_found/",
+        views.seven_days_found,
+        name="seven_days_found",
+    ),
+    path(
         "sitemap.xml",
         sitemap,
         {"sitemaps": sitemaps},
