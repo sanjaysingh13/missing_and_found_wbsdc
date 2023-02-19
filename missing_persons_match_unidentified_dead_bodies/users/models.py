@@ -50,6 +50,8 @@ class PoliceStation(TimeStampedModel):
     district = ForeignKey(District, blank=True, null=True, on_delete=SET_NULL)
 
     def save(self, *args, **kwargs):
+        if not self.pk:
+            self.pk = random.randint(10000000, 99999999)
         if self.district_id:
             self.ps_with_distt = self.name + " : " + str(self.district.name)
         else:
