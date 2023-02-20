@@ -526,6 +526,10 @@ def edit_report(request, pk):
             "reconciled",
         }
     }
+    if report_params["gender"] == "M":
+        report_params["gender"] = "Male"
+    elif report_params["gender"] == "F":
+        report_params["gender"] = "Female"
     police_station = report.police_station.ps_with_distt
     report_params["police_station_with_distt"] = police_station
     if request.method == "POST":
