@@ -254,7 +254,7 @@ def send_public_report_created_mail(pk):
     alert_oc_message = (
         "A Public missing report has been filed in your jurisdiction. "
         + "Please visit "
-        + f"https://wwww.wbmissingfound/backend/view_public_report/{report.token}/"
+        + f"https://www.wbmissingfound/backend/view_public_report/{report.token}/"
         + f" and contact the person at {report.telephone_of_reporter}."
     )
     send_mail(
