@@ -423,9 +423,6 @@ class PublicReportForm(forms.Form):
 
 
 class ReportFormEdit(forms.Form):
-    photo = forms.ImageField(
-        label="Photos ", required=False, widget=forms.ClearableFileInput()
-    )
     police_station_with_distt = forms.CharField(
         label="Police Station",
         max_length=100,
@@ -461,19 +458,6 @@ class ReportFormEdit(forms.Form):
         self.helper.layout = Layout(
             Div(
                 Column(
-                    Row(
-                        Column(
-                            "photo",
-                            css_class="form-group card text-dark bg-light col-md-6 mb-0",
-                        ),
-                        HTML(
-                            """<p class='col-md-6 mb-0 card text-white bg-primary'>
-                            Use a clear, vertical frontal face picture if possible.
-                            In case of mutilation by accident, take a clear picture
-                            after stitching of injuries.
-                            </p>"""
-                        ),
-                    ),
                     Row(HTML("</br>")),
                     Row(
                         Column(
@@ -564,14 +548,6 @@ class ReportFormEdit(forms.Form):
                 if (not (21 <= latitude <= 28)) or (not (86.5 <= longitude <= 90)):
                     msg_ = "Please fill lat and long within the State of West Bengal."
                     messages.append(msg_)
-        photo = cleaned_data.get("photo")
-        if photo:
-            if photo.size > 5 * 1024 * 1024:
-                msg_ = "Please pick image below 5 Mb"
-                messages.append(msg_)
-        else:
-            msg_ = "Please pick an image"
-            messages.append(msg_)
         if messages != []:
             messages = list(set(messages))
             raise forms.ValidationError(messages)

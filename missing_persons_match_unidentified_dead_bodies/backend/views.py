@@ -246,6 +246,7 @@ def upload_photo(request):
         template_name,
         {
             "reportsform": reportsform,
+            "title": "Uplaod a Report",
             "mapbox_access_token": mapbox_access_token,
             "heading": "Upload photo of missing person / unidentified dead body / unidentified recovered alive person.",
         },
@@ -530,7 +531,6 @@ def edit_report(request, pk):
     if request.method == "POST":
         reportsform = ReportFormEdit(request.POST, request.FILES)
         if reportsform.is_valid():
-            files = request.FILES.getlist("photo")
             cleaned_data = reportsform.cleaned_data
             reference = cleaned_data.get("reference", "")
             entry_date = cleaned_data.get("entry_date", "")
@@ -557,45 +557,25 @@ def edit_report(request, pk):
             police_station = PoliceStation.objects.get(
                 ps_with_distt=police_station_with_distt.strip()
             )
-            try:
-                existing_report = Report.objects.get(
-                    police_station=police_station,
-                    entry_date=entry_date,
-                    reference=reference,
-                )
-                message = (
-                    "A report with this reference already"
-                    + "exists at https://www.wbmissingfound.com/backend/"
-                    + f"view_report/{existing_report.pk}/ "
-                )
-                messages.info(request, message)
-                return render(
-                    request,
-                    "backend/photo_upload_form.html",
-                    {"reportsform": reportsform},
-                )
-            except Report.DoesNotExist:
-                pass
-            if files:
-                for f in files:
-                    resized_image, icon = resize_image(f, 600, 64)
-                    report.photo = resized_image
-                    report.icon = icon
-                    img = cv2.imdecode(
-                        np.fromstring(resized_image.read(), np.uint8),
-                        cv2.IMREAD_UNCHANGED,
-                    )
-                    _, img_encoded = cv2.imencode(".jpeg", img)
-                    memory_file_output = io.BytesIO()
-                    memory_file_output.write(img_encoded)
-                    memory_file_output.seek(0)
-                    image = face_recognition.load_image_file(memory_file_output)
-                    face_encoding = face_recognition.face_encodings(image)
-                    if len(face_encoding) != 0:
-                        face_encoding = face_encoding[0]
-                        face_encoding = json.dumps(face_encoding.tolist())
-                        report.face_encoding = face_encoding
-
+            # try:
+            #     existing_report = Report.objects.get(
+            #         police_station=police_station,
+            #         entry_date=entry_date,
+            #         reference=reference,
+            #     )
+            #     message = (
+            #         "A report with this reference already"
+            #         + "exists at https://www.wbmissingfound.com/backend/"
+            #         + f"view_report/{existing_report.pk}/ "
+            #     )
+            #     messages.info(request, message)
+            #     return render(
+            #         request,
+            #         "backend/photo_upload_form.html",
+            #         {"reportsform": reportsform},
+            #     )
+            # except Report.DoesNotExist:
+            #     pass
             report.police_station = police_station
 
             report.year = str(entry_date.year)[-2:]
@@ -619,7 +599,9 @@ def edit_report(request, pk):
     else:
         reportsform = ReportFormEdit(initial=report_params)
     return render(
-        request, "backend/photo_upload_form.html", {"reportsform": reportsform}
+        request,
+        "backend/photo_upload_form.html",
+        {"reportsform": reportsform, "title": "Edit Report"},
     )
 
 
