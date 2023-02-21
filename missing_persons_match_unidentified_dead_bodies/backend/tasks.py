@@ -344,7 +344,7 @@ def send_public_report_created_mail(pk):
     # SMSs
     message = (
         "A Public missing report has been filed. "
-        + f"https://wwww.wbmissingfound.com/backend/view_public_report/{report.token}/ "
+        + f"https://www.wbmissingfound.com/backend/view_public_report/{report.token}/ "
         + f"and contact {report.telephone_of_reporter}. GoWB"
     )
 
