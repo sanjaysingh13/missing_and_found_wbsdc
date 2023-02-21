@@ -401,6 +401,7 @@ def send_summary_mail(task_soft_time_limit=300, ignore_result=True):
 
 @app.task(task_soft_time_limit=300, ignore_result=True)
 def send_sms(templateid, message, mobile):
+    mobile = mobile[-10:]
     params = {
         "mobile": mobile,
         "templateid": templateid,
