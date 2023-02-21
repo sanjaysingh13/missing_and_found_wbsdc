@@ -281,16 +281,16 @@ clear.addEventListener("click", function(){
   document.getElementById("id_south_east_location").value = "";
 });
 }
-$(document).ready(function() {
-  $("input[value='F']").click(function() {
-    $("#id_name").prop("disabled", true);
-    $("#id_guardian_name_and_address").prop("disabled", true);
-  });
-  $("input[value='M']").click(function() {
-    $("#id_name").prop("disabled", false);
-    $("#id_guardian_name_and_address").prop("disabled", false);
-  });
-});
+// $(document).ready(function() {
+//   $("input[value='F']").click(function() {
+//     $("#id_name").prop("disabled", true);
+//     $("#id_guardian_name_and_address").prop("disabled", true);
+//   });
+//   $("input[value='M']").click(function() {
+//     $("#id_name").prop("disabled", false);
+//     $("#id_guardian_name_and_address").prop("disabled", false);
+//   });
+// });
 var telephone_of_reporter = document.getElementById("id_telephone_of_reporter")
 if (telephone_of_reporter) {
 console.log("hello sir");

@@ -3,6 +3,9 @@ from datetime import date
 from io import BytesIO
 
 import boto3
+import requests
+from dateutil import tz
+from dateutil.parser import parse
 from django.conf import settings
 from django.contrib.postgres.search import SearchVector
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -14,11 +17,28 @@ from PIL import Image
 from config.celery_app import app
 from missing_persons_match_unidentified_dead_bodies.backend.models import (
     Match,
+    Message,
     PublicReport,
     PublicReportMatch,
     Report,
 )
 from missing_persons_match_unidentified_dead_bodies.users.models import User
+
+passkey = settings.PASSKEY
+alert_oc_public_complaint = settings.TEMPLATEID_ALERT_OC_REGISTRATION_PUBLIC_COMPLAINT
+generate_token = settings.TEMPLATEID_GENERATE_TOKEN
+template_match = settings.TEMPLATEID_MATCH
+tinyurl_api = settings.TINY_URL_API
+dead_body_match_public_report = (
+    settings.TEMPLATEID_ALERT_OC_DEAD_BODY_MATCH_WITH_PUBLIC_COMPLAINT
+)
+
+
+def shorten_url(url):
+    url_tiny = f"https://tinyurl.com/api-create.php?apikey={tinyurl_api}&url={url}"
+    response = requests.get(url_tiny)
+    link = response.text
+    return link
 
 
 @app.task(task_soft_time_limit=3000, ignore_result=True)
@@ -98,6 +118,22 @@ def send_matched_mail(pk):
         + " dt. "
         + report_found.entry_date.strftime("%d,%b,%Y")
     )
+
+    # Shorten Links:
+    report_found_url = (
+        f"https://www.wbmissingfound.com/backend/view_report/{report_found.pk}/"
+    )
+    report_missing_url = (
+        f"https://www.wbmissingfound.com/backend/view_report/{report_missing.pk}/"
+    )
+    report_found_url_tiny_link = shorten_url(report_found_url)
+    report_missing_url_tiny_link = shorten_url(report_missing_url)
+
+    message = (
+        "Match for unidentified dead body: Found: "
+        + f"{report_found_url_tiny_link} Missing (public, use token no.):"
+        + f" {report_missing_url_tiny_link}. GoWB"
+    )
     try:
         missing_message = (
             f"There is a match for missing person {name_missing} of your Police Station"
@@ -151,8 +187,15 @@ def send_matched_mail(pk):
                 [user.email],
                 fail_silently=False,
             )
+            send_sms(template_match, message, user.telephone)
+
         match.mail_sent = date.today()
         match.save()
+        # Send SMSs
+        telephones = [oc_missing_tel, oc_found_tel, "9830425757"]
+        for telephone in telephones:
+            if telephone:
+                send_sms(template_match, message, telephone)
     except Exception as e:
         print(str(e))
 
@@ -181,6 +224,16 @@ def send_public_report_matched_mail(pk):
         str(report_found.reference)
         + " dt. "
         + report_missing.entry_date.strftime("%d,%b,%Y")
+    )
+    report_found_url = (
+        f"https://www.wbmissingfound.com/backend/view_report/{report_found.pk}/"
+    )
+    report_found_url_tiny_link = shorten_url(report_found_url)
+    message = (
+        "There is a match for an unidentified dead body"
+        + f" reported by you vide {report_found_url_tiny_link}. Please "
+        + f"contact the O/C {ps_missing} regarding a public missing "
+        + f"reported by: {report_missing.guardian_name_and_address}. GoWB"
     )
     try:
         missing_message = (
@@ -213,6 +266,11 @@ def send_public_report_matched_mail(pk):
             [oc_found_email],
             fail_silently=False,
         )
+        # SMSs
+        telephones = [oc_missing_tel, oc_found_tel, "9830425757"]
+        for telephone in telephones:
+            if telephone:
+                send_sms(dead_body_match_public_report, message, telephone)
         for user in User.objects.filter(
             category="DISTRICT_ADMIN",
             district=report_found.police_station.district,
@@ -235,6 +293,7 @@ def send_public_report_matched_mail(pk):
                 [user.email],
                 fail_silently=False,
             )
+            send_sms(dead_body_match_public_report, message, user.telephone)
         match.mail_sent = date.today()
         match.save()
     except Exception as e:
@@ -264,6 +323,10 @@ def send_public_report_created_mail(pk):
         [report.email_of_reporter],
         fail_silently=False,
     )
+    # SMS
+    message = f"Your token for missing person {report.name} is {report.token}"
+    send_sms(generate_token, message, report.telephone_of_reporter)
+
     send_mail(
         "Public Missing Report on WB Mising Found",
         alert_oc_message,
@@ -278,6 +341,18 @@ def send_public_report_created_mail(pk):
         ["sanjaysingh13@gmail.com"],
         fail_silently=False,
     )
+    # SMSs
+    message = (
+        "A Public missing report has been filed. "
+        + f"https://wwww.wbkhoyapaya/backend/view_public_report/{report.token}/ "
+        + f"and contact {report.telephone_of_reporter}. GoWB"
+    )
+
+    telephones = [report.police_station.telephones, "9830425757"]
+    for telephone in telephones:
+        if telephone:
+            send_sms(alert_oc_public_complaint, message, telephone)
+
     for user in User.objects.filter(
         category="DISTRICT_ADMIN", district=report.police_station.district
     ):
@@ -288,6 +363,7 @@ def send_public_report_created_mail(pk):
             [user.email],
             fail_silently=False,
         )
+        send_sms(alert_oc_public_complaint, message, user.telephone)
 
 
 @app.task
@@ -321,3 +397,21 @@ def send_summary_mail(ask_soft_time_limit=300, ignore_result=True):
         ["sanjaysingh13@gmail.com"],
         fail_silently=False,
     )
+
+
+@app.task(task_soft_time_limit=300, ignore_result=True)
+def send_sms(templateid, message, mobile):
+    params = {
+        "mobile": mobile,
+        "templateid": templateid,
+        "extra": "",
+        "passkey": passkey,
+        "message": message,
+    }
+    url = "https://sms.nltr.org/send_sms_ignb.php"
+    response = requests.post(url, params=params)
+    utc = parse(response.headers["Date"])
+    to_zone = tz.gettz("Asia/Kolkata")
+    local = utc.astimezone(to_zone)
+    sms = Message(telephone=mobile, time=local, message=message)
+    sms.save()

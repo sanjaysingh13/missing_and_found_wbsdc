@@ -296,7 +296,7 @@ class PublicReportForm(forms.Form):
     description = forms.CharField(max_length=500, widget=forms.Textarea())
     location = SpatialLocationField(map_attrs=default_map_attrs)
     otp = forms.CharField(
-        label="Check your Email for OTP", max_length=6, required=False
+        label="Check your Phone for OTP", max_length=6, required=False
     )
 
     def __init__(self, *args, **kwargs):

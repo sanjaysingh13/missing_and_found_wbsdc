@@ -4,13 +4,15 @@ from datetime import datetime
 # from dateutil.parser import parse
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry
-from django.core.mail import send_mail
+# from django.core.mail import send_mail
 from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 
 from missing_persons_match_unidentified_dead_bodies.backend.models import Report
+from missing_persons_match_unidentified_dead_bodies.backend.tasks import send_sms
 
 mapbox_access_token = settings.MAP_BOX_ACCESS_TOKEN
+generate_token = settings.TEMPLATEID_GENERATE_TOKEN
 
 # format
 date_format = "%Y-%m-%d"
@@ -18,20 +20,22 @@ date_format = "%Y-%m-%d"
 
 def send_otp(request):
     telephone_of_reporter = request.GET.get("telephone_of_reporter", None)
-    email_of_reporter = request.GET.get("email_of_reporter", None)
+    # email_of_reporter = request.GET.get("email_of_reporter", None)
     random_string = "s86hjaulop9&^2@"
     string = random_string + telephone_of_reporter
     string_hash = hashlib.sha256(string.encode()).hexdigest()
     num = int(string_hash, 16)
     num_str = str(num)[:6].zfill(6)
-    otp_message = f"Your OTP is {num_str}"
-    send_mail(
-        "OTP for registering missing person report on WB Khoya Paya",
-        otp_message,
-        None,
-        [email_of_reporter],
-        fail_silently=False,
-    )
+    # otp_message = f"Your OTP is {num_str}"
+    # send_mail(
+    #     "OTP for registering missing person report on WB Khoya Paya",
+    #     otp_message,
+    #     None,
+    #     [email_of_reporter],
+    #     fail_silently=False,
+    # )
+    otp_message = f"Your token for missing person Sanjay Singh is {num_str}. GoWB"
+    send_sms(generate_token, otp_message, telephone_of_reporter)
     return HttpResponse(status=200)
 
 

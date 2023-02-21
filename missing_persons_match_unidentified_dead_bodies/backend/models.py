@@ -1,5 +1,7 @@
 # from django.contrib.postgres.fields import ArrayField
 
+import random
+
 from django.contrib.gis.db import models
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVectorField
@@ -24,6 +26,12 @@ class TimeStampedModel(models.Model):
 
     class Meta:
         abstract = True
+
+
+class Message(TimeStampedModel):
+    telephone = models.CharField(max_length=10)
+    time = models.DateTimeField()
+    message = models.CharField(max_length=200)
 
 
 class Report(TimeStampedModel):
@@ -124,6 +132,11 @@ class PublicReport(TimeStampedModel):
         if self.police_station:
             person = person + " P.S. " + self.police_station.name
         return person
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.pk = random.randint(10000000, 99999999)
+        super().save(*args, **kwargs)
 
     # def save(self, *args, **kwargs): # Will use this later in CCS
     #     # Open the uploaded photo
