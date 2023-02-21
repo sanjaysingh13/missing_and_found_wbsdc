@@ -367,7 +367,7 @@ def send_public_report_created_mail(pk):
 
 
 @app.task
-def send_summary_mail(ask_soft_time_limit=300, ignore_result=True):
+def send_summary_mail(task_soft_time_limit=300, ignore_result=True):
     now = timezone.now()
 
     last_24_hours = now - timezone.timedelta(hours=24)
