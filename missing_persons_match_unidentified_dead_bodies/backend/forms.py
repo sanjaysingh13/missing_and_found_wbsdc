@@ -108,7 +108,7 @@ class ReportForm(forms.Form):
         label="Missing or Unidentified Dead Body",
         widget=forms.RadioSelect(choices=MISSING_OR_FOUND),
     )
-    height = forms.IntegerField()
+    height = forms.IntegerField(label="Height in cm.")
     age = forms.IntegerField()
     guardian_name_and_address = forms.CharField(max_length=300, required=False)
     description = forms.CharField(max_length=500, widget=forms.Textarea())
@@ -207,6 +207,11 @@ class ReportForm(forms.Form):
         latitude = cleaned_data.get("latitude")
         longitude = cleaned_data.get("longitude", "")
         missing_or_found = cleaned_data.get("missing_or_found", "")
+        height = int(cleaned_data.get("height", ""))
+        if height < 50:
+            print(height)
+            msg_ = "Please enter height in cm"
+            messages.append(msg_)
         name = cleaned_data.get("name", "")
         if missing_or_found == "F" and name:
             msg_ = "An unidentified dead body cannot have a name"
@@ -266,7 +271,7 @@ class PublicReportForm(forms.Form):
         label="Gender",
         widget=forms.RadioSelect(choices=[("M", "Male"), ("F", "Female")]),
     )
-    height = forms.IntegerField()
+    height = forms.IntegerField(label="Height in cm.")
     age = forms.IntegerField()
     guardian_name_and_address = forms.CharField(max_length=300, required=False)
     telephone_of_missing = forms.CharField(
@@ -404,6 +409,11 @@ class PublicReportForm(forms.Form):
         messages = []
         age = cleaned_data.get("age", "")
         photo = cleaned_data.get("photo")
+        height = int(cleaned_data.get("height", ""))
+        if height < 50:
+            print(height)
+            msg_ = "Please enter height in cm"
+            messages.append(msg_)
         if photo:
             if photo.size > 5 * 1024 * 1024:
                 msg_ = "Please pick image below 5 Mb"
@@ -441,7 +451,7 @@ class ReportFormEdit(forms.Form):
     missing_or_found = forms.CharField(
         label="Missing or Found", widget=forms.RadioSelect(choices=MISSING_OR_FOUND)
     )
-    height = forms.IntegerField()
+    height = forms.IntegerField(label="Height in cm.")
     age = forms.IntegerField()
     guardian_name_and_address = forms.CharField(
         max_length=300, required=False, widget=forms.Textarea()
@@ -530,6 +540,11 @@ class ReportFormEdit(forms.Form):
     def clean(self):
         cleaned_data = super().clean()
         messages = []
+        height = int(cleaned_data.get("height", ""))
+        if height < 50:
+            print(height)
+            msg_ = "Please enter height in cm"
+            messages.append(msg_)
         latitude = cleaned_data.get("latitude")
         longitude = cleaned_data.get("longitude", "")
         if latitude:
