@@ -460,7 +460,10 @@ class ReportFormEdit(forms.Form):
     latitude = forms.FloatField(required=False)
     longitude = forms.FloatField(required=False)
     location = SpatialLocationField(map_attrs=default_map_attrs, required=False)
-    reconciled = forms.BooleanField(required=False)
+    reconciled = forms.BooleanField(
+        required=False,
+        label="Missing person has been recovered or dead body has been identified",
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

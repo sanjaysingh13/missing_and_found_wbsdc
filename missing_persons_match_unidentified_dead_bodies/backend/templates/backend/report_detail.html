@@ -64,7 +64,13 @@
             {% else %}
                 Unidentified
             {% endif %}
-        </strong></p>
+        </strong>
+            {% if report.reconciled  %}
+              : Recovered/Identified
+
+
+            {% endif %}
+    </p>
             <p>{{ report.entry_date}}</p>
             <p>{{ report.name}}</p>
             <p>C/o: {{ report.guardian_name_and_address}}</p>

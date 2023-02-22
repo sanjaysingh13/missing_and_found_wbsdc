@@ -380,6 +380,7 @@ def view_report(request, object_id):
                 "guardian_name_and_address",
                 "height",
                 "age",
+                "reconciled",
             )
             if report.missing_or_found == "M":
                 for report_found in reports:
@@ -412,6 +413,7 @@ def view_report(request, object_id):
                 "guardian_name_and_address",
                 "height",
                 "age",
+                "reconciled",
             )
             for report_missing in public_reports:
                 if not PublicReportMatch.objects.filter(
@@ -926,6 +928,7 @@ def report_search_results(request, pk):
         "gender",
         "missing_or_found",
         "police_station",
+        "reconciled",
     )
     reports = reports.values()
     report_list = []
@@ -937,6 +940,7 @@ def report_search_results(request, pk):
         report_["id"] = id_
         report_["name"] = rep.name
         report_["missing_or_found"] = rep.missing_or_found
+        report_["reconciled"] = rep.reconciled
         report_["guardian_name_and_address"] = rep.guardian_name_and_address
         report_["age"] = rep.age
         report_["height"] = rep.height
@@ -1423,6 +1427,7 @@ def seven_days_missing(request):
         last_week = timezone.now() - timedelta(days=7)
         reports_missing = Report.objects.filter(
             missing_or_found="M",
+            reconciled=False,
             entry_date__gte=last_week,
             entry_date__lte=timezone.now(),
         ).order_by("-entry_date")
