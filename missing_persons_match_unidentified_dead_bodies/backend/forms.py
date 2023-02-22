@@ -12,11 +12,11 @@ from missing_persons_match_unidentified_dead_bodies.users.models import (
     PoliceStation,
 )
 
-GENDER = [("Male", "Male"), ("Female", "Female"), ("U", "Unknown")]
+GENDER = [("M", "Male"), ("F", "Female"), ("U", "Unknown")]
 MISSING_OR_FOUND = [
-    ("M", "Missing"),
-    ("F", "Unidentified Dead Body"),
-    ("U", "Unidentified Recovered Person"),
+    ("Missing", "Missing"),
+    ("Found", "Unidentified Dead Body"),
+    ("Unidentified", "Unidentified Recovered Person"),
 ]
 GDE_OR_FIR = [
     ("GDE", "GDE"),

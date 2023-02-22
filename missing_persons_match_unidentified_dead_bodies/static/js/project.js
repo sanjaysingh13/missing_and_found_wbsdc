@@ -281,6 +281,17 @@ clear.addEventListener("click", function(){
   document.getElementById("id_south_east_location").value = "";
 });
 }
+$(document).ready(function() {
+    $('input[name="missing_or_found"]').change(function() {
+      if ($('input[value="Found"]').is(':checked') || $('input[value="Unidentified"]').is(':checked')) {
+        $('#id_name').prop('disabled', true);
+        $("#id_guardian_name_and_address").prop("disabled", true);
+      } else if ($('input[value="Missing"]').is(':checked')) {
+        $('#id_name').prop('disabled', false);
+        $("#id_guardian_name_and_address").prop("disabled", false);
+      }
+    });
+  });
 // $(document).ready(function() {
 //   $("input[value='F']").click(function() {
 //     $("#id_name").prop("disabled", true);

@@ -4,7 +4,7 @@
 {% block content %}
 <div>
 
-    <h2>Matched Reports</h2>
+    <h2>Report (and matches, if any)</h2>
 
     <div class="container">
         <!--Pagination-->
@@ -57,9 +57,17 @@
         <div class="col">
             <h5>Reported Case</h5>
             <img src="{{ report.photo.url }}" class="img-fluid">
+            <p><strong>{% if report.missing_or_found == "M" %}
+              Missing
+            {% elif report.missing_or_found == "F" %}
+              Unidentified Dead Body
+            {% else %}
+                Unidentified
+            {% endif %}
+        </strong></p>
             <p>{{ report.entry_date}}</p>
             <p>{{ report.name}}</p>
-            <p><strong>C/o: </strong>{{ report.guardian_name_and_address}}</p>
+            <p>C/o: {{ report.guardian_name_and_address}}</p>
             <p>{{ report.description}}</p>
             <p>Height: {{report.height}} Age: {{report.age}}</p>
             <p>{{ report.police_station.ps_with_distt}}</p>
@@ -97,7 +105,15 @@
 
             <input class="form-check-input dup_id" type="checkbox"  value= {{match.pk}} aria-label="...">
             <p>{{ match.name}}</p>
-            <p><strong>C/o: </strong>{{ match.guardian_name_and_address}}</p>
+            <p><strong>{% if match.missing_or_found == "M" %}
+              Missing
+            {% elif match.missing_or_found == "F" %}
+              Unidentified Dead Body
+            {% else %}
+                Unidentified
+            {% endif %}
+            </strong></p>
+            <p>C/o: {{ match.guardian_name_and_address}}</p>
             <p>{{ match.entry_date}}</p>
             <p>{{ match.description}}</p>
             <p>{{ match.police_station.ps_with_distt}}</p>

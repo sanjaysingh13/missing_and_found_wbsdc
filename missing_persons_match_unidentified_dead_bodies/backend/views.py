@@ -72,6 +72,7 @@ from .utils import generate_map_from_reports, get_reports_within_bbox, resize_im
 # from .filters import ReportSearchFilter
 mapbox_access_token = settings.MAP_BOX_ACCESS_TOKEN
 gmap_access_token = settings.GOOGLE_MAPS_API
+generate_token = settings.TEMPLATEID_GENERATE_TOKEN
 
 s3_file_pattern = re.compile(r".*https.*")
 pk_pattern = re.compile(r"\$primary_key=(\d+)$")
@@ -88,7 +89,7 @@ def match_encodings(report):
     face_encoding = np.array(face_encoding, dtype="float64")
     gender = report.gender
     missing_or_found = report.missing_or_found
-    height = report.height
+    # height = report.height
     # entry_date = report.entry_date
     if missing_or_found == "M":
         reports_under_consideration = Report.objects.filter(
@@ -99,10 +100,10 @@ def match_encodings(report):
             gender=gender, missing_or_found="M", reconciled=False
         )
 
-    if height:
-        reports_under_consideration = reports_under_consideration.filter(
-            height__gte=height - 10, height__lte=height + 10
-        )
+    # if height and height != 0 :
+    #     reports_under_consideration = reports_under_consideration.filter(
+    #         height__gte=height - 10, height__lte=height + 10
+    #     )
     face_encodings = []
     ids = []
     for report in reports_under_consideration:
@@ -168,15 +169,18 @@ def upload_photo(request):
             entry_date = cleaned_data.get("entry_date", "")
             name = cleaned_data.get("name", "")
             gender = cleaned_data.get("gender", "")
-            if gender == "Male":
-                gender = "M"
-            elif gender == "Female":
-                gender = "F"
+
             age = cleaned_data.get("age", "")
             guardian_name_and_address = cleaned_data.get(
                 "guardian_name_and_address", ""
             )
             missing_or_found = cleaned_data.get("missing_or_found", "")
+            if missing_or_found == "Missing":
+                missing_or_found = "M"
+            elif missing_or_found == "Found":
+                missing_or_found = "F"
+            else:
+                missing_or_found = "U"
             height = cleaned_data.get("height", "")
             description = cleaned_data.get("description", "")
             latitude = cleaned_data.get("latitude", "")
@@ -264,10 +268,6 @@ def upload_public_report(request):
             cleaned_data = reportsform.cleaned_data
             name = cleaned_data.get("name", "")
             gender = cleaned_data.get("gender", "")
-            if gender == "Male":
-                gender = "M"
-            elif gender == "Female":
-                gender = "F"
             age = cleaned_data.get("age", "")
             guardian_name_and_address = cleaned_data.get(
                 "guardian_name_and_address", ""
@@ -526,10 +526,12 @@ def edit_report(request, pk):
             "reconciled",
         }
     }
-    if report_params["gender"] == "M":
-        report_params["gender"] = "Male"
-    elif report_params["gender"] == "F":
-        report_params["gender"] = "Female"
+    if report_params["missing_or_found"] == "M":
+        report_params["missing_or_found"] = "Missing"
+    elif report_params["missing_or_found"] == "Found":
+        report_params["missing_or_found"] = "Found"
+    else:
+        report_params["missing_or_found"] = "Unidentified"
     police_station = report.police_station.ps_with_distt
     report_params["police_station_with_distt"] = police_station
     if request.method == "POST":
@@ -540,15 +542,17 @@ def edit_report(request, pk):
             entry_date = cleaned_data.get("entry_date", "")
             name = cleaned_data.get("name", "")
             gender = cleaned_data.get("gender", "")
-            if gender == "Male":
-                gender = "M"
-            elif gender == "Female":
-                gender = "F"
             age = cleaned_data.get("age", "")
             guardian_name_and_address = cleaned_data.get(
                 "guardian_name_and_address", ""
             )
             missing_or_found = cleaned_data.get("missing_or_found", "")
+            if missing_or_found == "Missing":
+                missing_or_found = "M"
+            elif missing_or_found == "Found":
+                missing_or_found = "F"
+            else:
+                missing_or_found = "U"
             height = cleaned_data.get("height", "")
             description = cleaned_data.get("description", "")
             latitude = cleaned_data.get("latitude", "")
