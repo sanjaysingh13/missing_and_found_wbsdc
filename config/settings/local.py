@@ -19,7 +19,8 @@ ALLOWED_HOSTS = [
     ".ccsneo4jdigitalocean.com",
     ".wbkhoyapaya.com",
     ".wbmissingfound.com",
-    "missingfound.wb.gov.in"
+    "missingfound.wb.gov.in",
+    "movinglight.co.in"
 ]
 
 # CACHES
