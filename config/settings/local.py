@@ -20,7 +20,7 @@ ALLOWED_HOSTS = [
     ".wbkhoyapaya.com",
     ".wbmissingfound.com",
     "missingfound.wb.gov.in",
-    "movinglight.co.in"
+    ".movinglight.co.in"
 ]
 
 # CACHES
