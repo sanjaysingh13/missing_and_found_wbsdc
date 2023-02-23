@@ -182,6 +182,7 @@ class Match(TimeStampedModel):
         Report, on_delete=models.CASCADE, related_name="report_found"
     )
     mail_sent = models.DateField(null=True)
+    match_is_correct = models.BooleanField(null=True)
 
 
 class PublicReportMatch(TimeStampedModel):
@@ -192,6 +193,7 @@ class PublicReportMatch(TimeStampedModel):
         Report, on_delete=models.CASCADE, related_name="public_report_found"
     )
     mail_sent = models.DateField(null=True)
+    match_is_correct = models.BooleanField(null=True)
 
 
 class MitRailLines(models.Model):

@@ -604,6 +604,18 @@ def edit_report(request, pk):
             report.description = description
             if reconciled:
                 report.reconciled = True
+                matches = (
+                    Match.objects.filter(report_missing_id=report.pk) |
+                    Match.objects.filter(report_found_id=report.pk)
+                )
+
+                public_report_matches = PublicReportMatch.objects.filter(report_found_id=report.pk)
+                for match in matches:
+                    match.match_is_correct = False
+                    match.save()
+                for public_report_match in public_report_matches:
+                    public_report_match.match_is_correct = False
+                    public_report_match.save()
             report.save()
             return redirect("backend:view_report", object_id=report.id)
     else:
@@ -1045,7 +1057,7 @@ def bounded_box_search(request):
 @login_required
 @permission_required("users.add_user", raise_exception=True)
 def matches(request):
-    matches = Match.objects.all().order_by("-mail_sent").values()
+    matches = Match.objects.filter(match_is_correct__isnull=True).order_by("-mail_sent").values()
     matched_reports = [
         (
             Report.objects.get(pk=match["report_missing_id"]),
