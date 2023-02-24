@@ -656,6 +656,12 @@ def report_search(request):
             max_date = cleaned_data.get("max_date", "")
             advanced_search_report = cleaned_data.get("advanced_search_report", "")
             missing_or_found = cleaned_data.get("missing_or_found", "")
+            if missing_or_found == "Missing":
+                missing_or_found = "M"
+            elif missing_or_found == "Found":
+                missing_or_found = "F"
+            elif missing_or_found == "Unidentified":
+                missing_or_found = "U"
             gender = cleaned_data.get("gender", "")
             if gender == "Male":
                 gender = "M"
