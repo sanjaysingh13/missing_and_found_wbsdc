@@ -351,6 +351,7 @@ CSRF_TRUSTED_ORIGINS = [
     "https://wbkhoyapaya.com",
     "https://www.wbmissingfound.com",
     "https://wbmissingfound.com",
+    ".missingfound.wb.gov.in"
 ]
 
 
