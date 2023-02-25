@@ -292,16 +292,53 @@ $(document).ready(function() {
       }
     });
   });
-// $(document).ready(function() {
-//   $("input[value='F']").click(function() {
-//     $("#id_name").prop("disabled", true);
-//     $("#id_guardian_name_and_address").prop("disabled", true);
-//   });
-//   $("input[value='M']").click(function() {
-//     $("#id_name").prop("disabled", false);
-//     $("#id_guardian_name_and_address").prop("disabled", false);
-//   });
-// });
+// Merge matched reports
+$(document).ready(function() {
+    var accepted_matches = []
+    var list_of_suggested_matches = ""
+    $('#merge_matches').on('click', function(event) {
+        var merger_action_to_be_taken = $('#merger_action_to_be_taken').val()
+        console.log(merger_action_to_be_taken);
+        $.each($(".dup_id"), function( index, value ) {
+  if (this.checked) {
+    accepted_matches.push(value.value);
+  }
+  else {
+
+  };
+    });
+
+accepted_matches = accepted_matches.join(",")
+console.log("Accepted Matches " + accepted_matches) ;
+ list_of_suggested_matches = document.getElementById('matches_id').innerHTML
+console.log("Suggested Matches " + list_of_suggested_matches) ;
+report_id = document.getElementById('report_id').innerHTML
+console.log(report_id) ;
+report_m_or_f = document.getElementById('report_m_or_f').innerHTML
+console.log(report_m_or_f) ;
+
+$.ajax({
+                url: '/ajax/merge_matches/',
+                type: 'GET',
+                data: {
+                    'merger_action_to_be_taken': merger_action_to_be_taken,
+                    'list_of_suggested_matches':list_of_suggested_matches,
+                    'accepted_matches':accepted_matches,
+                    'report_id':report_id,
+                    'report_m_or_f':report_m_or_f
+                },
+                dataType: 'json',
+                success: function(data) {
+                    console.log("Hi");
+                    console.log(data);
+                    location.reload();
+
+            }
+// window.location.reload();
+    });
+ });
+
+});
 var telephone_of_reporter = document.getElementById("id_telephone_of_reporter")
 if (telephone_of_reporter) {
 console.log("hello sir");

@@ -21,7 +21,7 @@ from django.contrib.gis.geos import GEOSGeometry, Point
 from django.contrib.postgres.search import SearchQuery, SearchVector
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Subquery
 # from django.contrib.gis.geos import Point
 # from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 # from django.core.paginator import Paginator
@@ -95,9 +95,23 @@ def match_encodings(report):
         reports_under_consideration = Report.objects.filter(
             gender=gender, missing_or_found__in=["F", "U"], reconciled=False
         )
+        known_false_matches = Match.objects.filter(
+            report_missing=report, match_is_correct=False
+        )
+        known_false_match_reports = known_false_matches.values("report_found_id")
+        reports_under_consideration = reports_under_consideration.exclude(
+            id__in=Subquery(known_false_match_reports)
+        )
     else:
         reports_under_consideration = Report.objects.filter(
             gender=gender, missing_or_found="M", reconciled=False
+        )
+        known_false_matches = Match.objects.filter(
+            report_found=report, match_is_correct=False
+        )
+        known_false_match_reports = known_false_matches.values("report_missing_id")
+        reports_under_consideration = reports_under_consideration.exclude(
+            id__in=Subquery(known_false_match_reports)
         )
 
     # if height and height != 0 :
@@ -431,6 +445,7 @@ def view_report(request, object_id):
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
     context["matches"] = page_obj
+    context["matches_id"] = ",".join([str(report.pk) for report in page_obj])
     template_name = "backend/report_detail.html"
     return render(request, template_name, context)
 
@@ -604,18 +619,14 @@ def edit_report(request, pk):
             report.description = description
             if reconciled:
                 report.reconciled = True
-                matches = (
-                    Match.objects.filter(report_missing_id=report.pk) |
-                    Match.objects.filter(report_found_id=report.pk)
-                )
-
-                public_report_matches = PublicReportMatch.objects.filter(report_found_id=report.pk)
-                for match in matches:
-                    match.match_is_correct = False
-                    match.save()
-                for public_report_match in public_report_matches:
-                    public_report_match.match_is_correct = False
-                    public_report_match.save()
+                Match.objects.filter(
+                    report_missing_id=report.pk, match_is_correct=None
+                ) | Match.objects.filter(
+                    report_found_id=report.pk, match_is_correct=None
+                ).delete()
+                PublicReportMatch.objects.filter(
+                    report_found_id=report.pk, match_is_correct=None
+                ).delete()
             report.save()
             return redirect("backend:view_report", object_id=report.id)
     else:
@@ -1062,8 +1073,18 @@ def bounded_box_search(request):
 
 @login_required
 @permission_required("users.add_user", raise_exception=True)
-def matches(request):
-    matches = Match.objects.filter(match_is_correct__isnull=True).order_by("-mail_sent").values()
+def matches(request, category):
+    if category == "all":
+        matches = (
+            Match.objects.filter(match_is_correct__isnull=True)
+            .order_by("-mail_sent")
+            .values()
+        )
+    elif category == "true":
+        matches = (
+            Match.objects.filter(match_is_correct=True).order_by("-mail_sent").values()
+        )
+
     matched_reports = [
         (
             Report.objects.get(pk=match["report_missing_id"]),

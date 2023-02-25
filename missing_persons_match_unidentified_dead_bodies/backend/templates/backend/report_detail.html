@@ -5,6 +5,7 @@
 <div>
 
     <h2>Report (and matches, if any)</h2>
+<p id = "matches_id", style="display:none;">{{matches_id}}</p>
 
     <div class="container">
         <!--Pagination-->
@@ -56,8 +57,10 @@
     <div class="row row-cols-3">
         <div class="col">
             <h5>Reported Case</h5>
+            <p id = "report_id", style="display:none;">{{report.pk}}</p>
+            <p id="report_m_or_f", style="display:none;">{{report.missing_or_found}}</p>
             <img src="{{ report.photo.url }}" class="img-fluid">
-            <p><strong>{% if report.missing_or_found == "M" %}
+            <p ><strong >{% if report.missing_or_found == "M" %}
               Missing
             {% elif report.missing_or_found == "F" %}
               Unidentified Dead Body
@@ -92,7 +95,12 @@
                     </form>
                 </div>
             </div>
-
+            <select class="form-select form-select-lg mb-3" aria-label=".form-select-lg example" id="merger_action_to_be_taken">
+ <option selected>Action to be taken</option>
+  <option value="1">Selected pictures on right are matching</option>
+  <option value="2">No match</option>
+</select>
+<button type="submit" class="btn btn-primary mb-3" id="merge_matches">Confirm</button>
         </div>
 
 
@@ -129,8 +137,9 @@
         {% endfor %}
 
     </div>
+</div>
 
-    <button type="submit" class="btn btn-primary mb-3" id="merge_matches">Confirm Match</button>
+</div>
 </div>
 
 {% endblock content %}

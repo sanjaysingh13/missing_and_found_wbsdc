@@ -112,7 +112,7 @@
             <li><a class="dropdown-item" href="{% url 'backend:upload_photo' %}">Upload New Report</a></li>
             <li><a class="dropdown-item" href="{% url 'backend:report_search' %}"> Search Reports</a></li>
             <li><a class="dropdown-item" href="{% url 'backend:bounded_box_search' %}"> Curated Search: River/Rail/Road</a></li>
-            <li><a class="dropdown-item" href="{% url 'backend:matches' %}">Matched Reports</a></li>
+            <li><a class="dropdown-item" href="{% url 'backend:matches' category='all'%}">Matched Reports</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="{% url 'backend:public_report_search' %}">Regularize Public Report</a></li>
           </ul>
@@ -142,6 +142,7 @@
             <li><a class="dropdown-item" href="{% url 'backend:seven_days_missing' %}">Missing Last Week</a></li>
              <li><a class="dropdown-item" href="{% url 'backend:seven_days_public_missing' %}">Public Reports Last Week</a></li>
             <li><a class="dropdown-item" href="{% url 'backend:seven_days_found' %}">Found Last Week</a></li>
+            <li><a class="dropdown-item" href="{% url 'backend:matches' category='true'%}">Matched Reports</a></li>
           </ul>
         </li>
          {% endif %}

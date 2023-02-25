@@ -96,108 +96,109 @@ def add_description_search_vector_to_report(pk):
 @app.task(task_soft_time_limit=3000, ignore_result=True)
 def send_matched_mail(pk):
     match = Match.objects.get(pk=pk)
-    report_missing = match.report_missing
-    ps_missing = report_missing.police_station.ps_with_distt
-    oc_missing = report_missing.police_station.officer_in_charge
-    oc_missing_tel = report_missing.police_station.telephones
-    oc_missing_email = report_missing.police_station.emails
-    reference_missing = (
-        str(report_missing.reference)
-        + " dt. "
-        + report_missing.entry_date.strftime("%d,%b,%Y")
-    )
-    name_missing = report_missing.name
-
-    report_found = match.report_found
-    ps_found = report_found.police_station.ps_with_distt
-    oc_found = report_found.police_station.officer_in_charge
-    oc_found_tel = report_found.police_station.telephones
-    oc_found_email = report_found.police_station.emails
-    reference_found = (
-        str(report_found.reference)
-        + " dt. "
-        + report_found.entry_date.strftime("%d,%b,%Y")
-    )
-
-    # Shorten Links:
-    report_found_url = (
-        f"https://www.wbmissingfound.com/backend/view_report/{report_found.pk}/"
-    )
-    report_missing_url = (
-        f"https://www.wbmissingfound.com/backend/view_report/{report_missing.pk}/"
-    )
-    report_found_url_tiny_link = shorten_url(report_found_url)
-    report_missing_url_tiny_link = shorten_url(report_missing_url)
-
-    message = (
-        "Match for unidentified dead body: Found: "
-        + f"{report_found_url_tiny_link} Missing (public, use token no.):"
-        + f" {report_missing_url_tiny_link}. GoWB"
-    )
-    try:
-        missing_message = (
-            f"There is a match for missing person {name_missing} of your Police Station"
-            + f" ref: {reference_missing} in {ps_missing}."
-            + "\n"
-            + f"Please contact the O/C {oc_found} regarding their PS Ref: {reference_found}."
-            + "\n"
-            + f"Contact details are Tel:  {oc_found_tel} and Email: {oc_found_email}"
+    if match.match_is_correct == "Fuck":  # Change it to None
+        report_missing = match.report_missing
+        ps_missing = report_missing.police_station.ps_with_distt
+        oc_missing = report_missing.police_station.officer_in_charge
+        oc_missing_tel = report_missing.police_station.telephones
+        oc_missing_email = report_missing.police_station.emails
+        reference_missing = (
+            str(report_missing.reference)
+            + " dt. "
+            + report_missing.entry_date.strftime("%d,%b,%Y")
         )
-        send_mail(
-            "Missing Person Matched with Dead Body",
-            missing_message,
-            None,
-            [oc_missing_email],
-            fail_silently=False,
+        name_missing = report_missing.name
+
+        report_found = match.report_found
+        ps_found = report_found.police_station.ps_with_distt
+        oc_found = report_found.police_station.officer_in_charge
+        oc_found_tel = report_found.police_station.telephones
+        oc_found_email = report_found.police_station.emails
+        reference_found = (
+            str(report_found.reference)
+            + " dt. "
+            + report_found.entry_date.strftime("%d,%b,%Y")
         )
-        for user in User.objects.filter(
-            category="DISTRICT_ADMIN",
-            district=report_missing.police_station.district,
-        ):
+
+        # Shorten Links:
+        report_found_url = (
+            f"https://www.wbmissingfound.com/backend/view_report/{report_found.pk}/"
+        )
+        report_missing_url = (
+            f"https://www.wbmissingfound.com/backend/view_report/{report_missing.pk}/"
+        )
+        report_found_url_tiny_link = shorten_url(report_found_url)
+        report_missing_url_tiny_link = shorten_url(report_missing_url)
+
+        message = (
+            "Match for unidentified dead body: Found: "
+            + f"{report_found_url_tiny_link} Missing (public, use token no.):"
+            + f" {report_missing_url_tiny_link}. GoWB"
+        )
+        try:
+            missing_message = (
+                f"There is a match for missing person {name_missing} of your Police Station"
+                + f" ref: {reference_missing} in {ps_missing}."
+                + "\n"
+                + f"Please contact the O/C {oc_found} regarding their PS Ref: {reference_found}."
+                + "\n"
+                + f"Contact details are Tel:  {oc_found_tel} and Email: {oc_found_email}"
+            )
             send_mail(
                 "Missing Person Matched with Dead Body",
                 missing_message,
                 None,
-                [user.email],
+                [oc_missing_email],
                 fail_silently=False,
             )
-        found_message = (
-            f"There is a match for an unidentified dead body reported by you vide  {reference_found}"
-            + f" of {ps_found} at {ps_missing}."
-            + "\n"
-            + f"Please contact the O/C {oc_missing} regarding their PS Ref: {reference_missing}."
-            + "\n"
-            + f"Contact details are Tel: {oc_missing_tel} and Email: {oc_missing_email}"
-        )
-        send_mail(
-            "Unidentified Dead Body Matched with Missing Person",
-            found_message,
-            None,
-            [oc_found_email],
-            fail_silently=False,
-        )
-        for user in User.objects.filter(
-            category="DISTRICT_ADMIN",
-            district=report_found.police_station.district,
-        ):
+            for user in User.objects.filter(
+                category="DISTRICT_ADMIN",
+                district=report_missing.police_station.district,
+            ):
+                send_mail(
+                    "Missing Person Matched with Dead Body",
+                    missing_message,
+                    None,
+                    [user.email],
+                    fail_silently=False,
+                )
+            found_message = (
+                f"There is a match for an unidentified dead body reported by you vide  {reference_found}"
+                + f" of {ps_found} at {ps_missing}."
+                + "\n"
+                + f"Please contact the O/C {oc_missing} regarding their PS Ref: {reference_missing}."
+                + "\n"
+                + f"Contact details are Tel: {oc_missing_tel} and Email: {oc_missing_email}"
+            )
             send_mail(
                 "Unidentified Dead Body Matched with Missing Person",
                 found_message,
                 None,
-                [user.email],
+                [oc_found_email],
                 fail_silently=False,
             )
-            send_sms(template_match, message, user.telephone)
+            for user in User.objects.filter(
+                category="DISTRICT_ADMIN",
+                district=report_found.police_station.district,
+            ):
+                send_mail(
+                    "Unidentified Dead Body Matched with Missing Person",
+                    found_message,
+                    None,
+                    [user.email],
+                    fail_silently=False,
+                )
+                send_sms(template_match, message, user.telephone)
 
-        match.mail_sent = date.today()
-        match.save()
-        # Send SMSs
-        telephones = [oc_missing_tel, oc_found_tel, "9830425757"]
-        for telephone in telephones:
-            if telephone:
-                send_sms(template_match, message, telephone)
-    except Exception as e:
-        print(str(e))
+            match.mail_sent = date.today()
+            match.save()
+            # Send SMSs
+            telephones = [oc_missing_tel, oc_found_tel, "9830425757"]
+            for telephone in telephones:
+                if telephone:
+                    send_sms(template_match, message, telephone)
+        except Exception as e:
+            print(str(e))
 
 
 @app.task(task_soft_time_limit=3000, ignore_result=True)
