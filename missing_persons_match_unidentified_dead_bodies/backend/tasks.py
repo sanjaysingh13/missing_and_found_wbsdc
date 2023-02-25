@@ -96,7 +96,7 @@ def add_description_search_vector_to_report(pk):
 @app.task(task_soft_time_limit=3000, ignore_result=True)
 def send_matched_mail(pk):
     match = Match.objects.get(pk=pk)
-    if match.match_is_correct == "Fuck":  # Change it to None
+    if match.match_is_correct is None:
         report_missing = match.report_missing
         ps_missing = report_missing.police_station.ps_with_distt
         oc_missing = report_missing.police_station.officer_in_charge
