@@ -98,7 +98,7 @@ def match_encodings(report):
             gender=gender, missing_or_found__in=["F", "U"], reconciled=False
         )
         known_false_matches = Match.objects.filter(
-            report_missing=report, match_is_correct=False
+            report_missing_id=report.id, match_is_correct=False
         )
         known_false_match_reports = known_false_matches.values("report_found_id")
         reports_under_consideration = reports_under_consideration.exclude(
@@ -109,7 +109,7 @@ def match_encodings(report):
             gender=gender, missing_or_found="M", reconciled=False
         )
         known_false_matches = Match.objects.filter(
-            report_found=report, match_is_correct=False
+            report_found_id=report.id, match_is_correct=False
         )
         known_false_match_reports = known_false_matches.values("report_missing_id")
         reports_under_consideration = reports_under_consideration.exclude(
@@ -401,17 +401,17 @@ def view_report(request, object_id):
             if report.missing_or_found == "M":
                 for report_found in reports:
                     if not Match.objects.filter(
-                        report_missing=report, report_found=report_found
+                        report_missing_id=report.id, report_found_id=report_found.id
                     ).exists():
-                        match = Match(report_missing=report, report_found=report_found)
+                        match = Match(report_missing_id=report.id, report_found_id=report_found.id)
                         match.save()
             else:
                 for report_missing in reports:
                     if not Match.objects.filter(
-                        report_missing=report_missing, report_found=report
+                        report_missing_id=report_missing.id, report_found_id=report.id
                     ).exists():
                         match = Match(
-                            report_missing=report_missing, report_found=report
+                            report_missing_id=report_missing.id, report_found_id=report.id
                         )
                         match.save()
         matched_public_reports = match_encodings_with_public_reports(report)
@@ -433,10 +433,10 @@ def view_report(request, object_id):
             )
             for report_missing in public_reports:
                 if not PublicReportMatch.objects.filter(
-                    report_missing=report_missing, report_found=report
+                    report_missing_id=report_missing.id, report_found_id=report.id
                 ).exists():
                     match = PublicReportMatch(
-                        report_missing=report_missing, report_found=report
+                        report_missing_id=report_missing.id, report_found_id=report.id
                     )
                     match.save()
             reports = list(chain(public_reports, reports))
@@ -472,10 +472,10 @@ def view_public_report(request, object_id):
                 )
                 for report_found in reports:
                     if not PublicReportMatch.objects.filter(
-                        report_missing=report, report_found=report_found
+                        report_missing_id=report.id, report_found_id=report_found.id
                     ).exists():
                         match = PublicReportMatch(
-                            report_missing=report, report_found=report_found
+                            report_missing_id=report.id, report_found_id=report_found.id
                         )
                         match.save()
         context["report"] = report
@@ -978,8 +978,8 @@ def report_search_results(request, pk):
         report_["entry_date"] = rep.entry_date
         report_["description"] = rep.description
         report_["matched"] = (
-            Match.objects.filter(report_found=rep).exists()
-            or Match.objects.filter(report_missing=rep).exists()
+            Match.objects.filter(report_found_id=rep.id).exists()
+            or Match.objects.filter(report_missing_id=rep.id).exists()
         )
         report_["photo"] = rep.photo.url
         report_["ps"] = rep.police_station.ps_with_distt
