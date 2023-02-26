@@ -1538,7 +1538,7 @@ def comment_form(request):
             otp = cleaned_data.get("otp", "")
             if otp == num_str:
                 text = cleaned_data.get("text", "")
-                email_of_reporter = cleaned_data.get("email", "")
+                email_of_reporter = cleaned_data.get("email_of_reporter", "")
                 name = cleaned_data.get("name", "")
                 comment = Comment(
                     text=text,
