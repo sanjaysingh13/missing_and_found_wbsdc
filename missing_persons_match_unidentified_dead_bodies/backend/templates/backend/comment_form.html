@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %} {{title}} {% endblock title %}
+{% block content %}
+<div >
+	</br>
+	<h6> {{form_title}}</h6>
+	<form method="post" id="public_report">
+	{% crispy form form.helper %}
+
+</form>
+</div>
+
+
+
+
+{% endblock content %}

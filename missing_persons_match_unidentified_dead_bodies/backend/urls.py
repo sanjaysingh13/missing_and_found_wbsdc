@@ -87,6 +87,16 @@ urlpatterns = [
         name="seven_days_found",
     ),
     path(
+        "comment_form/",
+        views.comment_form,
+        name="comment_form",
+    ),
+    path(
+        "comments/",
+        views.comments,
+        name="comments",
+    ),
+    path(
         "sitemap.xml",
         sitemap,
         {"sitemaps": sitemaps},

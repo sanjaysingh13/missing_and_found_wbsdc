@@ -196,6 +196,13 @@ class PublicReportMatch(TimeStampedModel):
     match_is_correct = models.BooleanField(null=True)
 
 
+class Comment(TimeStampedModel):
+    text = models.CharField(max_length=2000)
+    email = models.CharField(max_length=50, null=True)
+    name = models.CharField(max_length=50, null=True)
+    telephone = models.CharField(max_length=10)
+
+
 class MitRailLines(models.Model):
     f_code = models.CharField(max_length=255, null=True)
     fco = models.IntegerField()

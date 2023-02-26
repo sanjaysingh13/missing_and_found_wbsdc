@@ -143,6 +143,16 @@
              <li><a class="dropdown-item" href="{% url 'backend:seven_days_public_missing' %}">Public Reports Last Week</a></li>
             <li><a class="dropdown-item" href="{% url 'backend:seven_days_found' %}">Found Last Week</a></li>
             <li><a class="dropdown-item" href="{% url 'backend:matches' category='true'%}">Correctly Matched Reports</a></li>
+            <li><a class="dropdown-item" href="{% url 'backend:matches' category='false'%}">Incorrectly Matched Reports</a></li>
+          </ul>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Comments
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <li><a class="dropdown-item" href="{% url 'backend:comment_form' %}">Give your Feedback</a></li>
+            <li><a class="dropdown-item" href="{% url 'backend:comments' %}"> View Feedback</a></li>
           </ul>
         </li>
          {% endif %}

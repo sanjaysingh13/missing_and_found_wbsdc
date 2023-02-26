@@ -35,6 +35,7 @@ from rest_framework import viewsets
 
 from missing_persons_match_unidentified_dead_bodies.backend.models import (
     AdvancedReportSearch,
+    Comment,
     EmailRecord,
     Match,
     PublicReport,
@@ -57,6 +58,7 @@ from missing_persons_match_unidentified_dead_bodies.users.models import (
 
 from .forms import (
     BoundedBoxSearchForm,
+    CommentForm,
     ConfirmPublicReportForm,
     DistrictForm,
     PublicForm,
@@ -1084,6 +1086,10 @@ def matches(request, category):
         matches = (
             Match.objects.filter(match_is_correct=True).order_by("-mail_sent").values()
         )
+    else:
+        matches = (
+            Match.objects.filter(match_is_correct=False).order_by("-mail_sent").values()
+        )
 
     matched_reports = [
         (
@@ -1514,3 +1520,47 @@ def seven_days_found(request):
             "backend/reports.html",
             {"reports": reports_found_or_unknown, "district": "last seven days"},
         )
+
+
+def comment_form(request):
+    if request.method == "GET":
+        form = CommentForm()
+    elif request.method == "POST":
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            cleaned_data = form.cleaned_data
+            telephone_of_reporter = cleaned_data.get("telephone_of_reporter", "")
+            random_string = "s86hjaulop9&^2@"
+            string = random_string + telephone_of_reporter
+            string_hash = hashlib.sha256(string.encode()).hexdigest()
+            num = int(string_hash, 16)
+            num_str = str(num)[:6].zfill(6)
+            otp = cleaned_data.get("otp", "")
+            if otp == num_str:
+                text = cleaned_data.get("text", "")
+                email_of_reporter = cleaned_data.get("email", "")
+                name = cleaned_data.get("name", "")
+                comment = Comment(
+                    text=text,
+                    email=email_of_reporter,
+                    name=name,
+                    telephone=telephone_of_reporter,
+                )
+                comment.save()
+                return redirect("backend:comments")
+    context = {}
+    context["form"] = form
+    context["form_title"] = "Feedback Form"
+    context["title"] = "Feedback Form"
+    return render(request, "backend/comment_form.html", context)
+
+
+def comments(request):
+    comments = Comment.objects.all().order_by("-created")
+    context = {}
+    paginator = Paginator(comments, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    context["comments"] = page_obj
+    context["title"] = "Feedback"
+    return render(request, "backend/comments.html", context)

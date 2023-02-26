@@ -5,7 +5,7 @@ from datetime import datetime
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.gis.geos import GEOSGeometry
-# from django.core.mail import send_mail
+from django.core.mail import send_mail
 from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 
@@ -21,20 +21,20 @@ date_format = "%Y-%m-%d"
 
 def send_otp(request):
     telephone_of_reporter = request.GET.get("telephone_of_reporter", None)
-    # email_of_reporter = request.GET.get("email_of_reporter", None)
+    email_of_reporter = request.GET.get("email_of_reporter", None)
     random_string = "s86hjaulop9&^2@"
     string = random_string + telephone_of_reporter
     string_hash = hashlib.sha256(string.encode()).hexdigest()
     num = int(string_hash, 16)
     num_str = str(num)[:6].zfill(6)
-    # otp_message = f"Your OTP is {num_str}"
-    # send_mail(
-    #     "OTP for registering missing person report on WB Khoya Paya",
-    #     otp_message,
-    #     None,
-    #     [email_of_reporter],
-    #     fail_silently=False,
-    # )
+    otp_message = f"Your OTP is {num_str}"
+    send_mail(
+        "OTP for registering missing person report on WB Khoya Paya",
+        otp_message,
+        None,
+        [email_of_reporter],
+        fail_silently=False,
+    )
     otp_message = f"Your token for missing person Sanjay Singh is {num_str}. GoWB"
     send_sms(generate_token, otp_message, telephone_of_reporter)
     return HttpResponse(status=200)

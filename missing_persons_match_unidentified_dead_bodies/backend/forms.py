@@ -973,7 +973,7 @@ class PublicReportSearchForm(forms.Form):
                     ),
                     Column(
                         "token_given_via_mail",
-                        css_class="fform-group col-md-4 mb-0",
+                        css_class="form-group col-md-4 mb-0",
                     ),
                 )
             )
@@ -983,3 +983,49 @@ class PublicReportSearchForm(forms.Form):
         self.helper.form_tag = False
         self.helper.form_id = "blueForms"
         # self.helper.add_input(Submit("submit", "Search"))
+
+
+class CommentForm(forms.Form):
+    captcha = ReCaptchaField()
+    text = forms.CharField(
+        required=False, label="Your Feedback", max_length=2000, widget=forms.Textarea()
+    )
+    email_of_reporter = forms.CharField(
+        required=False, label="Your Email", max_length=50
+    )
+    telephone_of_reporter = forms.CharField(
+        label="Your telephone (10 digits)",
+        max_length=10,
+        validators=[
+            RegexValidator(
+                r"\d{10}",
+                message="Telephone number must be 10-digit",
+                code="invalid_telephone",
+            ),
+        ],
+    )
+    name = forms.CharField(required=False, label="Your Name", max_length=50)
+    otp = forms.CharField(
+        label="Check your Phone for OTP", max_length=6, required=False
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Div(
+                Column(
+                    Row("text", css_class="form-group "),
+                    Row("email_of_reporter", css_class="form-group "),
+                    Row("name", css_class="form-group "),
+                    Row("captcha", css_class="form-group "),
+                    Row("telephone_of_reporter", css_class="form-group "),
+                    Row("otp", required=False, css_class="form-group col-md-2 mb-0"),
+                    css_class="col-md-10 mb-0",
+                )
+            )
+        )
+
+        self.helper.form_method = "post"
+        self.helper.form_tag = False
+        self.helper.add_input(Submit("submit", "Submit"))
