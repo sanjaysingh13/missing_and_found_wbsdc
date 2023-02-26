@@ -621,14 +621,16 @@ def edit_report(request, pk):
             report.description = description
             if reconciled:
                 report.reconciled = True
-                Match.objects.filter(
+                false_matches = Match.objects.filter(
                     report_missing_id=report.pk, match_is_correct=None
                 ) | Match.objects.filter(
                     report_found_id=report.pk, match_is_correct=None
-                ).delete()
-                PublicReportMatch.objects.filter(
+                )
+                false_matches.delete()
+                false_public_report_matches = PublicReportMatch.objects.filter(
                     report_found_id=report.pk, match_is_correct=None
-                ).delete()
+                )
+                false_public_report_matches.delete()
             report.save()
             return redirect("backend:view_report", object_id=report.id)
     else:
