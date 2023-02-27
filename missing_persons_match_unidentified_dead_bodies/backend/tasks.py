@@ -122,10 +122,10 @@ def send_matched_mail(pk):
 
         # Shorten Links:
         report_found_url = (
-            f"https://www.wbmissingfound.com/backend/view_report/{report_found.pk}/"
+            f"https://missingfound.wb.gov.in/backend/view_report/{report_found.pk}/"
         )
         report_missing_url = (
-            f"https://www.wbmissingfound.com/backend/view_report/{report_missing.pk}/"
+            f"https://missingfound.wb.gov.in/backend/view_report/{report_missing.pk}/"
         )
         report_found_url_tiny_link = shorten_url(report_found_url)
         report_missing_url_tiny_link = shorten_url(report_missing_url)
@@ -227,7 +227,7 @@ def send_public_report_matched_mail(pk):
         + report_missing.entry_date.strftime("%d,%b,%Y")
     )
     report_found_url = (
-        f"https://www.wbmissingfound.com/backend/view_report/{report_found.pk}/"
+        f"https://missingfound.wb.gov.in/backend/view_report/{report_found.pk}/"
     )
     report_found_url_tiny_link = shorten_url(report_found_url)
     message = (
@@ -314,7 +314,7 @@ def send_public_report_created_mail(pk):
     alert_oc_message = (
         "A Public missing report has been filed in your jurisdiction. "
         + "Please visit "
-        + f"https://www.wbmissingfound.com/backend/view_public_report/{report.token}/"
+        + f"https://missingfound.wb.gov.in/backend/view_public_report/{report.token}/"
         + f" and contact the person at {report.telephone_of_reporter}."
     )
     send_mail(
@@ -345,7 +345,7 @@ def send_public_report_created_mail(pk):
     # SMSs
     message = (
         "A Public missing report has been filed. "
-        + f"https://www.wbmissingfound.com/backend/view_public_report/{report.token}/ "
+        + f"https://missingfound.wb.gov.in/backend/view_public_report/{report.token}/ "
         + f"and contact {report.telephone_of_reporter}. GoWB"
     )
 
