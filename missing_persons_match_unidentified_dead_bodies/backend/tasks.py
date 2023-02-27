@@ -410,7 +410,7 @@ def send_sms(templateid, message, mobile):
         "passkey": passkey,
         "message": message,
     }
-    url = "https://sms.nltr.org/send_sms_ignb.php"
+    url = "https://barta.wb.gov.in/send_sms_ignb.php"
     response = requests.post(url, params=params)
     utc = parse(response.headers["Date"])
     to_zone = tz.gettz("Asia/Kolkata")
