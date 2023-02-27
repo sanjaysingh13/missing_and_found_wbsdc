@@ -398,22 +398,28 @@ def view_report(request, object_id):
                 "age",
                 "reconciled",
             )
-            if report.missing_or_found == "M":
-                for report_found in reports:
-                    if not Match.objects.filter(
-                        report_missing_id=report.id, report_found_id=report_found.id
-                    ).exists():
-                        match = Match(report_missing_id=report.id, report_found_id=report_found.id)
-                        match.save()
-            else:
-                for report_missing in reports:
-                    if not Match.objects.filter(
-                        report_missing_id=report_missing.id, report_found_id=report.id
-                    ).exists():
-                        match = Match(
-                            report_missing_id=report_missing.id, report_found_id=report.id
-                        )
-                        match.save()
+            if report.reconciled is False:
+                if report.missing_or_found == "M":
+                    for report_found in reports:
+                        if not Match.objects.filter(
+                            report_missing_id=report.id, report_found_id=report_found.id
+                        ).exists():
+                            match = Match(
+                                report_missing_id=report.id,
+                                report_found_id=report_found.id,
+                            )
+                            match.save()
+                else:
+                    for report_missing in reports:
+                        if not Match.objects.filter(
+                            report_missing_id=report_missing.id,
+                            report_found_id=report.id,
+                        ).exists():
+                            match = Match(
+                                report_missing_id=report_missing.id,
+                                report_found_id=report.id,
+                            )
+                            match.save()
         matched_public_reports = match_encodings_with_public_reports(report)
         if matched_public_reports:
             public_reports = PublicReport.objects.filter(
