@@ -3,6 +3,9 @@
 {% load mapbox_location_field_tags %}
  {% location_field_includes %}
  {% include_jquery %}
+ {% block head %}
+  <link rel="canonical" href="https://missingfound.wb.gov.in/backend/public" />
+{% endblock %}
 {% block title %} {{title}} {% endblock title %}
 {% block content %}
 <div >

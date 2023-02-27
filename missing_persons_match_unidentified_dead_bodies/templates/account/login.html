@@ -3,7 +3,9 @@
 {% load i18n %}
 {% load account socialaccount %}
 {% load crispy_forms_tags %}
-
+{% block head %}
+  <link rel="canonical" href="https://missingfound.wb.gov.in/accounts/login/" />
+{% endblock %}
 {% block head_title %}{% translate "Sign In" %}{% endblock %}
 
 {% block inner %}
