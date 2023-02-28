@@ -274,7 +274,17 @@ def get_reports_within_bbox(xmin, ymin, xmax, ymax, layer="waterlines"):
 
     reports = reports.distinct()
     reports = reports.filter(reconciled=False)
-    return reports
+    filtered_reports = Report.objects.none()
+    for report in reports:
+        if (
+            report.location.x > xmin
+            and report.location.x < xmax
+            and report.location.y > ymin
+            and report.location.y < ymax
+        ):
+            filtered_reports |= Report.objects.filter(pk=report.pk)
+
+    return filtered_reports
 
 
 def generate_map_from_reports(reports):

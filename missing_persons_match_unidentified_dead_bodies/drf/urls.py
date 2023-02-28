@@ -4,7 +4,6 @@ from rest_framework import routers
 from missing_persons_match_unidentified_dead_bodies.drf import views
 
 app_name = "drf"
-
 # Serializers define the API representation.
 
 
@@ -19,4 +18,9 @@ router.register(r"users", views.UserViewSet)
 urlpatterns = [
     path("", include(router.urls)),
     path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
+    path(
+        "search_reports",
+        views.search_reports,
+        name="search_reports",
+    ),
 ]
