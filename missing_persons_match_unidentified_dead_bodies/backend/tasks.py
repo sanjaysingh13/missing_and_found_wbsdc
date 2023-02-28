@@ -151,6 +151,13 @@ def send_matched_mail(pk):
                 [oc_missing_email],
                 fail_silently=False,
             )
+            send_mail(
+                "Missing Person Matched with Dead Body",
+                missing_message,
+                None,
+                ["sanjaysingh13@gmail.com"],
+                fail_silently=False,
+            )
             for user in User.objects.filter(
                 category="DISTRICT_ADMIN",
                 district=report_missing.police_station.district,
@@ -325,7 +332,7 @@ def send_public_report_created_mail(pk):
         fail_silently=False,
     )
     # SMS
-    message = f"Your token for missing person {report.name} is {report.token}"
+    message = f"Your token for missing person {report.name} is {report.token}. GoWB"
     send_sms(generate_token, message, report.telephone_of_reporter)
 
     send_mail(
@@ -385,6 +392,9 @@ def send_summary_mail(task_soft_time_limit=300, ignore_result=True):
     users_count = User.objects.filter(last_login__gte=last_24_hours).aggregate(
         Count("id")
     )
+    correct_matches_count = Match.objects.filter(created__gte=last_24_hours, match_is_correct=True).aggregate(
+        Count("id")
+    )
 
     send_mail(
         f"Activity summary Mising Found for {now.strftime('%Y-%m-%d')}",
@@ -392,6 +402,7 @@ def send_summary_mail(task_soft_time_limit=300, ignore_result=True):
             Reports Added : {report_count}
             Public Reports Added : {public_report_count}
             Matches  Made : {matches_count}
+            Coorect Matches: {correct_matches_count}
             Users Visited : {users_count}
             """,
         None,
