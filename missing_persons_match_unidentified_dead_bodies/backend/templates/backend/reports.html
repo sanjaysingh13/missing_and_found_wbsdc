@@ -9,7 +9,7 @@
       {% for report in reports %}
       {% if report.token %}
 
-    <a href= "{% url 'backend:view_report' report.token %}" class="list-group-item">
+    <a href= "{% url 'backend:view_public_report' report.token %}" class="list-group-item">
           <img src= {{report.icon.url}}  height= "50" class = "d-inline">
 
           <p class="list-group-item-heading d-inline">{{ report }}  </p>
