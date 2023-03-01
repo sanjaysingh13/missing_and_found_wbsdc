@@ -292,6 +292,13 @@ $(document).ready(function() {
       }
     });
   });
+$(document).ready(function() {
+    $('#district-select').change(function() {
+        var districtName = $(this).val();
+        var url = '/backend/matches/' + districtName;
+        window.location.href = url;
+    });
+});
 // Merge matched reports
 $(document).ready(function() {
     var accepted_matches = []

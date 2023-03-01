@@ -1084,28 +1084,51 @@ def bounded_box_search(request):
 @login_required
 @permission_required("users.add_user", raise_exception=True)
 def matches(request, category):
+    matched_reports = None
+    context = {}
     if category == "all":
         matches = (
             Match.objects.filter(match_is_correct__isnull=True)
             .order_by("-mail_sent")
             .values()
         )
+        context["districts"] = ["Select a District"] + sorted(
+            [district.name for district in District.objects.all()]
+        )
+        context["caption"] = "Matched Reports"
     elif category == "true":
         matches = (
             Match.objects.filter(match_is_correct=True).order_by("-mail_sent").values()
         )
-    else:
+        context["caption"] = "Correctly Matched Reports"
+    elif category == "false":
         matches = (
             Match.objects.filter(match_is_correct=False).order_by("-mail_sent").values()
         )
-
-    matched_reports = [
-        (
-            Report.objects.get(pk=match["report_missing_id"]),
-            Report.objects.get(pk=match["report_found_id"]),
+        context["caption"] = "Incorrectly Matched Reports"
+    else:
+        matches = Match.objects.filter(
+            Q(report_missing__police_station__district__name=category)
+            | Q(report_found__police_station__district__name=category),
+            match_is_correct=None,
         )
-        for match in matches
-    ]
+        matched_reports = [
+            (
+                Report.objects.get(pk=match.report_missing_id),
+                Report.objects.get(pk=match.report_found_id),
+            )
+            for match in matches
+        ]
+        context["caption"] = f"Matched Reports for {category}"
+
+    if not matched_reports:
+        matched_reports = [
+            (
+                Report.objects.get(pk=match["report_missing_id"]),
+                Report.objects.get(pk=match["report_found_id"]),
+            )
+            for match in matches
+        ]
     matched_reports = [
         (
             (
@@ -1130,7 +1153,6 @@ def matches(request, category):
     paginator = Paginator(matched_reports, 2)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
-    context = {}
     context["matches"] = page_obj
     template_name = "backend/matches.html"
     return render(request, template_name, context)

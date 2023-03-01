@@ -4,7 +4,7 @@
 {% block content %}
 <div>
 
-    <h2>Matched Reports</h2>
+    <h2>{{caption}}</h2>
 
     <div class="container">
         <!--Pagination-->
@@ -52,6 +52,17 @@
             {% endif %}
         </ul>
     </nav>
+    {% if districts%}
+    <form method="POST">
+    {% csrf_token %}
+    <select id="district-select" name="district" class="form-select">
+        {% for district in districts %}
+            <option value="{{ district }}">{{ district }}</option>
+        {% endfor %}
+    </select>
+</form>
+</br>
+{% endif %}
     <!--end of Pagination-->
     <div class="row row-cols-8">
         {% for match in matches %}
