@@ -122,25 +122,24 @@ def send_matched_mail(pk):
 
         # Shorten Links:
         report_found_url = (
-            f"https://missingfound.wb.gov.in/backend/view_report/{report_found.pk}/"
+            f"https://wbmissingfound.com/backend/view_report/{report_found.pk}/"
         )
         report_missing_url = (
-            f"https://missingfound.wb.gov.in/backend/view_report/{report_missing.pk}/"
+            f"https://wbmissingfound.com/backend/view_report/{report_missing.pk}/"
         )
-        report_found_url_tiny_link = shorten_url(report_found_url)
-        report_missing_url_tiny_link = shorten_url(report_missing_url)
+        # report_found_url_tiny_link = shorten_url(report_found_url)
+        # report_missing_url_tiny_link = shorten_url(report_missing_url)
 
         message = (
-            "Match for unidentified dead body: Found: "
-            + f"{report_found_url_tiny_link} Missing (public, use token no.):"
-            + f" {report_missing_url_tiny_link}. GoWB"
+            "Match for unidentified dead body: "
+            + f"{report_found_url} . GoWB"
         )
         try:
             missing_message = (
                 f"There is a match for missing person {name_missing} of your Police Station"
-                + f" ref: {reference_missing} in {ps_missing}."
+                + f" ref: {reference_missing} in {ps_missing}. See {report_missing_url}"
                 + "\n"
-                + f"Please contact the O/C {oc_found} regarding their PS Ref: {reference_found}."
+                + f"Please contact the O/C {oc_found} regarding their PS Ref: {reference_found}. See {report_found_url}"
                 + "\n"
                 + f"Contact details are Tel:  {oc_found_tel} and Email: {oc_found_email}"
             )
@@ -165,9 +164,10 @@ def send_matched_mail(pk):
                 )
             found_message = (
                 f"There is a match for an unidentified dead body reported by you vide  {reference_found}"
-                + f" of {ps_found} at {ps_missing}."
+                + f" of {ps_found} at {ps_missing}. See {report_found_url}"
                 + "\n"
                 + f"Please contact the O/C {oc_missing} regarding their PS Ref: {reference_missing}."
+                + f" See {report_found_url}"
                 + "\n"
                 + f"Contact details are Tel: {oc_missing_tel} and Email: {oc_missing_email}"
             )
@@ -236,21 +236,19 @@ def send_public_report_matched_mail(pk):
         + report_missing.entry_date.strftime("%d,%b,%Y")
     )
     report_found_url = (
-        f"https://missingfound.wb.gov.in/backend/view_report/{report_found.pk}/"
+        f"https://wbmissingfound.com/backend/view_report/{report_found.pk}/"
     )
-    report_found_url_tiny_link = shorten_url(report_found_url)
+    # report_found_url_tiny_link = shorten_url(report_found_url)
     message = (
         "There is a match for an unidentified dead body"
-        + f" reported by you vide {report_found_url_tiny_link}. Please "
-        + f"contact the O/C {ps_missing} regarding a public missing "
-        + f"reported by: {report_missing.guardian_name_and_address}. GoWB"
+        + f" reported by you {report_found_url}. GoWB "
+
     )
     try:
         missing_message = (
             f"There is a match for missing person {name_missing} of your Police Station"
             + f" reported by public from tel: {reference_missing} in {ps_missing}."
-            + "\n"
-            + f"Please contact the O/C {oc_found} regarding their PS Ref: {reference_found}."
+            + f"Please contact the O/C {oc_found} regarding their PS Ref: {reference_found}. See {report_found_url}"
             + "\n"
             + f"Contact details are Tel:  {oc_found_tel} and Email: {oc_found_email}"
         )
@@ -263,7 +261,7 @@ def send_public_report_matched_mail(pk):
         )
         found_message = (
             f"There is a match for an unidentified dead body reported by you vide  {reference_found}"
-            + f" of {ps_found} at {ps_missing}."
+            + f" of {ps_found} at {ps_missing}. See {report_found_url}"
             + "\n"
             + f"Please contact the O/C {oc_missing} regarding a public missing reported by: {reference_missing}."
             + "\n"
@@ -323,7 +321,7 @@ def send_public_report_created_mail(pk):
     alert_oc_message = (
         "A Public missing report has been filed in your jurisdiction. "
         + "Please visit "
-        + f"https://missingfound.wb.gov.in/backend/view_public_report/{report.token}/"
+        + f"https://wbmissingfound.com/backend/view_public_report/{report.token}/"
         + f" and contact the person at {report.telephone_of_reporter}."
     )
     send_mail(
@@ -354,7 +352,7 @@ def send_public_report_created_mail(pk):
     # SMSs
     message = (
         "A Public missing report has been filed. "
-        + f"https://missingfound.wb.gov.in/backend/view_public_report/{report.token}/ "
+        + f"https://wbmissingfound.com/backend/view_public_report/{report.token}/ "
         + f"and contact {report.telephone_of_reporter}. GoWB"
     )
 
