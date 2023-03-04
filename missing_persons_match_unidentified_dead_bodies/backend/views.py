@@ -1106,6 +1106,17 @@ def matches(request, category):
             Match.objects.filter(match_is_correct=False).order_by("-mail_sent").values()
         )
         context["caption"] = "Incorrectly Matched Reports"
+    elif category == "districts":
+        matches = Match.objects.filter(match_is_correct=None).select_related('report_missing__police_station')
+        district_counts = (
+            matches.values('report_missing__police_station__district__name')
+                   .annotate(count=Count('id'))
+                   .order_by('report_missing__police_station__district__name')
+        )
+        context["district_counts"] = district_counts
+        context["title"] = "District wise uncofirmed matches"
+        template_name = "backend/districts_unconfirmed_matches.html"
+        return render(request, template_name, context)
     else:
         matches = Match.objects.filter(
             Q(report_missing__police_station__district__name=category)

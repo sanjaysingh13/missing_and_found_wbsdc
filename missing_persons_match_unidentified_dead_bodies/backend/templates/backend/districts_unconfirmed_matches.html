@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %} {{title}} {% endblock title %}
+{% block content %}
+<h1> {{title}} </h1>
+<table class="table table-condensed table-responsive table-striped">
+      <tr>
+            <th >Sl no.</th>
+            <th >Name</th>
+
+            <th >Total Unconfirmed matches</th>
+
+
+
+
+        </tr>
+        <tbody>
+          {% for district_count in district_counts %}
+
+            <tr>
+              <td>{{forloop.counter}}</td>
+              <td><a href="{% url 'backend:matches' category=district_count.report_missing__police_station__district__name %}">{{district_count.report_missing__police_station__district__name}}</td>
+
+
+                <td>{{district_count.count}}</td>
+
+
+
+            </tr>
+            {% endfor %}
+        </tbody>
+{% endblock content %}
