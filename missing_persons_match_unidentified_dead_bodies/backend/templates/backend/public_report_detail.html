@@ -85,7 +85,7 @@
         {% for match in matches %}
         <div class="col">
             <h5>Match</h5>
-            <a href="{% url 'backend:view_report'  match.pk %}" class="card-link"><img src="{{ match.photo.url }}" class="card-img-top" alt="..."></a>
+            <h3> You may like to contact the O/C of the Police Station below at {{match.police_station.telephones}} or {{match.police_station.office_telephone}} or {{match.police_station.emails}}</h3>
             <input class="form-check-input dup_id" type="checkbox"  value= {{match.pk}} aria-label="...">
             <p>{{ match.name}}</p>
             <p><strong>Missing</strong></p>

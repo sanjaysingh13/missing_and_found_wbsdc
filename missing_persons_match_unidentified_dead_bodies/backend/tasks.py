@@ -197,7 +197,10 @@ def send_matched_mail(pk):
                     [user.email],
                     fail_silently=False,
                 )
-                send_sms(template_match, message, user.telephone)
+                try:
+                    send_sms(template_match, message, user.telephone)
+                except Exception as e:
+                    print(str(e))
 
             match.mail_sent = date.today()
             match.save()
@@ -205,7 +208,11 @@ def send_matched_mail(pk):
             telephones = [oc_missing_tel, oc_found_tel, "9830425757"]
             for telephone in telephones:
                 if telephone:
-                    send_sms(template_match, message, telephone)
+                    try:
+                        send_sms(template_match, message, telephone)
+                    except Exception as e:
+                        print(str(e))
+
         except Exception as e:
             print(str(e))
 
@@ -278,7 +285,10 @@ def send_public_report_matched_mail(pk):
         telephones = [oc_missing_tel, oc_found_tel, "9830425757"]
         for telephone in telephones:
             if telephone:
-                send_sms(dead_body_match_public_report, message, telephone)
+                try:
+                    send_sms(dead_body_match_public_report, message, telephone)
+                except Exception as e:
+                    print(str(e))
         for user in User.objects.filter(
             category="DISTRICT_ADMIN",
             district=report_found.police_station.district,
@@ -301,7 +311,10 @@ def send_public_report_matched_mail(pk):
                 [user.email],
                 fail_silently=False,
             )
-            send_sms(dead_body_match_public_report, message, user.telephone)
+            try:
+                send_sms(dead_body_match_public_report, message, user.telephone)
+            except Exception as e:
+                print(str(e))
         match.mail_sent = date.today()
         match.save()
     except Exception as e:
@@ -333,7 +346,10 @@ def send_public_report_created_mail(pk):
     )
     # SMS
     message = f"Your token for missing person {report.name} is {report.token}. GoWB"
-    send_sms(generate_token, message, report.telephone_of_reporter)
+    try:
+        send_sms(generate_token, message, report.telephone_of_reporter)
+    except Exception as e:
+        print(str(e))
 
     send_mail(
         "Public Missing Report on WB Mising Found",
@@ -359,7 +375,10 @@ def send_public_report_created_mail(pk):
     telephones = [report.police_station.telephones, "9830425757"]
     for telephone in telephones:
         if telephone:
-            send_sms(alert_oc_public_complaint, message, telephone)
+            try:
+                send_sms(alert_oc_public_complaint, message, telephone)
+            except Exception as e:
+                print(str(e))
 
     for user in User.objects.filter(
         category="DISTRICT_ADMIN", district=report.police_station.district
@@ -371,7 +390,10 @@ def send_public_report_created_mail(pk):
             [user.email],
             fail_silently=False,
         )
-        send_sms(alert_oc_public_complaint, message, user.telephone)
+        try:
+            send_sms(alert_oc_public_complaint, message, user.telephone)
+        except Exception as e:
+            print(str(e))
 
 
 @app.task
