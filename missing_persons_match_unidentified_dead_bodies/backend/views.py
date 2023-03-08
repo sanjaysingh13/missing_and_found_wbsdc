@@ -663,7 +663,7 @@ def check_ccs_for_report(request, pk):
             if matches != {}:
 
                 matches = dict(
-                    sorted(matches.items(), key=lambda item: item[1], reverse=True)
+                    sorted(matches.items(), key=lambda item: item[1])
                 )
                 matches = {k: matches[k] for k in list(matches)[:20]}
                 matches = ",".join(list(matches.keys()))
