@@ -671,7 +671,10 @@ def check_ccs_for_report(request, pk):
             ccs_names_pics_from_uuids = f"https://www.wbpcrime.info/backend/return_matches_to_missing_found/{matches}"
             response = requests.get(ccs_names_pics_from_uuids)
             matches = response.json()["matched_criminals"]
-            context = {"matches": matches, "report": report}
+            paginator = Paginator(matches, 2)
+            page_number = request.GET.get("page")
+            page_obj = paginator.get_page(page_number)
+            context = {"matches": page_obj, "report": report}
             return render(request, "backend/ccs_matches.html", context)
         else:
             return HttpResponse("<p>No Matches Found</p>")
