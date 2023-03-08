@@ -4,12 +4,14 @@ import io
 import json
 import random
 import re
+import urllib
 from datetime import date, timedelta
 from itertools import chain
 
 import cv2
 import face_recognition
 import numpy as np
+import requests
 # import traceback
 # import requests
 # from celery.result import AsyncResult
@@ -25,7 +27,7 @@ from django.db.models import Count, Q, Subquery
 # from django.contrib.gis.geos import Point
 # from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 # from django.core.paginator import Paginator
-from django.http import JsonResponse  # , , request
+from django.http import HttpResponse, JsonResponse  # , , request
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
@@ -648,6 +650,33 @@ def edit_report(request, pk):
     )
 
 
+def check_ccs_for_report(request, pk):
+    if request.method == "GET":
+        report = Report.objects.get(id=pk)
+        url = report.photo.url
+        response = requests.get(
+            "https://ccsfacesearch.com/match",
+            params={"url": urllib.parse.quote(url, safe="")},
+        )
+        if response.status_code == 200:
+            matches = response.json()["matches"]
+
+            matches = dict(
+                sorted(matches.items(), key=lambda item: item[1], reverse=True)
+            )
+            matches = {k: matches[k] for k in list(matches)[:20]}
+            matches = ",".join(list(matches.keys()))
+
+            matches = matches.replace("'", '"')
+            ccs_names_pics_from_uuids = f"https://www.wbpcrime.info/backend/return_matches_to_missing_found/{matches}"
+            response = requests.get(ccs_names_pics_from_uuids)
+            matches = response.json()["matched_criminals"]
+            context = {"matches": matches, "report": report}
+            return render(request, "backend/ccs_matches.html", context)
+        else:
+            return HttpResponse("<p>No Matches Found</p>")
+
+
 @login_required
 @permission_required("users.add_user", raise_exception=True)
 def report_search(request):
@@ -1107,11 +1136,13 @@ def matches(request, category):
         )
         context["caption"] = "Incorrectly Matched Reports"
     elif category == "districts":
-        matches = Match.objects.filter(match_is_correct=None).select_related('report_missing__police_station')
+        matches = Match.objects.filter(match_is_correct=None).select_related(
+            "report_missing__police_station"
+        )
         district_counts = (
-            matches.values('report_missing__police_station__district__name')
-                   .annotate(count=Count('id'))
-                   .order_by('report_missing__police_station__district__name')
+            matches.values("report_missing__police_station__district__name")
+            .annotate(count=Count("id"))
+            .order_by("report_missing__police_station__district__name")
         )
         context["district_counts"] = district_counts
         context["title"] = "District wise uncofirmed matches"

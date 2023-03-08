@@ -30,6 +30,11 @@ urlpatterns = [
         name="view_public_report",
     ),
     path("edit_report/<int:pk>/", views.edit_report, name="edit_report"),
+    path(
+        "check_ccs_for_report/<int:pk>/",
+        views.check_ccs_for_report,
+        name="check_ccs_for_report",
+    ),
     path("report_search/", views.report_search, name="report_search"),
     path(
         "public_report_search/", views.public_report_search, name="public_report_search"

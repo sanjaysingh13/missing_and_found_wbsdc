@@ -4,8 +4,7 @@
 {% block content %}
 <div>
 
-    <h2>Report (and matches, if any)</h2>
-    <p id = "matches_id", style="display:none;">{{matches_id}}</p>
+    <h2>{{caption}}</h2>
 
     <div class="container">
         <!--Pagination-->
@@ -53,7 +52,8 @@
             {% endif %}
         </ul>
     </nav>
-    <!--end of Pagination-->
+
+        <!--end of Pagination-->
     <div class="row row-cols-3">
         <div class="col">
             <h5>Reported Case</h5>
@@ -82,22 +82,11 @@
       <p>{{ report.police_station.ps_with_distt}}</p>
       <p id = "searched_report", style="display:none;">{{report.pk}}</p>
       <div class = "row">
-        <div class="col-md-4">
-            <form method="post" action="{% url 'backend:report_delete' report.pk %}">
-                {% csrf_token %}
-                <input type="submit" value="Delete" class="btn btn-danger">
-            </form>
-        </div>
-        <div class="col-md-4">
+
+        <div class="col-md-6">
             <form method="get" action="{% url 'backend:edit_report' report.pk %}">
                 {% csrf_token %}
                 <input type="submit" value="Edit" class="btn btn-info">
-            </form>
-        </div>
-        <div class="col-md-4">
-            <form method="get" action="{% url 'backend:check_ccs_for_report' report.pk %}">
-                {% csrf_token %}
-                <input type="submit" value="Check CCS" class="btn btn-info">
             </form>
         </div>
     </div>
@@ -116,38 +105,19 @@
 {% for match in matches %}
 <div class="col">
     <h5>Match</h5>
-    {% if match.token %}
-    <a href="{% url 'backend:view_public_report'  match.token %}" class="card-link"><img src="{{ match.photo.url }}" class="card-img-top" alt="..."></a>
-    {% elif match.pk %}
-    <a href="{% url 'backend:view_report'  match.pk %}" class="card-link"><img src="{{ match.photo.url }}" class="card-img-top" alt="..."></a>
 
-    {% endif %}
+    <a href= "https://www.wbpcrime.info/graphs/criminals/{{match.1}}"class="card-link"><img src="{{ match.2 }}" class="card-img-top" alt="..."></a>
 
-    <input class="form-check-input dup_id" type="checkbox"  value= {{match.pk}} aria-label="...">
-    <p>{{ match.name}}</p>
-    <p><strong>{% if match.missing_or_found == "M" %}
-      Missing
-      {% elif match.missing_or_found == "F" %}
-      Unidentified Dead Body
-      {% else %}
-      Unidentified
-      {% endif %}
-  </strong></p>
-  <p>C/o: {{ match.guardian_name_and_address}}</p>
-  <p>{{ match.entry_date}}</p>
-  <p>{{ match.description}}</p>
-  <p>{{ match.police_station.ps_with_distt}}</p>
-  <p>Height: {{match.height}} Age: {{match.age}}</p>
 
+    <input class="form-check-input dup_id" type="checkbox"  value= {{match.1}} aria-label="...">
+    <p>{{ match.0}}</p>
+   {{match.1}}
 </div>
 {% endfor %}
 
 </div>
 
 
-</div>
-
-</div>
 </div>
 
 {% endblock content %}
