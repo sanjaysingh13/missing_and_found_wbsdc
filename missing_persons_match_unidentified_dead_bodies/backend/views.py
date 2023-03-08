@@ -660,24 +660,27 @@ def check_ccs_for_report(request, pk):
         )
         if response.status_code == 200:
             matches = response.json()["matches"]
+            if matches != {}:
 
-            matches = dict(
-                sorted(matches.items(), key=lambda item: item[1], reverse=True)
-            )
-            matches = {k: matches[k] for k in list(matches)[:20]}
-            matches = ",".join(list(matches.keys()))
+                matches = dict(
+                    sorted(matches.items(), key=lambda item: item[1], reverse=True)
+                )
+                matches = {k: matches[k] for k in list(matches)[:20]}
+                matches = ",".join(list(matches.keys()))
 
-            matches = matches.replace("'", '"')
-            ccs_names_pics_from_uuids = f"https://www.wbpcrime.info/backend/return_matches_to_missing_found/{matches}"
-            response = requests.get(ccs_names_pics_from_uuids)
-            matches = response.json()["matched_criminals"]
-            paginator = Paginator(matches, 2)
-            page_number = request.GET.get("page")
-            page_obj = paginator.get_page(page_number)
-            context = {"matches": page_obj, "report": report}
-            return render(request, "backend/ccs_matches.html", context)
-        else:
-            return HttpResponse("<p>No Matches Found</p>")
+                matches = matches.replace("'", '"')
+                ccs_names_pics_from_uuids = (
+                    "https://www.wbpcrime.info/backend/return_matches_to_missing_found/"
+                    + matches
+                )
+                response = requests.get(ccs_names_pics_from_uuids)
+                matches = response.json()["matched_criminals"]
+                paginator = Paginator(matches, 2)
+                page_number = request.GET.get("page")
+                page_obj = paginator.get_page(page_number)
+                context = {"matches": page_obj, "report": report}
+                return render(request, "backend/ccs_matches.html", context)
+        return HttpResponse("<p>No Matches Found</p>")
 
 
 @login_required
