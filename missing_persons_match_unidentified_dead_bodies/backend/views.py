@@ -260,7 +260,7 @@ def upload_photo(request):
                 if len(face_encoding) != 0:
                     face_encoding = face_encoding[0]
                     # face_encoding = json.dumps(face_encoding.tolist())
-                    # report.face_encoding = face_encoding
+                    report.embedding = face_encoding
 
                 report.year = str(entry_date.year)[-2:]
                 if location:
