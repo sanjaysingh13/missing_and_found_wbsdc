@@ -393,7 +393,7 @@ def view_report(request, object_id):
     report = Report.objects.get(id=object_id)
     context = {}
     reports = []
-    if report.face_encoding:
+    if report.embedding is not None:
         matched_reports = match_encodings(report)
         if matched_reports:
             reports = Report.objects.filter(pk__in=matched_reports).only(
@@ -474,7 +474,7 @@ def view_public_report(request, object_id):
         public_report = PublicReport.objects.get(token=object_id)
         context = {}
         reports = []
-        if public_report.face_encoding:
+        if public_report.embedding is not None:
             matched_reports = match_encodings(public_report)
             if matched_reports:
                 reports = Report.objects.filter(pk__in=matched_reports).only(
