@@ -129,7 +129,7 @@ def match_encodings(report):
     face_encodings = []
     ids = []
     for report in reports_under_consideration:
-        if report.embedding:
+        if report.embedding is not None:
             face_encodings.append(report.embedding)
             ids.append(report.pk)
     if face_encodings != []:
@@ -168,7 +168,7 @@ def match_encodings_with_public_reports(report):
         face_encodings = []
         ids = []
         for public_report in public_reports_under_consideration:
-            if public_report.embedding:
+            if public_report.embedding is not None:
                 face_encodings.append(public_report.embedding)
                 ids.append(public_report.token)
         if face_encodings != []:
