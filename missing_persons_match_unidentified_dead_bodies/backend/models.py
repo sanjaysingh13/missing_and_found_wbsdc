@@ -8,6 +8,7 @@ from django.contrib.postgres.search import SearchVectorField
 from django.urls import reverse
 # from django.core.files import File
 from django.utils.translation import gettext_lazy as _
+from pgvector.django import IvfflatIndex, VectorField
 
 from missing_persons_match_unidentified_dead_bodies.users.models import (
     PoliceStation,
@@ -53,6 +54,7 @@ class Report(TimeStampedModel):
         ("Name if known"), blank=True, null=True, max_length=300
     )
     face_encoding = models.CharField(blank=True, null=True, max_length=4000)
+    embedding = VectorField(dimensions=128, null=True)
     latitude = models.FloatField(_("Latitude of Event"), blank=True, null=True)
     longitude = models.FloatField(_("Longitude of Event"), blank=True, null=True)
     location = models.PointField(srid=4326, geography=True, null=True)
@@ -66,7 +68,15 @@ class Report(TimeStampedModel):
     gde_or_fir = models.CharField(max_length=3)
 
     class Meta:
-        indexes = (GinIndex(fields=["description_search_vector"]),)  # add index
+        indexes = [
+            IvfflatIndex(
+                name="report_embeddings_index",
+                fields=["embedding"],
+                lists=100,
+                opclasses=["vector_cosine_ops"],
+            ),
+            GinIndex(fields=["description_search_vector"]),
+        ]
         constraints = [
             models.UniqueConstraint(
                 fields=["police_station", "reference", "entry_date", "gde_or_fir"],
@@ -112,6 +122,9 @@ class PublicReport(TimeStampedModel):
         ("Name if known"), blank=True, null=True, max_length=300
     )
     face_encoding = models.CharField(blank=True, null=True, max_length=4000)
+
+    embedding = VectorField(dimensions=128, null=True)
+
     location = models.PointField(srid=4326, geography=True, null=True)
     # spatial_location = SpatialLocationField()
     token = models.CharField(max_length=8)
@@ -119,7 +132,15 @@ class PublicReport(TimeStampedModel):
     reconciled = models.BooleanField(default=False)
 
     class Meta:
-        indexes = (GinIndex(fields=["description_search_vector"]),)  # add index
+        indexes = [
+            IvfflatIndex(
+                name="public_report_embeddings_index",
+                fields=["embedding"],
+                lists=100,
+                opclasses=["vector_cosine_ops"],
+            ),
+            GinIndex(fields=["description_search_vector"]),
+        ]
 
     def __str__(self):
         person = "Missing : "

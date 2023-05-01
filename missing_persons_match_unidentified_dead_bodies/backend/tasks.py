@@ -1,6 +1,6 @@
+import io
 import sys
 from datetime import date
-from io import BytesIO
 
 import boto3
 import requests
@@ -49,7 +49,7 @@ def add_icon_to_report(pk):
         image.thumbnail((64, 64))
 
         # Create a BytesIO buffer to receive image data
-        buffer = BytesIO()
+        buffer = io.BytesIO()
 
         # Save the image to the buffer
         image.save(buffer, "JPEG")
@@ -69,7 +69,7 @@ def add_icon_to_report(pk):
             icon_data = buffer.getvalue()
 
             # Upload the resized image to S3
-            s3.upload_fileobj(BytesIO(icon_data), "wb-missing-found", icon_file_name)
+            s3.upload_fileobj(io.BytesIO(icon_data), "wb-missing-found", icon_file_name)
 
             # Save the file name of the resized image to the icon field of the model
             report.icon = icon_file_name
@@ -130,10 +130,7 @@ def send_matched_mail(pk):
         # report_found_url_tiny_link = shorten_url(report_found_url)
         # report_missing_url_tiny_link = shorten_url(report_missing_url)
 
-        message = (
-            "Match for unidentified dead body: "
-            + f"{report_found_url} . GoWB"
-        )
+        message = "Match for unidentified dead body: " + f"{report_found_url} . GoWB"
         try:
             missing_message = (
                 f"There is a match for missing person {name_missing} of your Police Station"
@@ -249,7 +246,6 @@ def send_public_report_matched_mail(pk):
     message = (
         "There is a match for an unidentified dead body"
         + f" reported by you {report_found_url}. GoWB "
-
     )
     try:
         missing_message = (

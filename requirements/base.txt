@@ -42,3 +42,4 @@ sentry-sdk
 django-recaptcha
 
 pandas
+pgvector

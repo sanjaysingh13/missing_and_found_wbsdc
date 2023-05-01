@@ -57,17 +57,17 @@
     <div class="row row-cols-3">
         <div class="col">
             <h5>Reported Case</h5>
-            <img src="{{ report.photo.url }}" class="img-fluid">
+            <img src="{{ public_report.photo.url }}" class="img-fluid">
 
-            <p>{{ report.entry_date}}</p>
-            <p>{{ report.name}}</p>
-            <p><strong>C/o </strong>{{ report.guardian_name_and_address}}</p>
-            <p>{{report.description}}</p>
-            <p>Height: {{report.height}} Age: {{report.age}}</p>
-            <p><strong>Tel of Missing: </strong>{{ report.telephone_of_missing}}</p>
-            <p><strong>Tel of Guardian: </strong>{{ report.telephone_of_reporter}}</p>
-            <p>{{ report.police_station.ps_with_distt}}</p>
-            <p id = "searched_report", style="display:none;">{{report.pk}}</p>
+            <p>{{ public_report.entry_date}}</p>
+            <p>{{ public_report.name}}</p>
+            <p><strong>C/o </strong>{{ public_report.guardian_name_and_address}}</p>
+            <p>{{public_report.description}}</p>
+            <p>Height: {{public_report.height}} Age: {{public_report.age}}</p>
+            <p><strong>Tel of Missing: </strong>{{ public_report.telephone_of_missing}}</p>
+            <p><strong>Tel of Guardian: </strong>{{ public_report.telephone_of_reporter}}</p>
+            <p>{{ public_report.police_station.ps_with_distt}}</p>
+            <p id = "searched_report", style="display:none;">{{public_report.pk}}</p>
 
             {% if user.is_authenticated %}
     {% if user.email == report.police_station.emails or user.category == 'ADMIN' %}

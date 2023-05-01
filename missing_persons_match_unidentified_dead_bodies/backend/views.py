@@ -33,6 +33,7 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.edit import DeleteView
 from fuzzywuzzy import process
+from pgvector.django import CosineDistance
 from rest_framework import viewsets
 
 from missing_persons_match_unidentified_dead_bodies.backend.models import (
@@ -88,11 +89,12 @@ root = (
 
 
 def match_encodings(report):
-    face_encoding = report.face_encoding
-    face_encoding = json.loads(face_encoding)
-    face_encoding = np.array(face_encoding, dtype="float64")
+    face_encoding = report.embedding
     gender = report.gender
     missing_or_found = report.missing_or_found
+    similar_faces = Report.objects.order_by(CosineDistance("embedding", face_encoding))[
+        :100
+    ]
     # height = report.height
     # entry_date = report.entry_date
     if missing_or_found == "M":
@@ -106,6 +108,7 @@ def match_encodings(report):
         reports_under_consideration = reports_under_consideration.exclude(
             id__in=Subquery(known_false_match_reports)
         )
+        reports_under_consideration = reports_under_consideration & similar_faces
     else:
         reports_under_consideration = Report.objects.filter(
             gender=gender, missing_or_found="M", reconciled=False
@@ -117,6 +120,7 @@ def match_encodings(report):
         reports_under_consideration = reports_under_consideration.exclude(
             id__in=Subquery(known_false_match_reports)
         )
+        reports_under_consideration = reports_under_consideration & similar_faces
 
     # if height and height != 0 :
     #     reports_under_consideration = reports_under_consideration.filter(
@@ -126,9 +130,7 @@ def match_encodings(report):
     ids = []
     for report in reports_under_consideration:
         if report.face_encoding:
-            face_encodings.append(
-                np.array(json.loads(report.face_encoding), dtype="float64")
-            )
+            face_encodings.append(report.embedding)
             ids.append(report.pk)
     if face_encodings != []:
         all_matches = face_recognition.compare_faces(
@@ -142,27 +144,32 @@ def match_encodings(report):
 
 def match_encodings_with_public_reports(report):
     matched_images = None
-    face_encoding = report.face_encoding
-    face_encoding = json.loads(face_encoding)
-    face_encoding = np.array(face_encoding, dtype="float64")
+    face_encoding = report.embedding
+    # face_encoding = json.loads(face_encoding)
+    # face_encoding = np.array(face_encoding, dtype="float64")
     gender = report.gender
     missing_or_found = report.missing_or_found
     height = report.height
     # entry_date = report.entry_date
+    similar_faces = PublicReport.objects.order_by(
+        CosineDistance("embedding", face_encoding)
+    )[:100]
     if missing_or_found in ["F", "U"]:
-        reports_under_consideration = PublicReport.objects.filter(gender=gender)
+        public_reports_under_consideration = PublicReport.objects.filter(gender=gender)
         if height:
-            reports_under_consideration = reports_under_consideration.filter(
-                height__gte=height - 10, height__lte=height + 10
+            public_reports_under_consideration = (
+                public_reports_under_consideration.filter(
+                    height__gte=height - 10, height__lte=height + 10
+                )
             )
+        public_reports_under_consideration = (
+            public_reports_under_consideration & similar_faces
+        )
         face_encodings = []
         ids = []
-        for report in reports_under_consideration:
-            if report.face_encoding:
-                face_encodings.append(
-                    np.array(json.loads(report.face_encoding), dtype="float64")
-                )
-                ids.append(report.token)
+        for public_report in public_reports_under_consideration:
+            face_encodings.append(public_report.embedding)
+            ids.append(public_report.token)
         if face_encodings != []:
             all_matches = face_recognition.compare_faces(
                 face_encodings, face_encoding, tolerance=0.5
@@ -252,8 +259,9 @@ def upload_photo(request):
                 face_encoding = face_recognition.face_encodings(image)
                 if len(face_encoding) != 0:
                     face_encoding = face_encoding[0]
-                    face_encoding = json.dumps(face_encoding.tolist())
-                    report.face_encoding = face_encoding
+                    # face_encoding = json.dumps(face_encoding.tolist())
+                    # report.face_encoding = face_encoding
+
                 report.year = str(entry_date.year)[-2:]
                 if location:
                     report.location = location
@@ -346,8 +354,7 @@ def upload_public_report(request):
                     face_encoding = face_recognition.face_encodings(image)
                     if len(face_encoding) != 0:
                         face_encoding = face_encoding[0]
-                        face_encoding = json.dumps(face_encoding.tolist())
-                        report.face_encoding = face_encoding
+                        report.embedding = face_encoding
                     report.year = str(entry_date.year)[-2:]
                     report.reconciled = False
                     report.save()
@@ -463,11 +470,11 @@ def view_report(request, object_id):
 def view_public_report(request, object_id):
     if request.method == "GET":
         confirmform = ConfirmPublicReportForm(request.GET or None)
-        report = PublicReport.objects.get(token=object_id)
+        public_report = PublicReport.objects.get(token=object_id)
         context = {}
         reports = []
-        if report.face_encoding:
-            matched_reports = match_encodings(report)
+        if public_report.face_encoding:
+            matched_reports = match_encodings(public_report)
             if matched_reports:
                 reports = Report.objects.filter(pk__in=matched_reports).only(
                     "pk",
@@ -480,13 +487,15 @@ def view_public_report(request, object_id):
                 )
                 for report_found in reports:
                     if not PublicReportMatch.objects.filter(
-                        report_missing_id=report.id, report_found_id=report_found.id
+                        report_missing_id=public_report.id,
+                        report_found_id=report_found.id,
                     ).exists():
                         match = PublicReportMatch(
-                            report_missing_id=report.id, report_found_id=report_found.id
+                            report_missing_id=public_report.id,
+                            report_found_id=report_found.id,
                         )
                         match.save()
-        context["report"] = report
+        context["public_report"] = public_report
         paginator = Paginator(reports, 2)
         page_number = request.GET.get("page")
         page_obj = paginator.get_page(page_number)
@@ -501,6 +510,7 @@ def view_public_report(request, object_id):
             cleaned_data = confirmform.cleaned_data
             reference = cleaned_data.get("reference", "")
             entry_date = cleaned_data.get("entry_date", "")
+
             new_report = Report(
                 photo=public_report.photo,
                 reference=reference,
@@ -514,7 +524,7 @@ def view_public_report(request, object_id):
                 age=public_report.age,
                 guardian_name_and_address=public_report.guardian_name_and_address,
                 police_station=public_report.police_station,
-                face_encoding=public_report.face_encoding,
+                embedding=public_report.face_encoding,
             )
             new_report.save()
             report_created_message = f"""A missing report has been filed at
@@ -650,36 +660,22 @@ def edit_report(request, pk):
     )
 
 
+# NEED TO CHANGE THIS
 def check_ccs_for_report(request, pk):
     if request.method == "GET":
         report = Report.objects.get(id=pk)
         url = report.photo.url
         response = requests.get(
-            "https://ccsfacesearch.com/match",
+            "https://www.wbpcrime.info/backend/return_matches_to_missing_found/",
             params={"url": urllib.parse.quote(url, safe="")},
         )
         if response.status_code == 200:
-            matches = response.json()["matches"]
-            if matches != {}:
-
-                matches = dict(
-                    sorted(matches.items(), key=lambda item: item[1])
-                )
-                matches = {k: matches[k] for k in list(matches)[:20]}
-                matches = ",".join(list(matches.keys()))
-
-                matches = matches.replace("'", '"')
-                ccs_names_pics_from_uuids = (
-                    "https://www.wbpcrime.info/backend/return_matches_to_missing_found/"
-                    + matches
-                )
-                response = requests.get(ccs_names_pics_from_uuids)
-                matches = response.json()["matched_criminals"]
-                paginator = Paginator(matches, 2)
-                page_number = request.GET.get("page")
-                page_obj = paginator.get_page(page_number)
-                context = {"matches": page_obj, "report": report}
-                return render(request, "backend/ccs_matches.html", context)
+            matches = response.json()["matched_criminals"]
+            paginator = Paginator(matches, 2)
+            page_number = request.GET.get("page")
+            page_obj = paginator.get_page(page_number)
+            context = {"matches": page_obj, "report": report}
+            return render(request, "backend/ccs_matches.html", context)
         return HttpResponse("<p>No Matches Found</p>")
 
 
