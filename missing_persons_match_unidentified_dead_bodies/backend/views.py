@@ -129,7 +129,7 @@ def match_encodings(report):
     face_encodings = []
     ids = []
     for report in reports_under_consideration:
-        if report.face_encoding:
+        if report.embedding:
             face_encodings.append(report.embedding)
             ids.append(report.pk)
     if face_encodings != []:
@@ -168,8 +168,9 @@ def match_encodings_with_public_reports(report):
         face_encodings = []
         ids = []
         for public_report in public_reports_under_consideration:
-            face_encodings.append(public_report.embedding)
-            ids.append(public_report.token)
+            if public_report.embedding:
+                face_encodings.append(public_report.embedding)
+                ids.append(public_report.token)
         if face_encodings != []:
             all_matches = face_recognition.compare_faces(
                 face_encodings, face_encoding, tolerance=0.5
