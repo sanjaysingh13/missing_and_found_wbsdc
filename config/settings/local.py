@@ -15,7 +15,7 @@ ALLOWED_HOSTS = [
     "localhost",
     "0.0.0.0",
     "127.0.0.1",
-    "3.111.96.240",
+    "91.203.135.52",
     ".ccsneo4jdigitalocean.com",
     ".wbkhoyapaya.com",
     ".wbmissingfound.com",
