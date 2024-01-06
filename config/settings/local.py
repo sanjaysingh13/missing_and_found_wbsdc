@@ -39,7 +39,6 @@ CACHES = {
 EMAIL_BACKEND = env(
     "DJANGO_EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend"
 )
-
 # WhiteNoise
 # ------------------------------------------------------------------------------
 # http://whitenoise.evans.io/en/latest/django.html#using-whitenoise-in-development
@@ -148,10 +147,22 @@ try:
     # EMAIL
     # ------------------------------------------------------------------------------
     # https://docs.djangoproject.com/en/dev/ref/settings/#default-from-email
+    # DEFAULT_FROM_EMAIL = env(
+    #     "DJANGO_DEFAULT_FROM_EMAIL",
+    #     default="Missing Persons & Unidentified Dead Bodies <support@wbmissingfound.com>",
+    # )
+
+    # Gmail
     DEFAULT_FROM_EMAIL = env(
-        "DJANGO_DEFAULT_FROM_EMAIL",
-        default="Missing Persons & Unidentified Dead Bodies <support@wbmissingfound.com>",
-    )
+            "DJANGO_DEFAULT_FROM_EMAIL",
+            default="Missing Persons & Unidentified Dead Bodies <admin@wbmissingfound.com>",
+        )
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'smtp.gmail.com'
+    EMAIL_USE_TLS = True
+    EMAIL_PORT = 587
+    EMAIL_HOST_USER = 'admin@wbmissingfound.com'  # Your Gmail address
+    EMAIL_HOST_PASSWORD = env("MISSING_FOUND_GMAIL_APP_PASSWORD")   # Your app password
     # https://docs.djangoproject.com/en/dev/ref/settings/#server-email
     SERVER_EMAIL = env("DJANGO_SERVER_EMAIL", default=DEFAULT_FROM_EMAIL)
     # https://docs.djangoproject.com/en/dev/ref/settings/#email-subject-prefix
@@ -172,15 +183,15 @@ try:
     # https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
     # https://anymail.readthedocs.io/en/stable/installation/#anymail-settings-reference
     # https://anymail.readthedocs.io/en/stable/esps/sendgrid/
-    EMAIL_BACKEND = "anymail.backends.sendgrid.EmailBackend"
+
     # No more needed since we have SMS Integration now
     # EMAIL_BACKEND = "missing_persons_match_unidentified_dead_bodies.backend.utils.BCCEmailBackend"
-    ANYMAIL = {
-        "SENDGRID_API_KEY": env("SENDGRID_API_KEY"),
-        "SENDGRID_API_URL": env(
-            "SENDGRID_API_URL", default="https://api.sendgrid.com/v3/"
-        ),
-    }
+    # ANYMAIL = {
+    #     "SENDGRID_API_KEY": env("SENDGRID_API_KEY"),
+    #     "SENDGRID_API_URL": env(
+    #         "SENDGRID_API_URL", default="https://api.sendgrid.com/v3/"
+    #     ),
+    # }
     # LOGGING
     # ------------------------------------------------------------------------------
     # https://docs.djangoproject.com/en/dev/ref/settings/#logging
