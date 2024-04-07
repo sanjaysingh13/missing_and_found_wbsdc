@@ -59,3 +59,12 @@ Please note: For Celery's import magic to work, it is important *where* the cele
 ## Deployment
 
 The following details how to deploy this application.
+
+    $ git clone https://github.com/sanjaysingh13/missing_and_found_wbsdc.git
+    $ cd ~/missing_and_found_wbsdc
+    $ python -m venv missing_found
+    $ source missing_found/bin/activate
+    $ pip install -r requirements/local.txt
+    $ pip install -r requirements/production.txt
+    $ gunicorn -c config/gunicorn/prod.py
+Use nginx to serve the web-page
