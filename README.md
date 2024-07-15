@@ -5,6 +5,15 @@ An application for the automatic matching of missing persons with unidentified d
 [![Built with Cookiecutter Django](https://img.shields.io/badge/built%20with-Cookiecutter%20Django-ff69b4.svg?logo=cookiecutter)](https://github.com/cookiecutter/cookiecutter-django/)
 [![Black code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
+
+## The Problem
+
+One of the oldest problems of the policing system in India is the matching of unidentified dead bodies with missing person reports. This application attempts to solve that problem with the use of information technology. The main obstacles in the process of identification are identified and addressed. The application developed as a result of this analysis was successfully tested against live data of missing person reports and unidentified dead bodies in the state of West Bengal.
+
+Here is a detailed introduction to the app:
+
+[Detailed Introduction](https://drive.google.com/file/d/1byOUWPfPF7nHIESkGlOUdJVXdAWevD_h/view?usp=share_link)
+
 ## Settings
 
 Moved to [settings](http://cookiecutter-django.readthedocs.io/en/latest/settings.html).
