@@ -14,6 +14,26 @@ Here is a detailed introduction to the app:
 
 [Detailed Introduction](https://drive.google.com/file/d/1byOUWPfPF7nHIESkGlOUdJVXdAWevD_h/view?usp=share_link)
 
+## Deployment
+
+The following details how to deploy this application.
+
+    $ git clone https://github.com/sanjaysingh13/missing_and_found_wbsdc.git
+    $ cd ~/missing_and_found_wbsdc
+    $ python -m venv missing_found
+    $ source missing_found/bin/activate
+    $ pip install -r requirements/local.txt
+    $ pip install -r requirements/production.txt
+    $ gunicorn -c config/gunicorn/prod.py
+    In a separate terminal window..
+    $ celery -A config.celery_app worker -l info
+    In another one..
+    $ celery -A config.celery_app beat -l info
+Use nginx to serve the web-page
+You would need to set a number of environment variables, such as keys for AWS S3, Sendgrid, DATABASE_URL (Postgres), CELERY_BROKER_URL, MAP_BOX_ACCESS_TOKEN, SENTRY_DSN, RECAPTCHA_PUBLIC_KEY, RECAPTCHA_PRIVATE_KEY, etc.. You can find a full list in [base.py](./config/settings/base.py), [local.py](./config/settings/local.py) and [production.py](./config/settings/production.py)
+
+Please contact the author if you are not sure how to register for and get these credentials.
+
 ## Settings
 
 Moved to [settings](http://cookiecutter-django.readthedocs.io/en/latest/settings.html).
@@ -64,16 +84,3 @@ celery -A config.celery_app worker -l info
 ```
 
 Please note: For Celery's import magic to work, it is important *where* the celery commands are run. If you are in the same folder with *manage.py*, you should be right.
-
-## Deployment
-
-The following details how to deploy this application.
-
-    $ git clone https://github.com/sanjaysingh13/missing_and_found_wbsdc.git
-    $ cd ~/missing_and_found_wbsdc
-    $ python -m venv missing_found
-    $ source missing_found/bin/activate
-    $ pip install -r requirements/local.txt
-    $ pip install -r requirements/production.txt
-    $ gunicorn -c config/gunicorn/prod.py
-Use nginx to serve the web-page
